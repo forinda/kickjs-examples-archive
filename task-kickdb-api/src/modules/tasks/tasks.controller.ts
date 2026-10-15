@@ -3,16 +3,16 @@ import {
   Get,
   Post,
   Patch,
-  Autowired,
+  Inject,
   HttpException,
   reply,
   type RequestContext,
 } from '@forinda/kickjs'
-import { TasksRepository } from './tasks.repository'
+import { TASKS_REPOSITORY, type TasksRepository } from './tasks.repository'
 
 @Controller()
 export class TasksController {
-  @Autowired() private readonly tasks!: TasksRepository
+  @Inject(TASKS_REPOSITORY) private readonly tasks!: TasksRepository
 
   @Get('/')
   async list(ctx: RequestContext) {

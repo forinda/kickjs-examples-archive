@@ -2,16 +2,16 @@ import {
   Controller,
   Get,
   Post,
-  Autowired,
+  Inject,
   HttpException,
   reply,
   type RequestContext,
 } from '@forinda/kickjs'
-import { WorkspacesRepository } from './workspaces.repository'
+import { WORKSPACES_REPOSITORY, type WorkspacesRepository } from './workspaces.repository'
 
 @Controller()
 export class WorkspacesController {
-  @Autowired() private readonly workspaces!: WorkspacesRepository
+  @Inject(WORKSPACES_REPOSITORY) private readonly workspaces!: WorkspacesRepository
 
   @Get('/')
   async list(_ctx: RequestContext) {

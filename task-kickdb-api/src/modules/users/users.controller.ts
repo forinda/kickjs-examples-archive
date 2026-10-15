@@ -2,16 +2,16 @@ import {
   Controller,
   Get,
   Post,
-  Autowired,
+  Inject,
   HttpException,
   reply,
   type RequestContext,
 } from '@forinda/kickjs'
-import { UsersRepository } from './users.repository'
+import { USERS_REPOSITORY, type UsersRepository } from './users.repository'
 
 @Controller()
 export class UsersController {
-  @Autowired() private readonly users!: UsersRepository
+  @Inject(USERS_REPOSITORY) private readonly users!: UsersRepository
 
   @Get('/')
   async list(_ctx: RequestContext) {

@@ -1,5 +1,5 @@
-import { Service, Inject } from '@forinda/kickjs'
-import { DB_PRIMARY, type KickDbClient } from '@forinda/kickjs-db'
+import { createToken } from '@forinda/kickjs'
+import type { KickDbClient } from '@forinda/kickjs-db'
 
 export interface NewUser {
   email: string
@@ -9,37 +9,52 @@ export interface NewUser {
   avatarUrl?: string | null
 }
 
-@Service()
-export class UsersRepository {
-  // KickDbRegister augmentation in src/db/register.ts widens KickDbClient to the
-  // schema-derived shape automatically — no Db cast needed at the call site.
-  // id, isActive, createdAt are Generated<T> in the schema (serial PK +
-  // boolean default + timestamp defaultNow), so insert values can omit them.
-  constructor(@Inject(DB_PRIMARY) private readonly db: KickDbClient) {}
+/** Strips the password hash so it never reaches a response. */
+function toPublic<T extends { passwordHash: unknown }>(row: T): Omit<T, 'passwordHash'> {
+  const { passwordHash: _omit, ...rest } = row
+  return rest
+}
 
-  list() {
-    return this.db.selectFrom('users').selectAll().orderBy('createdAt', 'asc').execute()
-  }
+/** Repository over the kick/db client; deps come in as parameters. */
+export function createUsersRepository(db: KickDbClient) {
+  return {
+    list() {
+      return db
+        .selectFrom('users')
+        .selectAll()
+        .orderBy('createdAt', 'asc')
+        .execute()
+        .then((rows) => rows.map(toPublic))
+    },
 
-  findById(id: string) {
-    return this.db.selectFrom('users').selectAll().where('id', '=', id).executeTakeFirst()
-  }
+    async findById(id: string) {
+      const row = await db.selectFrom('users').selectAll().where('id', '=', id).executeTakeFirst()
+      return row && toPublic(row)
+    },
 
-  findByEmail(email: string) {
-    return this.db.selectFrom('users').selectAll().where('email', '=', email).executeTakeFirst()
-  }
+    /** Includes the hash — for credential checks only, never for a response. */
 
-  create(input: NewUser) {
-    return this.db
-      .insertInto('users')
-      .values({
-        email: input.email,
-        passwordHash: input.passwordHash,
-        firstName: input.firstName,
-        lastName: input.lastName,
-        avatarUrl: input.avatarUrl ?? null,
-      })
-      .returningAll()
-      .executeTakeFirstOrThrow()
+    findByEmail(email: string) {
+      return db.selectFrom('users').selectAll().where('email', '=', email).executeTakeFirst()
+    },
+
+    create(input: NewUser) {
+      return db
+        .insertInto('users')
+        .values({
+          email: input.email,
+          passwordHash: input.passwordHash,
+          firstName: input.firstName,
+          lastName: input.lastName,
+          avatarUrl: input.avatarUrl ?? null,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+        .then(toPublic)
+    },
   }
 }
+
+/** The contract, derived from the factory rather than declared beside it. */
+export type UsersRepository = ReturnType<typeof createUsersRepository>
+export const USERS_REPOSITORY = createToken<UsersRepository>('app/Users/repository')
