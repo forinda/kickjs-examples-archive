@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 export const createTaskSchema = z.object({
   title: z.string().min(1).max(200),
@@ -10,6 +10,6 @@ export const createTaskSchema = z.object({
   parentTaskId: z.string().optional(),
   dueDate: z.string().datetime().optional(),
   estimatePoints: z.number().int().min(0).optional(),
-});
+})
 
-export type CreateTaskDto = z.infer<typeof createTaskSchema>;
+export type CreateTaskDto = z.infer<typeof createTaskSchema>

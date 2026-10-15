@@ -1,5 +1,5 @@
-import mongoose, { Schema, type Document } from 'mongoose';
-import type { ChannelEntity } from '../../domain/entities/channel.entity';
+import mongoose, { Schema, type Document } from 'mongoose'
+import type { ChannelEntity } from '../../domain/entities/channel.entity'
 
 export interface ChannelDocument extends Omit<ChannelEntity, '_id'>, Document {}
 
@@ -14,8 +14,10 @@ const channelSchema = new Schema<ChannelDocument>(
     createdById: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
   { timestamps: true },
-);
+)
 
-channelSchema.index({ workspaceId: 1, name: 1 }, { unique: true });
+channelSchema.index({ workspaceId: 1, name: 1 }, { unique: true })
 
-export const ChannelModel = (mongoose.models.Channel as mongoose.Model<ChannelDocument>) || mongoose.model<ChannelDocument>('Channel', channelSchema);
+export const ChannelModel =
+  (mongoose.models.Channel as mongoose.Model<ChannelDocument>) ||
+  mongoose.model<ChannelDocument>('Channel', channelSchema)

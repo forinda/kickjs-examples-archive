@@ -1,23 +1,31 @@
-import { Controller, Get, Post, Patch, Delete, Middleware, Autowired, ApiQueryParams } from '@forinda/kickjs';
-import type { RequestContext } from '@forinda/kickjs';
-import { HttpException } from '@forinda/kickjs';
-import { z } from 'zod';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger';
-import { ErrorCode } from '@/shared/constants/error-codes';
-import { createChannelSchema } from '../application/dtos/create-channel.dto';
-import { successResponse } from '@/shared/application/api-response.dto';
-import { workspaceMembershipGuard } from '@/shared/guards/workspace-membership.guard';
-import { channelMembershipGuard } from '@/shared/guards/channel-membership.guard';
-import { MongoChannelRepository } from '../infrastructure/repositories/mongo-channel.repository';
-import { authBridgeMiddleware } from '@/shared/presentation/middlewares/auth-bridge.middleware';
-import { CHANNEL_QUERY_CONFIG } from '@/shared/constants/query-configs';
+import {
+  reply,
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Middleware,
+  Autowired,
+  ApiQueryParams,
+} from '@forinda/kickjs'
+import type { RequestContext } from '@forinda/kickjs'
+import { HttpException } from '@forinda/kickjs'
+import { z } from 'zod'
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
+import { ErrorCode } from '@/shared/constants/error-codes'
+import { createChannelSchema } from '../application/dtos/create-channel.dto'
+import { successResponse } from '@/shared/application/api-response.dto'
+import { workspaceMembershipGuard } from '@/shared/guards/workspace-membership.guard'
+import { channelMembershipGuard } from '@/shared/guards/channel-membership.guard'
+import { MongoChannelRepository } from '../infrastructure/repositories/mongo-channel.repository'
+import { CHANNEL_QUERY_CONFIG } from '@/shared/constants/query-configs'
+import { getUser } from '@/shared/utils/auth'
 
 @ApiTags('Channels')
 @ApiBearerAuth()
-@Middleware(authBridgeMiddleware)
 @Controller()
 export class ChannelsController {
-  @Autowired() private channelRepo!: MongoChannelRepository;
+  @Autowired() private channelRepo!: MongoChannelRepository
 
   @ApiOperation({ summary: 'Create a channel in a workspace' })
   @ApiResponse({ status: 201, description: 'Channel created successfully' })
@@ -29,17 +37,20 @@ export class ChannelsController {
   })
   @Middleware(workspaceMembershipGuard)
   async create(ctx: RequestContext) {
-    const user = ctx.get('user');
-    const existing = await this.channelRepo.findByNameAndWorkspace(ctx.body.name, ctx.params.workspaceId);
-    if (existing) throw HttpException.conflict(ErrorCode.CHANNEL_NAME_EXISTS);
+    const user = getUser(ctx)
+    const existing = await this.channelRepo.findByNameAndWorkspace(
+      ctx.body.name,
+      ctx.params.workspaceId,
+    )
+    if (existing) throw HttpException.conflict(ErrorCode.CHANNEL_NAME_EXISTS)
     const channel = await this.channelRepo.create({
       ...ctx.body,
       workspaceId: ctx.params.workspaceId as any,
       createdById: user.id as any,
       memberIds: [user.id as any],
       projectId: ctx.body.projectId as any,
-    });
-    ctx.created(successResponse(channel));
+    })
+    return reply.created(successResponse(channel))
   }
 
   @ApiOperation({ summary: 'List channels in a workspace' })
@@ -49,10 +60,10 @@ export class ChannelsController {
   @Middleware(workspaceMembershipGuard)
   @ApiQueryParams(CHANNEL_QUERY_CONFIG)
   async list(ctx: RequestContext) {
-    await ctx.paginate(
+    return ctx.paginate(
       (parsed) => this.channelRepo.findPaginated(parsed, { workspaceId: ctx.params.workspaceId }),
       CHANNEL_QUERY_CONFIG,
-    );
+    )
   }
 
   @ApiOperation({ summary: 'Get a single channel by ID' })
@@ -61,8 +72,8 @@ export class ChannelsController {
   @Get('/channels/:channelId', { params: z.object({ channelId: z.string() }) })
   @Middleware(channelMembershipGuard)
   async getOne(ctx: RequestContext) {
-    const channel = ctx.get('channel');
-    ctx.json(successResponse(channel));
+    const channel = ctx.get('channel')
+    return successResponse(channel)
   }
 
   @ApiOperation({ summary: 'Delete a channel' })
@@ -71,8 +82,8 @@ export class ChannelsController {
   @Delete('/channels/:channelId', { params: z.object({ channelId: z.string() }) })
   @Middleware(channelMembershipGuard)
   async delete(ctx: RequestContext) {
-    await this.channelRepo.delete(ctx.params.channelId);
-    ctx.json(successResponse(null, 'Channel deleted'));
+    await this.channelRepo.delete(ctx.params.channelId)
+    return successResponse(null, 'Channel deleted')
   }
 
   @ApiOperation({ summary: 'Add a member to a channel' })
@@ -84,8 +95,8 @@ export class ChannelsController {
   })
   @Middleware(channelMembershipGuard)
   async addMember(ctx: RequestContext) {
-    await this.channelRepo.addMember(ctx.params.channelId, ctx.body.userId);
-    ctx.json(successResponse(null, 'Member added'));
+    await this.channelRepo.addMember(ctx.params.channelId, ctx.body.userId)
+    return successResponse(null, 'Member added')
   }
 
   @ApiOperation({ summary: 'Remove a member from a channel' })
@@ -96,7 +107,7 @@ export class ChannelsController {
   })
   @Middleware(channelMembershipGuard)
   async removeMember(ctx: RequestContext) {
-    await this.channelRepo.removeMember(ctx.params.channelId, ctx.params.userId);
-    ctx.json(successResponse(null, 'Member removed'));
+    await this.channelRepo.removeMember(ctx.params.channelId, ctx.params.userId)
+    return successResponse(null, 'Member removed')
   }
 }

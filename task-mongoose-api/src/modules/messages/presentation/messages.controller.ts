@@ -1,20 +1,19 @@
-import { Controller, Get, Patch, Delete, Middleware, Autowired } from '@forinda/kickjs';
-import type { RequestContext } from '@forinda/kickjs';
-import { HttpException } from '@forinda/kickjs';
-import { z } from 'zod';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger';
-import { ErrorCode } from '@/shared/constants/error-codes';
-import { successResponse } from '@/shared/application/api-response.dto';
-import { channelMembershipGuard } from '@/shared/guards/channel-membership.guard';
-import { MongoMessageRepository } from '../infrastructure/repositories/mongo-message.repository';
-import { authBridgeMiddleware } from '@/shared/presentation/middlewares/auth-bridge.middleware';
+import { Controller, Get, Patch, Delete, Middleware, Autowired } from '@forinda/kickjs'
+import type { RequestContext } from '@forinda/kickjs'
+import { HttpException } from '@forinda/kickjs'
+import { z } from 'zod'
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
+import { ErrorCode } from '@/shared/constants/error-codes'
+import { successResponse } from '@/shared/application/api-response.dto'
+import { channelMembershipGuard } from '@/shared/guards/channel-membership.guard'
+import { MongoMessageRepository } from '../infrastructure/repositories/mongo-message.repository'
+import { getUser } from '@/shared/utils/auth'
 
 @ApiTags('Messages')
 @ApiBearerAuth()
-@Middleware(authBridgeMiddleware)
 @Controller()
 export class MessagesController {
-  @Autowired() private messageRepo!: MongoMessageRepository;
+  @Autowired() private messageRepo!: MongoMessageRepository
 
   @ApiOperation({ summary: 'Get message history for a channel' })
   @ApiResponse({ status: 200, description: 'Paginated message history returned' })
@@ -29,8 +28,8 @@ export class MessagesController {
   })
   @Middleware(channelMembershipGuard)
   async history(ctx: RequestContext) {
-    const messages = await this.messageRepo.findByChannel(ctx.params.channelId, ctx.query);
-    ctx.json(successResponse(messages));
+    const messages = await this.messageRepo.findByChannel(ctx.params.channelId, ctx.query)
+    return successResponse(messages)
   }
 
   @ApiOperation({ summary: 'Edit a message' })
@@ -42,12 +41,15 @@ export class MessagesController {
     body: z.object({ content: z.string().min(1) }),
   })
   async edit(ctx: RequestContext) {
-    const user = ctx.get('user');
-    const message = await this.messageRepo.findById(ctx.params.messageId);
-    if (!message) throw HttpException.notFound(ErrorCode.MESSAGE_NOT_FOUND);
-    if (message.senderId.toString() !== user.id) throw HttpException.forbidden(ErrorCode.NOT_MESSAGE_AUTHOR);
-    const updated = await this.messageRepo.update(ctx.params.messageId, { content: ctx.body.content });
-    ctx.json(successResponse(updated));
+    const user = getUser(ctx)
+    const message = await this.messageRepo.findById(ctx.params.messageId)
+    if (!message) throw HttpException.notFound(ErrorCode.MESSAGE_NOT_FOUND)
+    if (message.senderId.toString() !== user.id)
+      throw HttpException.forbidden(ErrorCode.NOT_MESSAGE_AUTHOR)
+    const updated = await this.messageRepo.update(ctx.params.messageId, {
+      content: ctx.body.content,
+    })
+    return successResponse(updated)
   }
 
   @ApiOperation({ summary: 'Delete a message' })
@@ -56,11 +58,12 @@ export class MessagesController {
   @ApiResponse({ status: 404, description: 'Message not found' })
   @Delete('/messages/:messageId', { params: z.object({ messageId: z.string() }) })
   async delete(ctx: RequestContext) {
-    const user = ctx.get('user');
-    const message = await this.messageRepo.findById(ctx.params.messageId);
-    if (!message) throw HttpException.notFound(ErrorCode.MESSAGE_NOT_FOUND);
-    if (message.senderId.toString() !== user.id) throw HttpException.forbidden(ErrorCode.NOT_MESSAGE_AUTHOR);
-    await this.messageRepo.softDelete(ctx.params.messageId);
-    ctx.json(successResponse(null, 'Message deleted'));
+    const user = getUser(ctx)
+    const message = await this.messageRepo.findById(ctx.params.messageId)
+    if (!message) throw HttpException.notFound(ErrorCode.MESSAGE_NOT_FOUND)
+    if (message.senderId.toString() !== user.id)
+      throw HttpException.forbidden(ErrorCode.NOT_MESSAGE_AUTHOR)
+    await this.messageRepo.softDelete(ctx.params.messageId)
+    return successResponse(null, 'Message deleted')
   }
 }

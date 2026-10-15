@@ -78,9 +78,7 @@ class InMemoryUserRepository implements IUserRepository {
 
 @Controller()
 class TestUserController {
-  constructor(
-    @Inject(TOKENS.USER_REPOSITORY) private readonly repo: IUserRepository,
-  ) {}
+  constructor(@Inject(TOKENS.USER_REPOSITORY) private readonly repo: IUserRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

@@ -47,11 +47,7 @@ class InMemoryProjectRepository implements IProjectRepository {
   }
 
   async findByKeyAndWorkspace(key: string, workspaceId: string) {
-    return (
-      this.projects.find(
-        (p) => p.key === key && String(p.workspaceId) === workspaceId,
-      ) ?? null
-    )
+    return this.projects.find((p) => p.key === key && String(p.workspaceId) === workspaceId) ?? null
   }
 
   async create(data: Partial<ProjectEntity>) {
@@ -95,9 +91,7 @@ class InMemoryProjectRepository implements IProjectRepository {
 
 @Controller()
 class TestProjectController {
-  constructor(
-    @Inject(TOKENS.PROJECT_REPOSITORY) private readonly repo: IProjectRepository,
-  ) {}
+  constructor(@Inject(TOKENS.PROJECT_REPOSITORY) private readonly repo: IProjectRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

@@ -1,5 +1,5 @@
-import mongoose, { Schema, type Document } from 'mongoose';
-import type { RefreshTokenEntity } from '../../domain/entities/refresh-token.entity';
+import mongoose, { Schema, type Document } from 'mongoose'
+import type { RefreshTokenEntity } from '../../domain/entities/refresh-token.entity'
 
 export interface RefreshTokenDocument extends Omit<RefreshTokenEntity, '_id'>, Document {}
 
@@ -10,6 +10,8 @@ const refreshTokenSchema = new Schema<RefreshTokenDocument>(
     expiresAt: { type: Date, required: true, index: { expires: 0 } },
   },
   { timestamps: true },
-);
+)
 
-export const RefreshTokenModel = (mongoose.models.RefreshToken as mongoose.Model<RefreshTokenDocument>) || mongoose.model<RefreshTokenDocument>('RefreshToken', refreshTokenSchema);
+export const RefreshTokenModel =
+  (mongoose.models.RefreshToken as mongoose.Model<RefreshTokenDocument>) ||
+  mongoose.model<RefreshTokenDocument>('RefreshToken', refreshTokenSchema)

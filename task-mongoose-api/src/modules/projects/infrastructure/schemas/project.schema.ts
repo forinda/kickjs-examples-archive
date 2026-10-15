@@ -1,5 +1,5 @@
-import mongoose, { Schema, type Document } from 'mongoose';
-import type { ProjectEntity } from '../../domain/entities/project.entity';
+import mongoose, { Schema, type Document } from 'mongoose'
+import type { ProjectEntity } from '../../domain/entities/project.entity'
 
 export interface ProjectDocument extends Omit<ProjectEntity, '_id'>, Document {}
 
@@ -10,7 +10,7 @@ const statusColumnSchema = new Schema(
     color: { type: String, required: true },
   },
   { _id: false },
-);
+)
 
 const projectSchema = new Schema<ProjectDocument>(
   {
@@ -32,8 +32,10 @@ const projectSchema = new Schema<ProjectDocument>(
     isArchived: { type: Boolean, default: false },
   },
   { timestamps: true },
-);
+)
 
-projectSchema.index({ workspaceId: 1, key: 1 }, { unique: true });
+projectSchema.index({ workspaceId: 1, key: 1 }, { unique: true })
 
-export const ProjectModel = (mongoose.models.Project as mongoose.Model<ProjectDocument>) || mongoose.model<ProjectDocument>('Project', projectSchema);
+export const ProjectModel =
+  (mongoose.models.Project as mongoose.Model<ProjectDocument>) ||
+  mongoose.model<ProjectDocument>('Project', projectSchema)

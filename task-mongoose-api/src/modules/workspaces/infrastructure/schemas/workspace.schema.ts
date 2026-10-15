@@ -1,5 +1,5 @@
-import mongoose, { Schema, type Document } from 'mongoose';
-import type { WorkspaceEntity } from '../../domain/entities/workspace.entity';
+import mongoose, { Schema, type Document } from 'mongoose'
+import type { WorkspaceEntity } from '../../domain/entities/workspace.entity'
 
 export interface WorkspaceDocument extends Omit<WorkspaceEntity, '_id'>, Document {}
 
@@ -12,6 +12,8 @@ const workspaceSchema = new Schema<WorkspaceDocument>(
     logoUrl: { type: String },
   },
   { timestamps: true },
-);
+)
 
-export const WorkspaceModel = (mongoose.models.Workspace as mongoose.Model<WorkspaceDocument>) || mongoose.model<WorkspaceDocument>('Workspace', workspaceSchema);
+export const WorkspaceModel =
+  (mongoose.models.Workspace as mongoose.Model<WorkspaceDocument>) ||
+  mongoose.model<WorkspaceDocument>('Workspace', workspaceSchema)

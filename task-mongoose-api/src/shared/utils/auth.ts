@@ -1,24 +1,12 @@
-import type { RequestContext } from '@forinda/kickjs';
-import { HttpException } from '@forinda/kickjs';
+import type { RequestContext } from '@forinda/kickjs'
+import { HttpException } from '@forinda/kickjs'
+import type { AuthUser } from '@/auth'
 
-export interface AuthUser {
-  id: string;
-  email: string;
-  globalRole: string;
-}
+export type { AuthUser } from '@/auth'
 
-/**
- * Get the authenticated user from the request.
- * Reads from ctx metadata (set by authBridgeMiddleware via ctx.set('user')).
- *
- * Since KickJS v1.2.5, ctx metadata is shared across all RequestContext
- * instances for the same request, so ctx.get() works across middleware → handler.
- */
+/** The authenticated user, resolved by `LoadAuthUser` (src/auth). Throws 401 when absent. */
 export function getUser(ctx: RequestContext): AuthUser {
-  const user = ctx.get<AuthUser>('user');
-  if (!user) {
-    throw HttpException.unauthorized('Authentication required');
-  }
-
-  return user;
+  const user = ctx.get('user')
+  if (!user) throw HttpException.unauthorized('Authentication required')
+  return user
 }

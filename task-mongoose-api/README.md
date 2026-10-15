@@ -1,60 +1,38 @@
-# vibed
+# task-mongoose-api
 
-A **Minimal** built with [KickJS](https://forinda.github.io/kick-js/) — a decorator-driven Node.js framework on Express 5 and TypeScript.
+A full task-management API (workspaces, projects, tasks, comments, labels, attachments, channels, chat, notifications, activity, stats) on **MongoDB + Mongoose**, in a DDD layout (`domain/` · `application/` · `infrastructure/` · `presentation/` per module).
 
-## Getting Started
+What it shows:
 
-```bash
-pnpm install
-kick dev
-```
+- `src/auth/` — the [BYO Auth recipe](https://kickjs.app/guide/byo-recipes#auth): `AuthAdapter` with `defaultPolicy: 'protected'`, a JWT strategy, `@Public` route flag, `@RequireRole({ roles: ['superadmin'] })`. Replaces the removed `@forinda/kickjs-auth`. `LoadAuthUser` runs `beforeValidation`, so anonymous requests get 401 and the membership guards (`src/shared/guards`) can read `ctx.get('user')`.
+- `src/shared/infrastructure/` — Mongoose and Redis clients as `defineAdapter()`s: connect in `beforeStart`, `onHealthCheck` feeding `GET /health/ready`, close in `shutdown`.
+- Background jobs — `@Job` / `@Process` classes in `modules/queue`, run by `QueueAdapter` (`@forinda/kickjs-queue`, BullMQ) and enqueued through `JOB_DISPATCHER`.
+- Scheduled jobs — `@Cron` methods in `modules/cron`, run by `KickCronAdapter()`.
+- WebSockets — `@WsController` chat with presence (`@forinda/kickjs-ws`, at `/ws/chat`).
+- Mail — a small BYO mailer plugin (`src/plugins/mailer.plugin.ts`): console in dev, Resend in production.
+- OpenAPI at `/docs` (`@forinda/kickjs-swagger`), DevTools at `/_debug` (`@forinda/kickjs-devtools`).
+- Return-value handlers (`return value`, `reply.created(...)`), `ctx.paginate` with query configs, file upload (`@FileUpload`).
 
-## Scripts
+## Run
 
-| Command                              | Description                          |
-| ------------------------------------ | ------------------------------------ |
-| `kick dev`                           | Start dev server with Vite HMR       |
-| `kick build`                         | Production build                     |
-| `kick start`                         | Run production build                 |
-| `pnpm run test`                      | Run tests with Vitest                |
-| `kick g module <name>`               | Generate a DDD module                |
-| `kick g scaffold <name> <fields...>` | Generate CRUD from field definitions |
-| `kick add <package>`                 | Add a KickJS package                 |
-
-## Project Structure
-
-```
-src/
-├── index.ts           # Application entry point
-├── modules/           # Feature modules (controllers, services, repos)
-│   └── index.ts       # Module registry
-└── ...
-```
-
-## Packages
-
-## Adding Features
+Needs MongoDB and Redis:
 
 ```bash
-kick add auth          # Authentication (JWT, API key, OAuth)
-kick add swagger       # OpenAPI documentation
-kick add ws            # WebSocket support
-kick add queue         # Background job processing
-kick add mailer        # Email sending
-kick add cron          # Scheduled tasks
-kick add --list        # Show all available packages
+docker run -d --name tm-mongo -p 127.0.0.1:27017:27017 mongo:7
+docker run -d --name tm-redis -p 127.0.0.1:6379:6379 redis:7-alpine
+
+pnpm install          # or: npm install
+cp .env.example .env
+pnpm seed             # or: npm run seed   — sample users, workspace, project, tasks
+pnpm dev              # or: npm run dev
 ```
 
-## Environment Variables
+Log in as `alice@vibed.dev` / `Password123!` via `POST /api/v1/auth/login`, then send `Authorization: Bearer <accessToken>`.
 
-Copy `.env.example` to `.env` and configure:
+| Variable | Notes |
+| --- | --- |
+| `MONGODB_URI`, `REDIS_URL` | required |
+| `JWT_SECRET`, `JWT_REFRESH_SECRET` | dev defaults outside production; **required** (32+ chars) when `NODE_ENV=production` |
+| `RESEND_API_KEY` | required in production (mail goes through Resend); dev logs mail to the console |
 
-| Variable   | Default       | Description |
-| ---------- | ------------- | ----------- |
-| `PORT`     | `3000`        | Server port |
-| `NODE_ENV` | `development` | Environment |
-
-## Learn More
-
-- [KickJS Documentation](https://forinda.github.io/kick-js/)
-- [CLI Reference](https://forinda.github.io/kick-js/api/cli.html)
+`pnpm test` (no services needed), `pnpm typecheck`, `pnpm build && pnpm start`, `pnpm db:reset` (drop + reseed).

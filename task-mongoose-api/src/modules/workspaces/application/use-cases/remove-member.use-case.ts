@@ -1,8 +1,8 @@
-import { Service, Inject, HttpException } from '@forinda/kickjs';
-import { TOKENS } from '@/shared/constants/tokens';
-import { ErrorCode } from '@/shared/constants/error-codes';
-import type { IWorkspaceMemberRepository } from '../../domain/repositories/workspace-member.repository';
-import type { IWorkspaceRepository } from '../../domain/repositories/workspace.repository';
+import { Service, Inject, HttpException } from '@forinda/kickjs'
+import { TOKENS } from '@/shared/constants/tokens'
+import { ErrorCode } from '@/shared/constants/error-codes'
+import type { IWorkspaceMemberRepository } from '../../domain/repositories/workspace-member.repository'
+import type { IWorkspaceRepository } from '../../domain/repositories/workspace.repository'
 
 @Service()
 export class RemoveMemberUseCase {
@@ -12,18 +12,18 @@ export class RemoveMemberUseCase {
   ) {}
 
   async execute(workspaceId: string, userId: string) {
-    const workspace = await this.workspaceRepo.findById(workspaceId);
+    const workspace = await this.workspaceRepo.findById(workspaceId)
     if (!workspace) {
-      throw HttpException.notFound(ErrorCode.WORKSPACE_NOT_FOUND);
+      throw HttpException.notFound(ErrorCode.WORKSPACE_NOT_FOUND)
     }
 
     if (workspace.ownerId.toString() === userId) {
-      throw HttpException.forbidden(ErrorCode.CANNOT_REMOVE_OWNER);
+      throw HttpException.forbidden(ErrorCode.CANNOT_REMOVE_OWNER)
     }
 
-    const deleted = await this.memberRepo.deleteByUserAndWorkspace(userId, workspaceId);
+    const deleted = await this.memberRepo.deleteByUserAndWorkspace(userId, workspaceId)
     if (!deleted) {
-      throw HttpException.notFound(ErrorCode.NOT_WORKSPACE_MEMBER);
+      throw HttpException.notFound(ErrorCode.NOT_WORKSPACE_MEMBER)
     }
   }
 }

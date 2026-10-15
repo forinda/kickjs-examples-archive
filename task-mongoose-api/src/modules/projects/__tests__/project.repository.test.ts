@@ -23,11 +23,7 @@ class InMemoryProjectRepository implements IProjectRepository {
   }
 
   async findByKeyAndWorkspace(key: string, workspaceId: string) {
-    return (
-      this.projects.find(
-        (p) => p.key === key && String(p.workspaceId) === workspaceId,
-      ) ?? null
-    )
+    return this.projects.find((p) => p.key === key && String(p.workspaceId) === workspaceId) ?? null
   }
 
   async create(data: Partial<ProjectEntity>) {

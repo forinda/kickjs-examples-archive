@@ -121,9 +121,7 @@ class InMemoryTaskRepository implements ITaskRepository {
 
 @Controller()
 class TestTaskController {
-  constructor(
-    @Inject(TOKENS.TASK_REPOSITORY) private readonly repo: ITaskRepository,
-  ) {}
+  constructor(@Inject(TOKENS.TASK_REPOSITORY) private readonly repo: ITaskRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

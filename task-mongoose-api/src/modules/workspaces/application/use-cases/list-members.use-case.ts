@@ -1,7 +1,7 @@
-import { Service, Inject } from '@forinda/kickjs';
-import { TOKENS } from '@/shared/constants/tokens';
-import type { IWorkspaceMemberRepository } from '../../domain/repositories/workspace-member.repository';
-import type { IUserRepository } from '@/modules/users/domain/repositories/user.repository';
+import { Service, Inject } from '@forinda/kickjs'
+import { TOKENS } from '@/shared/constants/tokens'
+import type { IWorkspaceMemberRepository } from '../../domain/repositories/workspace-member.repository'
+import type { IUserRepository } from '@/modules/users/domain/repositories/user.repository'
 
 @Service()
 export class ListMembersUseCase {
@@ -11,10 +11,10 @@ export class ListMembersUseCase {
   ) {}
 
   async execute(workspaceId: string) {
-    const members = await this.memberRepo.findByWorkspace(workspaceId);
+    const members = await this.memberRepo.findByWorkspace(workspaceId)
     const enriched = await Promise.all(
       members.map(async (m) => {
-        const user = await this.userRepo.findById(m.userId.toString());
+        const user = await this.userRepo.findById(m.userId.toString())
         return {
           id: m._id.toString(),
           userId: m.userId.toString(),
@@ -28,9 +28,9 @@ export class ListMembersUseCase {
                 avatarUrl: user.avatarUrl,
               }
             : null,
-        };
+        }
       }),
-    );
-    return enriched;
+    )
+    return enriched
   }
 }

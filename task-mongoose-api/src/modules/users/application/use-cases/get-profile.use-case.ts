@@ -1,18 +1,16 @@
-import { Service, Inject, HttpException } from '@forinda/kickjs';
-import { TOKENS } from '@/shared/constants/tokens';
-import { ErrorCode } from '@/shared/constants/error-codes';
-import type { IUserRepository } from '../../domain/repositories/user.repository';
+import { Service, Inject, HttpException } from '@forinda/kickjs'
+import { TOKENS } from '@/shared/constants/tokens'
+import { ErrorCode } from '@/shared/constants/error-codes'
+import type { IUserRepository } from '../../domain/repositories/user.repository'
 
 @Service()
 export class GetProfileUseCase {
-  constructor(
-    @Inject(TOKENS.USER_REPOSITORY) private userRepo: IUserRepository,
-  ) {}
+  constructor(@Inject(TOKENS.USER_REPOSITORY) private userRepo: IUserRepository) {}
 
   async execute(userId: string) {
-    const user = await this.userRepo.findById(userId);
+    const user = await this.userRepo.findById(userId)
     if (!user) {
-      throw HttpException.notFound(ErrorCode.USER_NOT_FOUND);
+      throw HttpException.notFound(ErrorCode.USER_NOT_FOUND)
     }
 
     return {
@@ -24,6 +22,6 @@ export class GetProfileUseCase {
       globalRole: user.globalRole,
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
-    };
+    }
   }
 }

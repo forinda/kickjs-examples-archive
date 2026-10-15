@@ -1,157 +1,90 @@
-import 'reflect-metadata'
-import { describe, it, expect, beforeEach, beforeAll, afterAll, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
 import jwt from 'jsonwebtoken'
-import {
-  Container,
-  Controller,
-  Post,
-  Get,
-  Middleware,
-  HttpException,
-} from '@forinda/kickjs'
-import type { MiddlewareHandler } from '@forinda/kickjs'
-import type { RequestContext } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
-import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
+import { Container, Controller, Get, defineModule, type RequestContext } from '@forinda/kickjs'
+import { createTestApp } from '@forinda/kickjs-testing'
+import { AuthAdapter, Public, RequireRole, jwtStrategy } from '@/auth'
 
-// ── Test JWT secret ──────────────────────────────────────────────────
-const TEST_JWT_SECRET = 'test-secret-that-is-at-least-32-chars-long!'
-
-// Stub env vars so they don't leak to other tests
-beforeAll(() => {
-  vi.stubEnv('JWT_SECRET', TEST_JWT_SECRET)
-  vi.stubEnv('JWT_REFRESH_SECRET', TEST_JWT_SECRET)
-  vi.stubEnv('JWT_ACCESS_EXPIRES_IN', '15m')
-  vi.stubEnv('JWT_REFRESH_EXPIRES_IN', '7d')
-  vi.stubEnv('DATABASE_URL', 'mongodb://test:test@localhost/test')
-})
-
-afterAll(() => {
-  vi.unstubAllEnvs()
-})
-
-// ── Test auth middleware (same logic as the real one) ─────────────────
-
-const testAuthMiddleware: MiddlewareHandler = (ctx: RequestContext, next) => {
-  const header = ctx.req.headers.authorization
-  if (!header?.startsWith('Bearer ')) {
-    throw HttpException.unauthorized('Missing or invalid authorization header')
-  }
-  const token = header.slice(7)
-  try {
-    const payload = jwt.verify(token, TEST_JWT_SECRET) as jwt.JwtPayload
-    ctx.set('user', {
-      id: payload.sub!,
-      email: payload.email as string,
-      globalRole: payload.globalRole as string,
-    })
-  } catch {
-    throw HttpException.unauthorized('Invalid or expired token')
-  }
-  next()
-}
-
-// ── Test controllers ─────────────────────────────────────────────────
+const SECRET = 'test-secret-that-is-at-least-32-chars-long!'
 
 @Controller()
-class TestProtectedController {
-  @Get('/')
-  @Middleware(testAuthMiddleware)
-  async getProfile(ctx: RequestContext) {
-    const user = ctx.get('user')
-    ctx.json({ data: user })
+class ProbeController {
+  @Get('/me')
+  me(ctx: RequestContext) {
+    return { data: ctx.get('user') }
+  }
+
+  @Public
+  @Get('/health')
+  health() {
+    return { status: 'ok' }
+  }
+
+  @RequireRole({ roles: ['superadmin'] })
+  @Get('/admin')
+  admin() {
+    return { ok: true }
   }
 }
 
-@Controller()
-class TestPublicController {
-  @Get('/')
-  async health(ctx: RequestContext) {
-    ctx.json({ status: 'ok' })
-  }
+const ProbeModule = defineModule({
+  name: 'ProbeModule',
+  build: () => ({ routes: () => ({ path: '/probe', controller: ProbeController }) }),
+})
+
+async function makeApp() {
+  const { app } = await createTestApp({
+    modules: [ProbeModule()],
+    adapters: [
+      AuthAdapter({
+        defaultPolicy: 'protected',
+        strategies: [
+          jwtStrategy({
+            secret: SECRET,
+            mapPayload: (p) => ({ id: p.sub!, email: p.email, globalRole: p.globalRole ?? 'user' }),
+          }),
+        ],
+      }),
+    ],
+  })
+  return request(app.handle.bind(app))
 }
 
-// ── Tests ────────────────────────────────────────────────────────────
+const token = (claims: object, expiresIn: jwt.SignOptions['expiresIn'] = '1h') =>
+  `Bearer ${jwt.sign({ sub: 'u1', email: 'alice@test.com', ...claims }, SECRET, { expiresIn })}`
 
-describe('Auth middleware', () => {
+describe('BYO auth (src/auth)', () => {
   beforeEach(() => Container.reset())
 
-  function buildProtectedModule() {
-    return createTestModule({
-      register: (c) => c.register(TestProtectedController, TestProtectedController),
-      routes: () => ({
-        path: '/protected',
-        router: buildRoutes(TestProtectedController),
-        controller: TestProtectedController,
-      }),
-    })
-  }
-
-  it('rejects requests without Authorization header', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildProtectedModule()] })
-
-    const res = await request(expressApp).get('/api/v1/protected').expect(401)
-    expect(res.body.message).toMatch(/Missing or invalid/)
+  it('rejects requests without a token', async () => {
+    const http = await makeApp()
+    await http.get('/api/v1/probe/me').expect(401)
   })
 
-  it('rejects requests with invalid token', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildProtectedModule()] })
-
-    const res = await request(expressApp)
-      .get('/api/v1/protected')
-      .set('Authorization', 'Bearer invalid.token.here')
-      .expect(401)
-
-    expect(res.body.message).toMatch(/Invalid or expired/)
+  it('rejects invalid and expired tokens', async () => {
+    const http = await makeApp()
+    await http.get('/api/v1/probe/me').set('Authorization', 'Bearer invalid.token').expect(401)
+    await http.get('/api/v1/probe/me').set('Authorization', token({}, '-1s')).expect(401)
   })
 
-  it('accepts requests with valid JWT and exposes user', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildProtectedModule()] })
-
-    const token = jwt.sign(
-      { sub: 'u1', email: 'alice@test.com', globalRole: 'user' },
-      TEST_JWT_SECRET,
-      { expiresIn: '1h' },
-    )
-
-    const res = await request(expressApp)
-      .get('/api/v1/protected')
-      .set('Authorization', `Bearer ${token}`)
-      .expect(200)
-
-    expect(res.body.data.id).toBe('u1')
-    expect(res.body.data.email).toBe('alice@test.com')
+  it('exposes the user for a valid token', async () => {
+    const http = await makeApp()
+    const res = await http.get('/api/v1/probe/me').set('Authorization', token({})).expect(200)
+    expect(res.body.data).toEqual({ id: 'u1', email: 'alice@test.com', globalRole: 'user' })
   })
 
-  it('rejects expired tokens', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildProtectedModule()] })
-
-    const token = jwt.sign(
-      { sub: 'u1', email: 'alice@test.com', globalRole: 'user' },
-      TEST_JWT_SECRET,
-      { expiresIn: '-1s' }, // already expired
-    )
-
-    await request(expressApp)
-      .get('/api/v1/protected')
-      .set('Authorization', `Bearer ${token}`)
-      .expect(401)
-  })
-
-  it('public routes work without auth', async () => {
-    const PublicModule = createTestModule({
-      register: (c) => c.register(TestPublicController, TestPublicController),
-      routes: () => ({
-        path: '/health',
-        router: buildRoutes(TestPublicController),
-        controller: TestPublicController,
-      }),
-    })
-
-    const { expressApp } = await createTestApp({ modules: [PublicModule] })
-
-    const res = await request(expressApp).get('/api/v1/health').expect(200)
+  it('lets @Public routes through without a token', async () => {
+    const http = await makeApp()
+    const res = await http.get('/api/v1/probe/health').expect(200)
     expect(res.body.status).toBe('ok')
+  })
+
+  it('@RequireRole answers 403 for the wrong role and 200 for the right one', async () => {
+    const http = await makeApp()
+    await http.get('/api/v1/probe/admin').set('Authorization', token({})).expect(403)
+    await http
+      .get('/api/v1/probe/admin')
+      .set('Authorization', token({ globalRole: 'superadmin' }))
+      .expect(200)
   })
 })

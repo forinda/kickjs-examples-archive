@@ -22,4 +22,4 @@ export const TOKENS = {
   // Infrastructure
   MONGOOSE: Symbol('Mongoose'),
   REDIS: Symbol('Redis'),
-} as const;
+} as const

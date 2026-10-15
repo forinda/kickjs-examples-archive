@@ -1,17 +1,14 @@
-import type { AppModule, ModuleRoutes, Container } from '@forinda/kickjs';
-import { buildRoutes } from '@forinda/kickjs';
-import { StatsController } from './presentation/stats.controller';
+import { defineModule } from '@forinda/kickjs'
+import { StatsController } from './presentation/stats.controller'
 
-export class StatsModule implements AppModule {
-  register(_container: Container): void {
-    // No DI bindings needed
-  }
+// Eagerly load decorated classes so @Controller()/@Service()/@Repository()
+// Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
+// decorators register in the DI container.
+import.meta.glob(['./**/*.ts', '!./**/*.test.ts', '!./**/*.d.ts'], { eager: true })
 
-  routes(): ModuleRoutes {
-    return {
-      path: '/',
-      router: buildRoutes(StatsController),
-      controller: StatsController,
-    };
-  }
-}
+export const StatsModule = defineModule({
+  name: 'StatsModule',
+  build: () => ({
+    routes: () => ({ path: '/', controller: StatsController }),
+  }),
+})

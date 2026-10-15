@@ -1,5 +1,5 @@
-import mongoose, { Schema, type Document } from 'mongoose';
-import type { UserEntity } from '../../domain/entities/user.entity';
+import mongoose, { Schema, type Document } from 'mongoose'
+import type { UserEntity } from '../../domain/entities/user.entity'
 
 export interface UserDocument extends Omit<UserEntity, '_id'>, Document {}
 
@@ -15,8 +15,10 @@ const userSchema = new Schema<UserDocument>(
     lastLoginAt: { type: Date },
   },
   { timestamps: true },
-);
+)
 
-userSchema.index({ firstName: 'text', lastName: 'text', email: 'text' });
+userSchema.index({ firstName: 'text', lastName: 'text', email: 'text' })
 
-export const UserModel = (mongoose.models.User as mongoose.Model<UserDocument>) || mongoose.model<UserDocument>('User', userSchema);
+export const UserModel =
+  (mongoose.models.User as mongoose.Model<UserDocument>) ||
+  mongoose.model<UserDocument>('User', userSchema)

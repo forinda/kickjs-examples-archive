@@ -1,11 +1,12 @@
-import type { AppModule, ModuleRoutes, Container } from '@forinda/kickjs';
+import { defineModule } from '@forinda/kickjs'
 
-export class CronModule implements AppModule {
-  register(_container: Container): void {
-    // Cron jobs are registered via CronAdapter in bootstrap
-  }
+// Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
+// decorators register in the DI container.
+import.meta.glob(['./**/*.ts', '!./**/*.test.ts', '!./**/*.d.ts'], { eager: true })
 
-  routes(): ModuleRoutes {
-    return { path: '/', router: undefined as any, controller: undefined as any };
-  }
-}
+export const CronModule = defineModule({
+  name: 'CronModule',
+  build: () => ({
+    routes: () => null,
+  }),
+})
