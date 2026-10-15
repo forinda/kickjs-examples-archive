@@ -1,63 +1,26 @@
 # multi-tenant-mongoose-api
 
-A **Minimal** built with [KickJS](https://forinda.github.io/kick-js/) — a decorator-driven Node.js framework on Express 5 and TypeScript.
+Multi-tenancy the BYO way: no tenant package, just framework primitives.
 
-## Getting Started
+- `src/contributors/tenant.context.ts` — `LoadTenant` context decorator resolves the tenant from the subdomain (`acme.localhost` → Acme Corp) into `ctx.get('tenant')`, mounted globally.
+- `src/plugins/tenant-db.plugin.ts` — registers `TENANT_DB` as a `Scope.REQUEST` factory that returns the active tenant's database.
+- `src/db/tenant-manager.ts` — caches one connection per tenant. The database is **simulated** in memory; the comments show where `mongoose.createConnection(tenant.dbUrl)` goes.
+- `src/auth/` — the BYO Auth recipe (`AuthAdapter`, `jwtStrategy`, `@LoadAuthUser`, `@Public`), replacing the removed `@forinda/kickjs-auth`.
 
-```bash
-pnpm install
-kick dev
-```
+Guides: [Multi-tenancy](https://kickjs.app/guide/multi-tenancy) · [BYO Auth](https://kickjs.app/guide/byo-recipes#auth)
 
-## Scripts
-
-| Command                              | Description                          |
-| ------------------------------------ | ------------------------------------ |
-| `kick dev`                           | Start dev server with Vite HMR       |
-| `kick build`                         | Production build                     |
-| `kick start`                         | Run production build                 |
-| `pnpm run test`                      | Run tests with Vitest                |
-| `kick g module <name>`               | Generate a DDD module                |
-| `kick g scaffold <name> <fields...>` | Generate CRUD from field definitions |
-| `kick add <package>`                 | Add a KickJS package                 |
-
-## Project Structure
-
-```
-src/
-├── index.ts           # Application entry point
-├── modules/           # Feature modules (controllers, services, repos)
-│   └── index.ts       # Module registry
-└── ...
-```
-
-## Packages
-
-- `@forinda/kickjs`
-- `@forinda/kickjs-vite`
-
-## Adding Features
+## Run
 
 ```bash
-kick add auth          # Authentication (JWT, API key, OAuth)
-kick add swagger       # OpenAPI documentation
-kick add ws            # WebSocket support
-kick add queue         # Background job processing
-kick add mailer        # Email sending
-kick add cron          # Scheduled tasks
-kick add --list        # Show all available packages
+pnpm install        # or: npm install
+cp .env.example .env
+pnpm dev            # or: npm run dev
 ```
 
-## Environment Variables
+```bash
+curl http://localhost:3000/api/v1/hello
+TOKEN=$(node -e "console.log(require('jsonwebtoken').sign({sub:'u1',email:'me@acme.test'},'dev-secret-change-me'))")
+curl -H "Host: acme.localhost" -H "Authorization: Bearer $TOKEN" http://localhost:3000/api/v1/projects
+```
 
-Copy `.env.example` to `.env` and configure:
-
-| Variable   | Default       | Description |
-| ---------- | ------------- | ----------- |
-| `PORT`     | `3000`        | Server port |
-| `NODE_ENV` | `development` | Environment |
-
-## Learn More
-
-- [KickJS Documentation](https://forinda.github.io/kick-js/)
-- [CLI Reference](https://forinda.github.io/kick-js/api/cli.html)
+`pnpm test`, `pnpm typecheck`, `pnpm build && pnpm start` work the same way.

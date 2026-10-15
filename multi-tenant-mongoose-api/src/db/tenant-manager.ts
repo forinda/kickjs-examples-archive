@@ -75,8 +75,8 @@ function createSimulatedDb(tenantId: string): SimulatedDb {
 
 // ── Tenant Manager Instance ───────────────────────────────────────────
 
-export const tenantManager = new TenantConnectionManager<SimulatedDb>(
-  (tenantId) => createSimulatedDb(tenantId),
+export const tenantManager = new TenantConnectionManager<SimulatedDb>((tenantId) =>
+  createSimulatedDb(tenantId),
 )
 
 // ── Helpers ───────────────────────────────────────────────────────────

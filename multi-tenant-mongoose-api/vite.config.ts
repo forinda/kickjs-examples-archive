@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import swc from 'unplugin-swc'
 import { kickjsVitePlugin, envWatchPlugin } from '@forinda/kickjs-vite'
 
@@ -14,13 +14,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
-  },
-  ssr: {
-    // Don't bundle pino — its worker-thread transport needs Node.js resolution
-    // to find pino-pretty at runtime for colored log output
-    external: ['pino', 'pino-pretty'],
   },
   build: {
     target: 'node20',
@@ -28,7 +23,7 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
     rollupOptions: {
-      input: resolve(__dirname, 'src/index.ts'),
+      input: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
       output: { format: 'esm' },
     },
   },
