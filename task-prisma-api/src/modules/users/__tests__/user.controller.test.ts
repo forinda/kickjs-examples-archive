@@ -5,11 +5,11 @@ import { Container, Controller, Get, Delete, Inject } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
-import { USER_REPOSITORY, type IUserRepository } from '../domain/repositories/user.repository'
+import { USER_REPOSITORY, type UserRepository } from '@/modules/users/user.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryUserRepository implements IUserRepository {
+class InMemoryUserRepository implements UserRepository {
   private users: any[] = [
     {
       id: 'u1',
@@ -79,7 +79,7 @@ class InMemoryUserRepository implements IUserRepository {
 
 @Controller()
 class TestUserController {
-  constructor(@Inject(USER_REPOSITORY) private readonly repo: IUserRepository) {}
+  constructor(@Inject(USER_REPOSITORY) private readonly repo: UserRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

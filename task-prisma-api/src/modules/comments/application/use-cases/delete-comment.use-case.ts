@@ -1,15 +1,12 @@
 import { Service, Inject } from '@forinda/kickjs'
 import { PRISMA_CLIENT } from '@/db/prisma'
 import type { PrismaClient } from '@/generated/prisma/client'
-import {
-  COMMENT_REPOSITORY,
-  type ICommentRepository,
-} from '../../domain/repositories/comment.repository'
+import { COMMENT_REPOSITORY, type CommentRepository } from '@/modules/comments/comment.repository'
 
 @Service()
 export class DeleteCommentUseCase {
   constructor(
-    @Inject(COMMENT_REPOSITORY) private readonly repo: ICommentRepository,
+    @Inject(COMMENT_REPOSITORY) private readonly repo: CommentRepository,
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
   ) {}
 

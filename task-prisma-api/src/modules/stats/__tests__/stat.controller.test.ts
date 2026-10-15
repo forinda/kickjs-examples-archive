@@ -6,14 +6,14 @@ import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
-  STATS_REPOSITORY,
-  type IStatsRepository,
   type ProjectStats,
-} from '../domain/repositories/stat.repository'
+  STATS_REPOSITORY,
+  type StatsRepository,
+} from '@/modules/stats/stats.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryStatsRepository implements IStatsRepository {
+class InMemoryStatsRepository implements StatsRepository {
   async getWorkspaceStats(workspaceId: string) {
     if (workspaceId === 'w1') {
       return {
@@ -59,7 +59,7 @@ class InMemoryStatsRepository implements IStatsRepository {
 
 @Controller()
 class TestStatController {
-  constructor(@Inject(STATS_REPOSITORY) private readonly repo: IStatsRepository) {}
+  constructor(@Inject(STATS_REPOSITORY) private readonly repo: StatsRepository) {}
 
   @Get('/workspace/:workspaceId')
   async workspaceStats(ctx: RequestContext) {

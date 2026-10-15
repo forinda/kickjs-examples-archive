@@ -1,17 +1,22 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
 import { ErrorCode } from '@/shared/constants/error-codes'
-import type { IWorkspaceRepository } from '../../domain/repositories/workspace.repository'
-import type { IWorkspaceMemberRepository } from '../../domain/repositories/workspace-member.repository'
 import type { CreateWorkspaceDTO } from '../dtos/create-workspace.dto'
+import {
+  WORKSPACE_REPOSITORY,
+  type WorkspaceRepository,
+} from '@/modules/workspaces/workspace.repository'
+import {
+  WORKSPACE_MEMBER_REPOSITORY,
+  type WorkspaceMemberRepository,
+} from '@/modules/workspaces/workspace-member.repository'
 
 @Service()
 export class CreateWorkspaceUseCase {
   constructor(
-    @Inject(TOKENS.WORKSPACE_REPOSITORY)
-    private readonly repo: IWorkspaceRepository,
-    @Inject(TOKENS.WORKSPACE_MEMBER_REPOSITORY)
-    private readonly memberRepo: IWorkspaceMemberRepository,
+    @Inject(WORKSPACE_REPOSITORY)
+    private readonly repo: WorkspaceRepository,
+    @Inject(WORKSPACE_MEMBER_REPOSITORY)
+    private readonly memberRepo: WorkspaceMemberRepository,
   ) {}
 
   async execute(dto: CreateWorkspaceDTO, ownerId: string) {

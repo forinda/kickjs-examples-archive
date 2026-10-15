@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type { IChannelRepository, NewChannel } from '../domain/repositories/channel.repository'
 
 // ── In-memory implementation ─────────────────────────────────────────
 
 import type { Channel } from '@/generated/prisma/client'
+import type { ChannelRepository, NewChannel } from '@/modules/channels/channel.repository'
 
-class InMemoryChannelRepository implements IChannelRepository {
+class InMemoryChannelRepository implements ChannelRepository {
   private channels: Channel[] = []
 
   async findById(id: string) {
@@ -48,7 +48,7 @@ class InMemoryChannelRepository implements IChannelRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryChannelRepository', () => {
-  let repo: IChannelRepository
+  let repo: ChannelRepository
 
   beforeEach(() => {
     repo = new InMemoryChannelRepository()

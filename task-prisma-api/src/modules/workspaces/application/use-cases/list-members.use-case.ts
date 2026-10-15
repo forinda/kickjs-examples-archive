@@ -1,12 +1,14 @@
 import { Service, Inject } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { IWorkspaceMemberRepository } from '../../domain/repositories/workspace-member.repository'
+import {
+  WORKSPACE_MEMBER_REPOSITORY,
+  type WorkspaceMemberRepository,
+} from '@/modules/workspaces/workspace-member.repository'
 
 @Service()
 export class ListMembersUseCase {
   constructor(
-    @Inject(TOKENS.WORKSPACE_MEMBER_REPOSITORY)
-    private readonly memberRepo: IWorkspaceMemberRepository,
+    @Inject(WORKSPACE_MEMBER_REPOSITORY)
+    private readonly memberRepo: WorkspaceMemberRepository,
   ) {}
 
   async execute(workspaceId: string) {

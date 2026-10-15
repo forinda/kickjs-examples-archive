@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type {
-  INotificationRepository,
-  NewNotification,
-} from '../domain/repositories/notification.repository'
 
 // ── In-memory implementation ─────────────────────────────────────────
 
 import type { Notification } from '@/generated/prisma/client'
+import type {
+  NewNotification,
+  NotificationRepository,
+} from '@/modules/notifications/notification.repository'
 
-class InMemoryNotificationRepository implements INotificationRepository {
+class InMemoryNotificationRepository implements NotificationRepository {
   private notifications: Notification[] = []
 
   async findById(id: string) {
@@ -58,7 +58,7 @@ class InMemoryNotificationRepository implements INotificationRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryNotificationRepository', () => {
-  let repo: INotificationRepository
+  let repo: NotificationRepository
 
   beforeEach(() => {
     repo = new InMemoryNotificationRepository()

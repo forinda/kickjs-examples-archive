@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import type {
-  IStatsRepository,
-  WorkspaceStats,
   ProjectStats,
-} from '../domain/repositories/stat.repository'
+  StatsRepository,
+  WorkspaceStats,
+} from '@/modules/stats/stats.repository'
 
 // ── In-memory implementation ─────────────────────────────────────────
 
-class InMemoryStatsRepository implements IStatsRepository {
+class InMemoryStatsRepository implements StatsRepository {
   private workspaceStatsMap: Record<string, WorkspaceStats> = {
     w1: {
       memberCount: 5,
@@ -58,7 +58,7 @@ class InMemoryStatsRepository implements IStatsRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryStatsRepository', () => {
-  let repo: IStatsRepository
+  let repo: StatsRepository
 
   beforeEach(() => {
     repo = new InMemoryStatsRepository()

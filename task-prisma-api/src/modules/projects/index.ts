@@ -1,7 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { PROJECT_REPOSITORY } from './domain/repositories/project.repository'
-import { PrismaProjectRepository } from './infrastructure/repositories/prisma-project.repository'
+import { PRISMA_CLIENT } from '@/db/prisma'
+import { PROJECT_REPOSITORY, createProjectRepository } from './project.repository'
 import { ProjectController } from './presentation/project.controller'
 
 import.meta.glob(
@@ -13,9 +12,9 @@ export const ProjectModule = defineModule({
   name: 'ProjectModule',
   build: () => ({
     register(container) {
-      const factory = () => container.resolve(PrismaProjectRepository)
-      container.registerFactory(PROJECT_REPOSITORY, factory)
-      container.registerFactory(TOKENS.PROJECT_REPOSITORY, factory)
+      container.registerFactory(PROJECT_REPOSITORY, () =>
+        createProjectRepository(container.resolve(PRISMA_CLIENT)),
+      )
     },
 
     routes() {

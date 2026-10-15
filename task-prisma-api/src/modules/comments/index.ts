@@ -11,8 +11,8 @@
  *   infrastructure/  — Repository implementations (in-memory, Drizzle, Prisma, etc.)
  */
 import { defineModule } from '@forinda/kickjs'
-import { COMMENT_REPOSITORY } from './domain/repositories/comment.repository'
-import { PrismaCommentRepository } from './infrastructure/repositories/prisma-comment.repository'
+import { PRISMA_CLIENT } from '@/db/prisma'
+import { COMMENT_REPOSITORY, createCommentRepository } from './comment.repository'
 import { CommentController } from './presentation/comment.controller'
 
 // Eagerly load decorated classes so @Service()/@Repository() decorators register in the DI container
@@ -31,7 +31,7 @@ export const CommentModule = defineModule({
      */
     register(container) {
       container.registerFactory(COMMENT_REPOSITORY, () =>
-        container.resolve(PrismaCommentRepository),
+        createCommentRepository(container.resolve(PRISMA_CLIENT)),
       )
     },
 

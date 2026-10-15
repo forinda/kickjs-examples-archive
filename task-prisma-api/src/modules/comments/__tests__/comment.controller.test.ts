@@ -5,14 +5,11 @@ import { Container, Controller, Get, Post, Delete, Inject } from '@forinda/kickj
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
-import {
-  COMMENT_REPOSITORY,
-  type ICommentRepository,
-} from '../domain/repositories/comment.repository'
+import { COMMENT_REPOSITORY, type CommentRepository } from '@/modules/comments/comment.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryCommentRepository implements ICommentRepository {
+class InMemoryCommentRepository implements CommentRepository {
   private comments: any[] = [
     {
       id: 'c1',
@@ -63,7 +60,7 @@ class InMemoryCommentRepository implements ICommentRepository {
 
 @Controller()
 class TestCommentController {
-  constructor(@Inject(COMMENT_REPOSITORY) private readonly repo: ICommentRepository) {}
+  constructor(@Inject(COMMENT_REPOSITORY) private readonly repo: CommentRepository) {}
 
   @Post('/')
   async create(ctx: RequestContext) {

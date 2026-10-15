@@ -1,10 +1,12 @@
 import { Container, HttpException, type MiddlewareHandler } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
 import { ErrorCode } from '@/shared/constants/error-codes'
 import { getUser } from '@/shared/utils/auth'
-import type { IProjectRepository } from '@/modules/projects/domain/repositories/project.repository'
-import type { IWorkspaceMemberRepository } from '@/modules/workspaces/domain/repositories/workspace-member.repository'
+import { PROJECT_REPOSITORY, type ProjectRepository } from '@/modules/projects/project.repository'
+import {
+  WORKSPACE_MEMBER_REPOSITORY,
+  type WorkspaceMemberRepository,
+} from '@/modules/workspaces/workspace-member.repository'
 
 export const projectAccessGuard: MiddlewareHandler = async (ctx: RequestContext, next) => {
   const user = getUser(ctx)
@@ -15,16 +17,14 @@ export const projectAccessGuard: MiddlewareHandler = async (ctx: RequestContext,
   }
 
   const container = Container.getInstance()
-  const projectRepo = container.resolve<IProjectRepository>(TOKENS.PROJECT_REPOSITORY)
+  const projectRepo = container.resolve<ProjectRepository>(PROJECT_REPOSITORY)
 
   const project = await projectRepo.findById(projectId)
   if (!project) {
     throw HttpException.notFound(ErrorCode.PROJECT_NOT_FOUND)
   }
 
-  const memberRepo = container.resolve<IWorkspaceMemberRepository>(
-    TOKENS.WORKSPACE_MEMBER_REPOSITORY,
-  )
+  const memberRepo = container.resolve<WorkspaceMemberRepository>(WORKSPACE_MEMBER_REPOSITORY)
 
   const member = await memberRepo.findByWorkspaceAndUser(project.workspaceId, user.id)
   if (!member) {

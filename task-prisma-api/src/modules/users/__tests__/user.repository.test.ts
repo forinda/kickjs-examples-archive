@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type { IUserRepository } from '../domain/repositories/user.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
 import type { User } from '@/generated/prisma/client'
+import type { UserRepository } from '@/modules/users/user.repository'
 
-class InMemoryUserRepository implements IUserRepository {
+class InMemoryUserRepository implements UserRepository {
   private users: User[] = []
 
   async findById(id: string) {
@@ -57,7 +57,7 @@ class InMemoryUserRepository implements IUserRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryUserRepository', () => {
-  let repo: IUserRepository
+  let repo: UserRepository
 
   beforeEach(() => {
     repo = new InMemoryUserRepository()

@@ -1,1 +1,1 @@
-export type { WorkspaceStats, ProjectStats } from '../../domain/repositories/stat.repository'
+export type { WorkspaceStats, ProjectStats } from '@/modules/stats/stats.repository'

@@ -1,13 +1,12 @@
 import { Service, Inject } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { IProjectRepository } from '../../domain/repositories/project.repository'
 import type { CreateProjectDTO } from '../dtos/create-project.dto'
+import { PROJECT_REPOSITORY, type ProjectRepository } from '@/modules/projects/project.repository'
 
 @Service()
 export class CreateProjectUseCase {
   constructor(
-    @Inject(TOKENS.PROJECT_REPOSITORY)
-    private readonly repo: IProjectRepository,
+    @Inject(PROJECT_REPOSITORY)
+    private readonly repo: ProjectRepository,
   ) {}
 
   async execute(dto: CreateProjectDTO) {

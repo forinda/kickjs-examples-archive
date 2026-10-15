@@ -5,14 +5,11 @@ import { Container, Controller, Get, Post, Delete, Inject } from '@forinda/kickj
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
-import {
-  CHANNEL_REPOSITORY,
-  type IChannelRepository,
-} from '../domain/repositories/channel.repository'
+import { CHANNEL_REPOSITORY, type ChannelRepository } from '@/modules/channels/channel.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryChannelRepository implements IChannelRepository {
+class InMemoryChannelRepository implements ChannelRepository {
   private channels: any[] = [
     {
       id: 'ch1',
@@ -62,7 +59,7 @@ class InMemoryChannelRepository implements IChannelRepository {
 
 @Controller()
 class TestChannelController {
-  constructor(@Inject(CHANNEL_REPOSITORY) private readonly repo: IChannelRepository) {}
+  constructor(@Inject(CHANNEL_REPOSITORY) private readonly repo: ChannelRepository) {}
 
   @Post('/')
   async create(ctx: RequestContext) {

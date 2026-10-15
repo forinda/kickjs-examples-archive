@@ -7,12 +7,12 @@ import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   ATTACHMENT_REPOSITORY,
-  type IAttachmentRepository,
-} from '../domain/repositories/attachment.repository'
+  type AttachmentRepository,
+} from '@/modules/attachments/attachment.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryAttachmentRepository implements IAttachmentRepository {
+class InMemoryAttachmentRepository implements AttachmentRepository {
   private attachments: any[] = [
     {
       id: 'att1',
@@ -53,7 +53,7 @@ class InMemoryAttachmentRepository implements IAttachmentRepository {
 
 @Controller()
 class TestAttachmentController {
-  constructor(@Inject(ATTACHMENT_REPOSITORY) private readonly repo: IAttachmentRepository) {}
+  constructor(@Inject(ATTACHMENT_REPOSITORY) private readonly repo: AttachmentRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

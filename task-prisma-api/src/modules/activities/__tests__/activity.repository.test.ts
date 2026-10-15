@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type { IActivityRepository, NewActivity } from '../domain/repositories/activity.repository'
+import type { ActivityRepository, NewActivity } from '@/modules/activities/activity.repository'
 
 // ── In-memory implementation ─────────────────────────────────────────
 
@@ -14,7 +14,7 @@ type Activity = {
   createdAt: Date
 }
 
-class InMemoryActivityRepository implements IActivityRepository {
+class InMemoryActivityRepository implements ActivityRepository {
   private activities: Activity[] = []
 
   async findPaginated(
@@ -46,7 +46,7 @@ class InMemoryActivityRepository implements IActivityRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryActivityRepository', () => {
-  let repo: IActivityRepository
+  let repo: ActivityRepository
 
   beforeEach(() => {
     repo = new InMemoryActivityRepository()

@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type { ITaskRepository, NewTask } from '../domain/repositories/task.repository'
 
 // ── In-memory implementation ─────────────────────────────────────────
 
 import type { Task } from '@/generated/prisma/client'
+import type { NewTask, TaskRepository } from '@/modules/tasks/task.repository'
 
-class InMemoryTaskRepository implements ITaskRepository {
+class InMemoryTaskRepository implements TaskRepository {
   private tasks: Task[] = []
 
   async findById(id: string) {
@@ -63,7 +63,7 @@ class InMemoryTaskRepository implements ITaskRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryTaskRepository', () => {
-  let repo: ITaskRepository
+  let repo: TaskRepository
 
   beforeEach(() => {
     repo = new InMemoryTaskRepository()

@@ -1,6 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { PrismaMessageRepository } from './infrastructure/repositories/prisma-message.repository'
+import { PRISMA_CLIENT } from '@/db/prisma'
+import { MESSAGE_REPOSITORY, createMessageRepository } from './message.repository'
 import { MessageController } from './presentation/message.controller'
 
 import.meta.glob(
@@ -12,8 +12,8 @@ export const MessageModule = defineModule({
   name: 'MessageModule',
   build: () => ({
     register(container) {
-      container.registerFactory(TOKENS.MESSAGE_REPOSITORY, () =>
-        container.resolve(PrismaMessageRepository),
+      container.registerFactory(MESSAGE_REPOSITORY, () =>
+        createMessageRepository(container.resolve(PRISMA_CLIENT)),
       )
     },
 

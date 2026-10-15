@@ -1,8 +1,10 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { WORKSPACE_REPOSITORY } from './domain/repositories/workspace.repository'
-import { PrismaWorkspaceRepository } from './infrastructure/repositories/prisma-workspace.repository'
-import { PrismaWorkspaceMemberRepository } from './infrastructure/repositories/prisma-workspace-member.repository'
+import { PRISMA_CLIENT } from '@/db/prisma'
+import { WORKSPACE_REPOSITORY, createWorkspaceRepository } from './workspace.repository'
+import {
+  WORKSPACE_MEMBER_REPOSITORY,
+  createWorkspaceMemberRepository,
+} from './workspace-member.repository'
 import { WorkspaceController } from './presentation/workspace.controller'
 
 import.meta.glob(
@@ -14,12 +16,12 @@ export const WorkspaceModule = defineModule({
   name: 'WorkspaceModule',
   build: () => ({
     register(container) {
-      const workspaceFactory = () => container.resolve(PrismaWorkspaceRepository)
-      container.registerFactory(WORKSPACE_REPOSITORY, workspaceFactory)
-      container.registerFactory(TOKENS.WORKSPACE_REPOSITORY, workspaceFactory)
-
-      const memberFactory = () => container.resolve(PrismaWorkspaceMemberRepository)
-      container.registerFactory(TOKENS.WORKSPACE_MEMBER_REPOSITORY, memberFactory)
+      container.registerFactory(WORKSPACE_REPOSITORY, () =>
+        createWorkspaceRepository(container.resolve(PRISMA_CLIENT)),
+      )
+      container.registerFactory(WORKSPACE_MEMBER_REPOSITORY, () =>
+        createWorkspaceMemberRepository(container.resolve(PRISMA_CLIENT)),
+      )
     },
 
     routes() {

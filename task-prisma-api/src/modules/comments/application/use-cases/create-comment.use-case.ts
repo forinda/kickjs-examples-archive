@@ -1,11 +1,8 @@
 import { Service, Inject } from '@forinda/kickjs'
 import { PRISMA_CLIENT } from '@/db/prisma'
 import type { PrismaClient } from '@/generated/prisma/client'
-import {
-  COMMENT_REPOSITORY,
-  type ICommentRepository,
-} from '../../domain/repositories/comment.repository'
 import type { CreateCommentDTO } from '../dtos/create-comment.dto'
+import { COMMENT_REPOSITORY, type CommentRepository } from '@/modules/comments/comment.repository'
 
 /** Extract @mentioned user IDs from comment content */
 function parseMentions(content: string): string[] {
@@ -17,7 +14,7 @@ function parseMentions(content: string): string[] {
 @Service()
 export class CreateCommentUseCase {
   constructor(
-    @Inject(COMMENT_REPOSITORY) private readonly repo: ICommentRepository,
+    @Inject(COMMENT_REPOSITORY) private readonly repo: CommentRepository,
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
   ) {}
 

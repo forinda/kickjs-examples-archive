@@ -1,12 +1,12 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { IChannelRepository } from '../repositories/channel.repository'
+import type { ChannelRepository } from '@/modules/channels/channel.repository'
+import { CHANNEL_REPOSITORY } from '@/modules/channels/channel.repository'
 
 @Service()
 export class ChannelDomainService {
   constructor(
-    @Inject(TOKENS.CHANNEL_REPOSITORY)
-    private readonly repo: IChannelRepository,
+    @Inject(CHANNEL_REPOSITORY)
+    private readonly repo: ChannelRepository,
   ) {}
 
   async ensureExists(id: string) {

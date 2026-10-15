@@ -3,14 +3,14 @@ import { PRISMA_CLIENT } from '@/db/prisma'
 import type { PrismaClient } from '@/generated/prisma/client'
 import {
   ATTACHMENT_REPOSITORY,
-  type IAttachmentRepository,
+  type AttachmentRepository,
   type NewAttachment,
-} from '../../domain/repositories/attachment.repository'
+} from '@/modules/attachments/attachment.repository'
 
 @Service()
 export class CreateAttachmentUseCase {
   constructor(
-    @Inject(ATTACHMENT_REPOSITORY) private readonly repo: IAttachmentRepository,
+    @Inject(ATTACHMENT_REPOSITORY) private readonly repo: AttachmentRepository,
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
   ) {}
 

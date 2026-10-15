@@ -1,9 +1,9 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
-import { LABEL_REPOSITORY, type ILabelRepository } from '../repositories/label.repository'
+import { LABEL_REPOSITORY, type LabelRepository } from '@/modules/labels/label.repository'
 
 @Service()
 export class LabelDomainService {
-  constructor(@Inject(LABEL_REPOSITORY) private readonly repo: ILabelRepository) {}
+  constructor(@Inject(LABEL_REPOSITORY) private readonly repo: LabelRepository) {}
 
   async ensureExists(id: string) {
     const entity = await this.repo.findById(id)

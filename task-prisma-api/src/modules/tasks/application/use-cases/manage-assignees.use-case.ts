@@ -1,12 +1,14 @@
 import { Service, Inject } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { ITaskAssigneeRepository } from '../../domain/repositories/task-assignee.repository'
+import {
+  TASK_ASSIGNEE_REPOSITORY,
+  type TaskAssigneeRepository,
+} from '@/modules/tasks/task-assignee.repository'
 
 @Service()
 export class ManageAssigneesUseCase {
   constructor(
-    @Inject(TOKENS.TASK_ASSIGNEE_REPOSITORY)
-    private readonly assigneeRepo: ITaskAssigneeRepository,
+    @Inject(TASK_ASSIGNEE_REPOSITORY)
+    private readonly assigneeRepo: TaskAssigneeRepository,
   ) {}
 
   async addAssignee(taskId: string, userId: string) {

@@ -1,12 +1,12 @@
 import { Service, Inject } from '@forinda/kickjs'
 import {
   TASK_LABEL_REPOSITORY,
-  type ITaskLabelRepository,
-} from '../../domain/repositories/task-label.repository'
+  type TaskLabelRepository,
+} from '@/modules/labels/task-label.repository'
 
 @Service()
 export class ManageTaskLabelsUseCase {
-  constructor(@Inject(TASK_LABEL_REPOSITORY) private readonly repo: ITaskLabelRepository) {}
+  constructor(@Inject(TASK_LABEL_REPOSITORY) private readonly repo: TaskLabelRepository) {}
 
   async getLabels(taskId: string) {
     return this.repo.findByTask(taskId)

@@ -1,6 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { PrismaRefreshTokenRepository } from './infrastructure/repositories/prisma-refresh-token.repository'
+import { PRISMA_CLIENT } from '@/db/prisma'
+import { REFRESH_TOKEN_REPOSITORY, createRefreshTokenRepository } from './refresh-token.repository'
 import { AuthController } from './presentation/auth.controller'
 
 // Eagerly load use cases so @Service() decorators register in the DI container
@@ -10,8 +10,8 @@ export const AuthModule = defineModule({
   name: 'AuthModule',
   build: () => ({
     register(container) {
-      container.registerFactory(TOKENS.REFRESH_TOKEN_REPOSITORY, () =>
-        container.resolve(PrismaRefreshTokenRepository),
+      container.registerFactory(REFRESH_TOKEN_REPOSITORY, () =>
+        createRefreshTokenRepository(container.resolve(PRISMA_CLIENT)),
       )
     },
 

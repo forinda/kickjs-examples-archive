@@ -5,14 +5,11 @@ import { Container, Controller, Get, Post, Delete, Inject } from '@forinda/kickj
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
-import {
-  PROJECT_REPOSITORY,
-  type IProjectRepository,
-} from '../domain/repositories/project.repository'
+import { PROJECT_REPOSITORY, type ProjectRepository } from '@/modules/projects/project.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryProjectRepository implements IProjectRepository {
+class InMemoryProjectRepository implements ProjectRepository {
   private projects: any[] = [
     {
       id: 'p1',
@@ -74,7 +71,7 @@ class InMemoryProjectRepository implements IProjectRepository {
 
 @Controller()
 class TestProjectController {
-  constructor(@Inject(PROJECT_REPOSITORY) private readonly repo: IProjectRepository) {}
+  constructor(@Inject(PROJECT_REPOSITORY) private readonly repo: ProjectRepository) {}
 
   @Post('/')
   async create(ctx: RequestContext) {

@@ -1,9 +1,11 @@
 import { Container, HttpException, type MiddlewareHandler } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
 import { ErrorCode } from '@/shared/constants/error-codes'
 import { getUser } from '@/shared/utils/auth'
-import type { IWorkspaceMemberRepository } from '@/modules/workspaces/domain/repositories/workspace-member.repository'
+import {
+  WORKSPACE_MEMBER_REPOSITORY,
+  type WorkspaceMemberRepository,
+} from '@/modules/workspaces/workspace-member.repository'
 
 export const workspaceMembershipGuard: MiddlewareHandler = async (ctx: RequestContext, next) => {
   const user = getUser(ctx)
@@ -14,9 +16,7 @@ export const workspaceMembershipGuard: MiddlewareHandler = async (ctx: RequestCo
   }
 
   const container = Container.getInstance()
-  const memberRepo = container.resolve<IWorkspaceMemberRepository>(
-    TOKENS.WORKSPACE_MEMBER_REPOSITORY,
-  )
+  const memberRepo = container.resolve<WorkspaceMemberRepository>(WORKSPACE_MEMBER_REPOSITORY)
 
   const member = await memberRepo.findByWorkspaceAndUser(workspaceId, user.id)
   if (!member) {
@@ -33,9 +33,7 @@ export const requireWorkspaceRole = (...roles: string[]): MiddlewareHandler => {
     const workspaceId = ctx.params.workspaceId || ctx.params.id
 
     const container = Container.getInstance()
-    const memberRepo = container.resolve<IWorkspaceMemberRepository>(
-      TOKENS.WORKSPACE_MEMBER_REPOSITORY,
-    )
+    const memberRepo = container.resolve<WorkspaceMemberRepository>(WORKSPACE_MEMBER_REPOSITORY)
 
     const member = await memberRepo.findByWorkspaceAndUser(workspaceId, user.id)
     if (!member) {

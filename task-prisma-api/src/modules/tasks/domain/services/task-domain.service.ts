@@ -1,13 +1,13 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
 import { ErrorCode } from '@/shared/constants/error-codes'
-import type { ITaskRepository, Task } from '../repositories/task.repository'
+import type { TaskRepository, Task } from '@/modules/tasks/task.repository'
+import { TASK_REPOSITORY } from '@/modules/tasks/task.repository'
 
 @Service()
 export class TaskDomainService {
   constructor(
-    @Inject(TOKENS.TASK_REPOSITORY)
-    private readonly repo: ITaskRepository,
+    @Inject(TASK_REPOSITORY)
+    private readonly repo: TaskRepository,
   ) {}
 
   async ensureExists(id: string): Promise<Task> {

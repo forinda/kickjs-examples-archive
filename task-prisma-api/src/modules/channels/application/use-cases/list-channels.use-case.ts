@@ -1,13 +1,12 @@
 import { Service, Inject } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { IChannelRepository } from '../../domain/repositories/channel.repository'
 import type { ParsedQuery } from '@forinda/kickjs'
+import { CHANNEL_REPOSITORY, type ChannelRepository } from '@/modules/channels/channel.repository'
 
 @Service()
 export class ListChannelsUseCase {
   constructor(
-    @Inject(TOKENS.CHANNEL_REPOSITORY)
-    private readonly repo: IChannelRepository,
+    @Inject(CHANNEL_REPOSITORY)
+    private readonly repo: ChannelRepository,
   ) {}
 
   async execute(parsed: ParsedQuery, workspaceId: string) {

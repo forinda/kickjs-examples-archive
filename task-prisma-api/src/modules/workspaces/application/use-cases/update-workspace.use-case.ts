@@ -1,13 +1,15 @@
 import { Service, Inject } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { IWorkspaceRepository } from '../../domain/repositories/workspace.repository'
 import type { UpdateWorkspaceDTO } from '../dtos/update-workspace.dto'
+import {
+  WORKSPACE_REPOSITORY,
+  type WorkspaceRepository,
+} from '@/modules/workspaces/workspace.repository'
 
 @Service()
 export class UpdateWorkspaceUseCase {
   constructor(
-    @Inject(TOKENS.WORKSPACE_REPOSITORY)
-    private readonly repo: IWorkspaceRepository,
+    @Inject(WORKSPACE_REPOSITORY)
+    private readonly repo: WorkspaceRepository,
   ) {}
 
   async execute(id: string, dto: UpdateWorkspaceDTO) {

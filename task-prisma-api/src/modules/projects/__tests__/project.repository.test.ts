@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type { IProjectRepository, NewProject } from '../domain/repositories/project.repository'
+import type { NewProject, ProjectRepository } from '@/modules/projects/project.repository'
 
 // ── In-memory implementation ─────────────────────────────────────────
 
@@ -17,7 +17,7 @@ type Project = {
   updatedAt: Date
 }
 
-class InMemoryProjectRepository implements IProjectRepository {
+class InMemoryProjectRepository implements ProjectRepository {
   private projects: Project[] = []
 
   async findById(id: string) {
@@ -72,7 +72,7 @@ class InMemoryProjectRepository implements IProjectRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryProjectRepository', () => {
-  let repo: IProjectRepository
+  let repo: ProjectRepository
 
   beforeEach(() => {
     repo = new InMemoryProjectRepository()

@@ -1,1 +1,1 @@
-export type { Task as TaskResponseDTO } from '../../domain/repositories/task.repository'
+export type { Task as TaskResponseDTO } from '@/modules/tasks/task.repository'

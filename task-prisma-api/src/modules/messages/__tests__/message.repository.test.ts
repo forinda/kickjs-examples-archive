@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type { IMessageRepository, NewMessage } from '../domain/repositories/message.repository'
+import type { MessageRepository, NewMessage } from '@/modules/messages/message.repository'
 
 // ── In-memory implementation ─────────────────────────────────────────
 
@@ -14,7 +14,7 @@ type Message = {
   updatedAt: Date
 }
 
-class InMemoryMessageRepository implements IMessageRepository {
+class InMemoryMessageRepository implements MessageRepository {
   private messages: Message[] = []
 
   async findById(id: string) {
@@ -66,7 +66,7 @@ class InMemoryMessageRepository implements IMessageRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryMessageRepository', () => {
-  let repo: IMessageRepository
+  let repo: MessageRepository
 
   beforeEach(() => {
     repo = new InMemoryMessageRepository()

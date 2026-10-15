@@ -5,14 +5,11 @@ import { Container, Controller, Get, Post, Delete, Inject } from '@forinda/kickj
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
-import {
-  MESSAGE_REPOSITORY,
-  type IMessageRepository,
-} from '../domain/repositories/message.repository'
+import { MESSAGE_REPOSITORY, type MessageRepository } from '@/modules/messages/message.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryMessageRepository implements IMessageRepository {
+class InMemoryMessageRepository implements MessageRepository {
   private messages: any[] = [
     {
       id: 'm1',
@@ -63,7 +60,7 @@ class InMemoryMessageRepository implements IMessageRepository {
 
 @Controller()
 class TestMessageController {
-  constructor(@Inject(MESSAGE_REPOSITORY) private readonly repo: IMessageRepository) {}
+  constructor(@Inject(MESSAGE_REPOSITORY) private readonly repo: MessageRepository) {}
 
   @Post('/')
   async create(ctx: RequestContext) {

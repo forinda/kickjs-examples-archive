@@ -2,20 +2,22 @@ import { Service, Inject, HttpException } from '@forinda/kickjs'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
-import { TOKENS } from '@/shared/constants/tokens'
 import { ErrorCode } from '@/shared/constants/error-codes'
 import { env } from '@/config'
-import type { IUserRepository } from '@/modules/users/domain/repositories/user.repository'
-import type { IRefreshTokenRepository } from '../../domain/repositories/refresh-token.repository'
 import type { RegisterDTO } from '../dtos/register.dto'
+import { USER_REPOSITORY, type UserRepository } from '@/modules/users/user.repository'
+import {
+  REFRESH_TOKEN_REPOSITORY,
+  type RefreshTokenRepository,
+} from '@/modules/auth/refresh-token.repository'
 
 @Service()
 export class RegisterUseCase {
   constructor(
-    @Inject(TOKENS.USER_REPOSITORY)
-    private userRepo: IUserRepository,
-    @Inject(TOKENS.REFRESH_TOKEN_REPOSITORY)
-    private refreshTokenRepo: IRefreshTokenRepository,
+    @Inject(USER_REPOSITORY)
+    private userRepo: UserRepository,
+    @Inject(REFRESH_TOKEN_REPOSITORY)
+    private refreshTokenRepo: RefreshTokenRepository,
   ) {}
 
   async execute(dto: RegisterDTO) {

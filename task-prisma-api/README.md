@@ -1,10 +1,11 @@
 # task-prisma-api
 
-A full task-management API (users, auth, workspaces, projects, tasks, labels, comments, attachments, channels + chat, notifications, activity, stats) on **Prisma 7** and PostgreSQL, in a DDD layout (`domain/`, `application/`, `infrastructure/`, `presentation/` per module).
+A full task-management API (users, auth, workspaces, projects, tasks, labels, comments, attachments, channels + chat, notifications, activity, stats) on **Prisma 7** and PostgreSQL, in a layered layout (`domain/`, `application/`, `presentation/` per module).
 
 What it shows:
 
 - **Prisma wired directly** (`src/db/prisma.ts`) — `PrismaAdapter` creates `new PrismaClient({ adapter: new PrismaPg(...) })`, registers it under `PRISMA_CLIENT`, reports it on `GET /health/ready`, disconnects on shutdown. Replaces the removed `@forinda/kickjs-prisma`. The client omits `User.passwordHash` globally.
+- One file per repository (`src/modules/<module>/<name>.repository.ts`): a `createXRepository(prisma)` factory, `type XRepository = ReturnType<…>`, and an `X_REPOSITORY` token bound in the module's `register()` — the shape `kick g module` generates.
 - `src/shared/infrastructure/query-adapter.ts` — turns `ctx.qs()` / `ctx.paginate()` filters, sort, search and pagination into Prisma `findMany` args.
 - JWT auth as a guard middleware (`authBridgeMiddleware`) plus workspace / project / channel access guards.
 - `@forinda/kickjs-queue` (BullMQ workers for email, notifications, activity), `@forinda/kickjs-ws` (`/ws/chat`), `@forinda/kickjs-swagger` (`/docs`, `/openapi.json`), `@forinda/kickjs-devtools` (`/_debug`).

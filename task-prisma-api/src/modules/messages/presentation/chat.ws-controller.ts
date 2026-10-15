@@ -1,9 +1,9 @@
 import { WsController, OnConnect, OnDisconnect, OnMessage } from '@forinda/kickjs-ws'
 import type { WsContext } from '@forinda/kickjs-ws'
-import { Autowired, Logger } from '@forinda/kickjs'
+import { Logger, Inject } from '@forinda/kickjs'
 import jwt from 'jsonwebtoken'
 import { env } from '@/config'
-import { PrismaMessageRepository } from '../infrastructure/repositories/prisma-message.repository'
+import { MESSAGE_REPOSITORY, type MessageRepository } from '@/modules/messages/message.repository'
 
 const logger = Logger.for('ChatWsController')
 
@@ -12,7 +12,7 @@ const onlineUsers = new Map<string, { userId: string; userName: string }>()
 
 @WsController('/chat')
 export class ChatWsController {
-  @Autowired() private messageRepo!: PrismaMessageRepository
+  @Inject(MESSAGE_REPOSITORY) private readonly messageRepo!: MessageRepository
 
   @OnConnect()
   handleConnect(ctx: WsContext) {

@@ -3,13 +3,13 @@ import { PRISMA_CLIENT } from '@/db/prisma'
 import type { PrismaClient } from '@/generated/prisma/client'
 import {
   ATTACHMENT_REPOSITORY,
-  type IAttachmentRepository,
-} from '../../domain/repositories/attachment.repository'
+  type AttachmentRepository,
+} from '@/modules/attachments/attachment.repository'
 
 @Service()
 export class DeleteAttachmentUseCase {
   constructor(
-    @Inject(ATTACHMENT_REPOSITORY) private readonly repo: IAttachmentRepository,
+    @Inject(ATTACHMENT_REPOSITORY) private readonly repo: AttachmentRepository,
     @Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient,
   ) {}
 

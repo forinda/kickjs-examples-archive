@@ -1,14 +1,17 @@
-import { Service, Autowired, Logger } from '@forinda/kickjs'
+import { Service, Logger, Inject } from '@forinda/kickjs'
 import { Job, Process } from '@forinda/kickjs-queue'
 import type { Job as BullMQJob } from 'bullmq'
-import { PrismaNotificationRepository } from '@/modules/notifications/infrastructure/repositories/prisma-notification.repository'
+import {
+  NOTIFICATION_REPOSITORY,
+  type NotificationRepository,
+} from '@/modules/notifications/notification.repository'
 
 const logger = Logger.for('NotificationProcessor')
 
 @Service()
 @Job('notifications')
 export class NotificationProcessor {
-  @Autowired() private notificationRepo!: PrismaNotificationRepository
+  @Inject(NOTIFICATION_REPOSITORY) private readonly notificationRepo!: NotificationRepository
 
   @Process('create-notification')
   async createNotification(

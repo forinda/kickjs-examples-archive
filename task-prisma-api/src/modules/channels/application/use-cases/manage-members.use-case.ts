@@ -1,12 +1,14 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { IChannelMemberRepository } from '../../domain/repositories/channel.repository'
+import {
+  CHANNEL_MEMBER_REPOSITORY,
+  type ChannelMemberRepository,
+} from '@/modules/channels/channel-member.repository'
 
 @Service()
 export class ManageChannelMembersUseCase {
   constructor(
-    @Inject(TOKENS.CHANNEL_MEMBER_REPOSITORY)
-    private readonly memberRepo: IChannelMemberRepository,
+    @Inject(CHANNEL_MEMBER_REPOSITORY)
+    private readonly memberRepo: ChannelMemberRepository,
   ) {}
 
   async listMembers(channelId: string) {

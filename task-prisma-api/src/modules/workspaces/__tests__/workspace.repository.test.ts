@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type { IWorkspaceRepository } from '../domain/repositories/workspace.repository'
+import type { WorkspaceRepository } from '@/modules/workspaces/workspace.repository'
 
 // ── In-memory implementation ─────────────────────────────────────────
 
@@ -14,7 +14,7 @@ type Workspace = {
   updatedAt: Date
 }
 
-class InMemoryWorkspaceRepository implements IWorkspaceRepository {
+class InMemoryWorkspaceRepository implements WorkspaceRepository {
   private workspaces: Workspace[] = []
 
   async findById(id: string) {
@@ -63,7 +63,7 @@ class InMemoryWorkspaceRepository implements IWorkspaceRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryWorkspaceRepository', () => {
-  let repo: IWorkspaceRepository
+  let repo: WorkspaceRepository
 
   beforeEach(() => {
     repo = new InMemoryWorkspaceRepository()

@@ -1,7 +1,6 @@
 import { Service, Inject } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { IMessageRepository } from '../../domain/repositories/message.repository'
 import type { CreateMessageDTO } from '../dtos/create-message.dto'
+import { MESSAGE_REPOSITORY, type MessageRepository } from '@/modules/messages/message.repository'
 
 /** Extract @mentioned user IDs from message content */
 function parseMentions(content: string): string[] {
@@ -13,8 +12,8 @@ function parseMentions(content: string): string[] {
 @Service()
 export class CreateMessageUseCase {
   constructor(
-    @Inject(TOKENS.MESSAGE_REPOSITORY)
-    private readonly repo: IMessageRepository,
+    @Inject(MESSAGE_REPOSITORY)
+    private readonly repo: MessageRepository,
   ) {}
 
   async execute(dto: CreateMessageDTO, senderId: string) {

@@ -1,14 +1,17 @@
-import { Service, Autowired, Logger } from '@forinda/kickjs'
+import { Service, Logger, Inject } from '@forinda/kickjs'
 import { Job, Process } from '@forinda/kickjs-queue'
 import type { Job as BullMQJob } from 'bullmq'
-import { PrismaActivityRepository } from '@/modules/activities/infrastructure/repositories/prisma-activity.repository'
+import {
+  ACTIVITY_REPOSITORY,
+  type ActivityRepository,
+} from '@/modules/activities/activity.repository'
 
 const logger = Logger.for('ActivityProcessor')
 
 @Service()
 @Job('activity')
 export class ActivityProcessor {
-  @Autowired() private activityRepo!: PrismaActivityRepository
+  @Inject(ACTIVITY_REPOSITORY) private readonly activityRepo!: ActivityRepository
 
   @Process('log-activity')
   async logActivity(

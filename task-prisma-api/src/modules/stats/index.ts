@@ -1,6 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
-import { STATS_REPOSITORY } from './domain/repositories/stat.repository'
-import { PrismaStatsRepository } from './infrastructure/repositories/prisma-stat.repository'
+import { PRISMA_CLIENT } from '@/db/prisma'
+import { STATS_REPOSITORY, createStatsRepository } from './stats.repository'
 import { StatController } from './presentation/stat.controller'
 
 import.meta.glob(
@@ -12,7 +12,9 @@ export const StatModule = defineModule({
   name: 'StatModule',
   build: () => ({
     register(container) {
-      container.registerFactory(STATS_REPOSITORY, () => container.resolve(PrismaStatsRepository))
+      container.registerFactory(STATS_REPOSITORY, () =>
+        createStatsRepository(container.resolve(PRISMA_CLIENT)),
+      )
     },
 
     routes() {

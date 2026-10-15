@@ -1,13 +1,13 @@
 import { Service, Inject } from '@forinda/kickjs'
+import type { ParsedQuery } from '@forinda/kickjs'
 import {
   ACTIVITY_REPOSITORY,
-  type IActivityRepository,
-} from '../../domain/repositories/activity.repository'
-import type { ParsedQuery } from '@forinda/kickjs'
+  type ActivityRepository,
+} from '@/modules/activities/activity.repository'
 
 @Service()
 export class ListActivitiesUseCase {
-  constructor(@Inject(ACTIVITY_REPOSITORY) private readonly repo: IActivityRepository) {}
+  constructor(@Inject(ACTIVITY_REPOSITORY) private readonly repo: ActivityRepository) {}
 
   async execute(
     parsed: ParsedQuery,

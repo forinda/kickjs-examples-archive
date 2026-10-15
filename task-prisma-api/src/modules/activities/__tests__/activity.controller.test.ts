@@ -7,12 +7,12 @@ import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   ACTIVITY_REPOSITORY,
-  type IActivityRepository,
-} from '../domain/repositories/activity.repository'
+  type ActivityRepository,
+} from '@/modules/activities/activity.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryActivityRepository implements IActivityRepository {
+class InMemoryActivityRepository implements ActivityRepository {
   private activities: any[] = [
     {
       id: 'a1',
@@ -64,7 +64,7 @@ class InMemoryActivityRepository implements IActivityRepository {
 
 @Controller()
 class TestActivityController {
-  constructor(@Inject(ACTIVITY_REPOSITORY) private readonly repo: IActivityRepository) {}
+  constructor(@Inject(ACTIVITY_REPOSITORY) private readonly repo: ActivityRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

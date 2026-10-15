@@ -7,12 +7,12 @@ import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   WORKSPACE_REPOSITORY,
-  type IWorkspaceRepository,
-} from '../domain/repositories/workspace.repository'
+  type WorkspaceRepository,
+} from '@/modules/workspaces/workspace.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryWorkspaceRepository implements IWorkspaceRepository {
+class InMemoryWorkspaceRepository implements WorkspaceRepository {
   private workspaces: any[] = [
     {
       id: 'w1',
@@ -67,7 +67,7 @@ class InMemoryWorkspaceRepository implements IWorkspaceRepository {
 
 @Controller()
 class TestWorkspaceController {
-  constructor(@Inject(WORKSPACE_REPOSITORY) private readonly repo: IWorkspaceRepository) {}
+  constructor(@Inject(WORKSPACE_REPOSITORY) private readonly repo: WorkspaceRepository) {}
 
   @Post('/')
   async create(ctx: RequestContext) {

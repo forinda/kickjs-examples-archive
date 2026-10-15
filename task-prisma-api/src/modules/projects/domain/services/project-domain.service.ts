@@ -1,13 +1,13 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
 import { ErrorCode } from '@/shared/constants/error-codes'
-import type { IProjectRepository, Project } from '../repositories/project.repository'
+import type { ProjectRepository, Project } from '@/modules/projects/project.repository'
+import { PROJECT_REPOSITORY } from '@/modules/projects/project.repository'
 
 @Service()
 export class ProjectDomainService {
   constructor(
-    @Inject(TOKENS.PROJECT_REPOSITORY)
-    private readonly repo: IProjectRepository,
+    @Inject(PROJECT_REPOSITORY)
+    private readonly repo: ProjectRepository,
   ) {}
 
   async ensureExists(id: string): Promise<Project> {

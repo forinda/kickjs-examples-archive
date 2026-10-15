@@ -1,8 +1,7 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { TASK_REPOSITORY } from './domain/repositories/task.repository'
-import { PrismaTaskRepository } from './infrastructure/repositories/prisma-task.repository'
-import { PrismaTaskAssigneeRepository } from './infrastructure/repositories/prisma-task-assignee.repository'
+import { PRISMA_CLIENT } from '@/db/prisma'
+import { TASK_REPOSITORY, createTaskRepository } from './task.repository'
+import { TASK_ASSIGNEE_REPOSITORY, createTaskAssigneeRepository } from './task-assignee.repository'
 import { TaskController } from './presentation/task.controller'
 
 import.meta.glob(
@@ -14,12 +13,11 @@ export const TaskModule = defineModule({
   name: 'TaskModule',
   build: () => ({
     register(container) {
-      const taskFactory = () => container.resolve(PrismaTaskRepository)
-      container.registerFactory(TASK_REPOSITORY, taskFactory)
-      container.registerFactory(TOKENS.TASK_REPOSITORY, taskFactory)
-
-      container.registerFactory(TOKENS.TASK_ASSIGNEE_REPOSITORY, () =>
-        container.resolve(PrismaTaskAssigneeRepository),
+      container.registerFactory(TASK_REPOSITORY, () =>
+        createTaskRepository(container.resolve(PRISMA_CLIENT)),
+      )
+      container.registerFactory(TASK_ASSIGNEE_REPOSITORY, () =>
+        createTaskAssigneeRepository(container.resolve(PRISMA_CLIENT)),
       )
     },
 
