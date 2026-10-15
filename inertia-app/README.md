@@ -6,9 +6,9 @@ A notes app on **KickJS + Inertia (React)** with **kick/db + SQLite**: controlle
   - **Validation errors**: a failed `noteSchema` body check → `inertiaErrorHandler()` redirects back to the form, and the messages arrive as `props.errors` (`form.errors.title` in `useForm`). API clients posting JSON without `X-Inertia` get the usual 422.
   - **Flash**: `flash(ctx, { success })` (or `{ error }`) before each redirect. `src/client/toasts.tsx` turns Inertia's `flash` event into toasts — top-right, dismissible (×), gone after 4s. Inertia keeps flash out of history and the session drops it after one response, so a toast never comes back on back/forward or reload.
   - **Deferred prop**: `stats: defer(() => notes.stats())` is left out of the first response and fetched right after render; the page wraps it in `<Deferred>`.
-- `src/inertia.ts` — adapter options, incl. the **shared props** every page gets (`appName`, a stub `user`).
+- `src/config/inertia.ts` — adapter options, incl. the **shared props** every page gets (`appName`, a stub `user`).
 - `src/client/pages/` — `Notes/Index.tsx`, `Notes/Edit.tsx`, `Error.tsx`; server-rendered (`src/client/ssr.tsx`) and hydrated (`main.tsx`).
-- `src/db/` — client + `DbAdapter` (`APP_DB` token, `SELECT 1` on `GET /health/ready`, closes the handle on shutdown). `kickDbAdapter()` applies migrations on boot outside production. `db/migrations/` holds the reviewed `init` migration.
+- `src/db/` — client + schema; `src/adapters/db.adapter.ts` — `DbAdapter` (`APP_DB` token, `SELECT 1` on `GET /health/ready`, closes the handle on shutdown). `kickDbAdapter()` applies migrations on boot outside production. `db/migrations/` holds the reviewed `init` migration.
 - `src/modules/notes/note.repository.ts` — factory repository (`createNoteRepository(db)`, contract = its `ReturnType`, `NOTE_REPOSITORY` token bound in the module's `register()`).
 
 Validation errors and flash messages travel in the session (an encrypted cookie). Guides: [Inertia](https://kickjs.app/guide/inertia) · [kick/db](https://kickjs.app/guide/database/)

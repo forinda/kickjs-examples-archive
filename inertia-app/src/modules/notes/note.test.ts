@@ -10,8 +10,8 @@ import { createTestApp } from '@forinda/kickjs-testing'
 import express from 'express'
 import { env } from '@/config'
 import { database, migrationAdapter } from '@/db/client'
-import { DbAdapter } from '@/db/db.adapter'
-import { inertiaOptions } from '@/inertia'
+import { DbAdapter } from '@/adapters/db.adapter'
+import { inertiaOptions } from '@/config/inertia'
 import { NoteModule } from './note.module'
 
 /**

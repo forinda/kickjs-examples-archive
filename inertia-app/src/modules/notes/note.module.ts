@@ -1,5 +1,5 @@
 import { defineModule } from '@forinda/kickjs'
-import { APP_DB } from '../../db/db.adapter'
+import { APP_DB } from '@/adapters/db.adapter'
 import { NoteController } from './note.controller'
 import { createNoteRepository, NOTE_REPOSITORY } from './note.repository'
 

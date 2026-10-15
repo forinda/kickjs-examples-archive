@@ -1,5 +1,5 @@
 import { createToken } from '@forinda/kickjs'
-import type { AppDb } from '../../db/client'
+import type { AppDb } from '@/db/client'
 
 export interface NoteInput {
   title: string

@@ -7,8 +7,8 @@ import { kickDbAdapter } from '@forinda/kickjs-db'
 import { InertiaAdapter, inertiaErrorHandler, inertiaNotFound } from '@forinda/kickjs-inertia'
 import express from 'express'
 import { migrationAdapter } from './db/client'
-import { DbAdapter } from './db/db.adapter'
-import { inertiaOptions } from './inertia'
+import { DbAdapter } from './adapters/db.adapter'
+import { inertiaOptions } from './config/inertia'
 import { modules } from './modules'
 
 // Export the app for the Vite plugin (dev mode)

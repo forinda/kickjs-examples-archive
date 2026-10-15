@@ -1,5 +1,5 @@
 import { createToken, defineAdapter } from '@forinda/kickjs'
-import { database, db, type AppDb } from './client'
+import { database, db, type AppDb } from '@/db/client'
 
 export const APP_DB = createToken<AppDb>('app/Db')
 
