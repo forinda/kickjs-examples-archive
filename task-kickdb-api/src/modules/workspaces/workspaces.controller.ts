@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Autowired, type RequestContext } from '@forinda/kickjs'
+import {
+  Controller,
+  Get,
+  Post,
+  Autowired,
+  HttpException,
+  reply,
+  type RequestContext,
+} from '@forinda/kickjs'
 import { WorkspacesRepository } from './workspaces.repository'
 
 @Controller()
@@ -6,19 +14,16 @@ export class WorkspacesController {
   @Autowired() private readonly workspaces!: WorkspacesRepository
 
   @Get('/')
-  async list(ctx: RequestContext) {
+  async list(_ctx: RequestContext) {
     const rows = await this.workspaces.list()
-    ctx.json({ workspaces: rows })
+    return { workspaces: rows }
   }
 
   @Get('/:id')
   async show(ctx: RequestContext) {
     const ws = await this.workspaces.findById(ctx.params.id as string)
-    if (!ws) {
-      ctx.notFound()
-      return
-    }
-    ctx.json(ws)
+    if (!ws) throw HttpException.notFound()
+    return ws
   }
 
   // Relational fetch — workspace + owner + members + projects in a
@@ -29,11 +34,8 @@ export class WorkspacesController {
   @Get('/:id/full')
   async showFull(ctx: RequestContext) {
     const ws = await this.workspaces.findFullById(ctx.params.id as string, ctx.signal)
-    if (!ws) {
-      ctx.notFound()
-      return
-    }
-    ctx.json(ws)
+    if (!ws) throw HttpException.notFound()
+    return ws
   }
 
   // Per-owner listing. Same signal-threading pattern — the nested
@@ -42,7 +44,7 @@ export class WorkspacesController {
   @Get('/owned-by/:userId')
   async ownedBy(ctx: RequestContext) {
     const rows = await this.workspaces.listOwnedByUser(ctx.params.userId as string, ctx.signal)
-    ctx.json({ workspaces: rows })
+    return { workspaces: rows }
   }
 
   @Post('/')
@@ -54,6 +56,6 @@ export class WorkspacesController {
       ownerId: string
     }
     const created = await this.workspaces.create(body)
-    ctx.created(created)
+    return reply.created(created)
   }
 }

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Autowired, type RequestContext } from '@forinda/kickjs'
+import {
+  Controller,
+  Get,
+  Post,
+  Autowired,
+  HttpException,
+  reply,
+  type RequestContext,
+} from '@forinda/kickjs'
 import { UsersRepository } from './users.repository'
 
 @Controller()
@@ -6,19 +14,16 @@ export class UsersController {
   @Autowired() private readonly users!: UsersRepository
 
   @Get('/')
-  async list(ctx: RequestContext) {
+  async list(_ctx: RequestContext) {
     const rows = await this.users.list()
-    ctx.json({ users: rows })
+    return { users: rows }
   }
 
   @Get('/:id')
   async show(ctx: RequestContext) {
     const user = await this.users.findById(ctx.params.id as string)
-    if (!user) {
-      ctx.notFound()
-      return
-    }
-    ctx.json(user)
+    if (!user) throw HttpException.notFound()
+    return user
   }
 
   @Post('/')
@@ -31,6 +36,6 @@ export class UsersController {
       avatarUrl?: string | null
     }
     const created = await this.users.create(body)
-    ctx.created(created)
+    return reply.created(created)
   }
 }

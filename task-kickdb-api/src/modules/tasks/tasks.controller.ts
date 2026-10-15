@@ -5,6 +5,7 @@ import {
   Patch,
   Autowired,
   HttpException,
+  reply,
   type RequestContext,
 } from '@forinda/kickjs'
 import { TasksRepository } from './tasks.repository'
@@ -18,7 +19,7 @@ export class TasksController {
     const workspaceId = ctx.query.workspaceId as string | undefined
     if (!workspaceId) throw HttpException.badRequest('workspaceId query param required')
     const rows = await this.tasks.listByWorkspace(workspaceId)
-    ctx.json({ tasks: rows })
+    return { tasks: rows }
   }
 
   // Single-trip relational fetch that threads `ctx.signal` through
@@ -30,11 +31,8 @@ export class TasksController {
   @Get('/:id/full')
   async showFull(ctx: RequestContext) {
     const row = await this.tasks.findFullById(ctx.params.id as string, ctx.signal)
-    if (!row) {
-      ctx.notFound()
-      return
-    }
-    ctx.json(row)
+    if (!row) throw HttpException.notFound()
+    return row
   }
 
   @Post('/')
@@ -52,17 +50,14 @@ export class TasksController {
       parentTaskId?: string | null
     }
     const created = await this.tasks.create(body)
-    ctx.created(created)
+    return reply.created(created)
   }
 
   @Patch('/:id/status')
   async updateStatus(ctx: RequestContext) {
     const body = ctx.body as { status: string }
     const updated = await this.tasks.updateStatus(ctx.params.id as string, body.status)
-    if (!updated) {
-      ctx.notFound()
-      return
-    }
-    ctx.json(updated)
+    if (!updated) throw HttpException.notFound()
+    return updated
   }
 }
