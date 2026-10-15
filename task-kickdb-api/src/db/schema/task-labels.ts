@@ -1,7 +1,7 @@
 import { table, uuid, timestamp, unique } from '@forinda/kickjs-db'
 
-import { tasks } from './tasks.ts'
-import { labels } from './labels.ts'
+import { tasks } from './tasks'
+import { labels } from './labels'
 
 export const taskLabels = table(
   'task_labels',

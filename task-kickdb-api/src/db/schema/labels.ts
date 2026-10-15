@@ -1,6 +1,6 @@
 import { table, uuid, varchar, char, timestamp, unique } from '@forinda/kickjs-db'
 
-import { workspaces } from './workspaces.ts'
+import { workspaces } from './workspaces'
 
 export const labels = table(
   'labels',

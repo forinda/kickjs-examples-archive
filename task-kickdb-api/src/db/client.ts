@@ -1,37 +1,23 @@
-// Singleton Postgres pool + KickDbClient wired into KickJS DI.
-//
-// One pool serves both:
-//   - the migration adapter (used by kickDbAdapter on boot + the CLI)
-//   - the query client (registered under DB_PRIMARY for repositories)
-//
-// On bootstrap, kickDbAdapter calls migrationAdapter.close() during shutdown
-// — that's a no-op (caller-owned pool), so we close the pool ourselves below.
-
+// One pg.Pool serves both the query client (registered under DB_PRIMARY by
+// DbModule) and the migration adapter kickDbAdapter uses on boot.
 import { Pool } from 'pg'
 import { createDbClient } from '@forinda/kickjs-db'
-import { pgAdapter, pgDialect } from '@forinda/kickjs-db-pg'
-
+import { pgAdapter, pgDialect } from '@forinda/kickjs-db/pg'
+import { env } from '../config'
 import * as schema from './schema'
 
-const connectionString = process.env.DATABASE_URL
+export const pool = new Pool({ connectionString: env.DATABASE_URL })
 
-if (!connectionString) {
-  // Don't throw here at import time — let the actual pool() invocation throw
-  // so `kick build` / typegen / format don't fail when DATABASE_URL is unset.
-}
-
-export const pool = new Pool({ connectionString })
-
-// No explicit DB generic — SchemaToTypes<typeof schema> is inferred end-to-end.
-// Adopters who want to widen `KickDbClient` (no generic) globally to this
-// shape declare the KickDbRegister augmentation in ./register.ts.
+// SchemaToTypes<typeof schema> is inferred end-to-end; `kick typegen` also
+// widens the bare `KickDbClient` type to this shape (.kickjs/types/kick__db.d.ts).
 export const dbClient = createDbClient({
   schema,
   dialect: pgDialect({ pool }),
   events: true,
 })
 
-export const migrationAdapter = pgAdapter({ pool })
+// `endPoolOnClose` — kickDbAdapter closes this on shutdown, draining the shared pool.
+export const migrationAdapter = pgAdapter({ pool, endPoolOnClose: true })
 
 export type Db = typeof dbClient
 

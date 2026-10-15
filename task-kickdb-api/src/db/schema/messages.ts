@@ -1,7 +1,7 @@
 import { table, uuid, text, jsonb, boolean, timestamp, index } from '@forinda/kickjs-db'
 
-import { channels } from './channels.ts'
-import { users } from './users.ts'
+import { channels } from './channels'
+import { users } from './users'
 
 export const messages = table(
   'messages',

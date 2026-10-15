@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Patch, Autowired, type RequestContext } from '@forinda/kickjs'
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Autowired,
+  HttpException,
+  type RequestContext,
+} from '@forinda/kickjs'
 import { TasksRepository } from './tasks.repository'
 
 @Controller()
@@ -8,10 +16,7 @@ export class TasksController {
   @Get('/')
   async list(ctx: RequestContext) {
     const workspaceId = ctx.query.workspaceId as string | undefined
-    if (!workspaceId) {
-      ctx.json({ error: 'workspaceId query param required' })
-      return
-    }
+    if (!workspaceId) throw HttpException.badRequest('workspaceId query param required')
     const rows = await this.tasks.listByWorkspace(workspaceId)
     ctx.json({ tasks: rows })
   }

@@ -1,7 +1,7 @@
 import { table, uuid, varchar, text, jsonb, boolean, timestamp, index } from '@forinda/kickjs-db'
 
-import { users } from './users.ts'
-import { notificationType } from './enums.ts'
+import { users } from './users'
+import { notificationType } from './enums'
 
 export const notifications = table(
   'notifications',

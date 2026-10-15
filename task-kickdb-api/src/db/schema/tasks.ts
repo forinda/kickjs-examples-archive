@@ -9,10 +9,10 @@ import {
   type ColumnRef,
 } from '@forinda/kickjs-db'
 
-import { users } from './users.ts'
-import { workspaces } from './workspaces.ts'
-import { projects } from './projects.ts'
-import { taskPriority } from './enums.ts'
+import { users } from './users'
+import { workspaces } from './workspaces'
+import { projects } from './projects'
+import { taskPriority } from './enums'
 
 export const tasks = table(
   'tasks',

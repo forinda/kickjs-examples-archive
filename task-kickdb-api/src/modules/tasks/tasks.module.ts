@@ -1,12 +1,9 @@
-import { type AppModule, type ModuleRoutes, buildRoutes } from '@forinda/kickjs'
+import { defineModule } from '@forinda/kickjs'
 import { TasksController } from './tasks.controller'
 
-export class TasksModule implements AppModule {
-  routes(): ModuleRoutes {
-    return {
-      path: '/tasks',
-      router: buildRoutes(TasksController),
-      controller: TasksController,
-    }
-  }
-}
+export const TasksModule = defineModule({
+  name: 'TasksModule',
+  build: () => ({
+    routes: () => ({ path: '/tasks', controller: TasksController }),
+  }),
+})
