@@ -25,7 +25,7 @@ export default defineConfig({
   // `kick db generate | migrate | status` — runs on the app's own SQLite handle.
   plugins: [dbCliPlugin],
   db: {
-    schemaPath: 'src/db/schema/index.ts',
+    schemaPath: 'src/db/schema.ts',
     migrationsDir: 'db/migrations',
     dialect: 'sqlite',
     adapter: async () => (await import('./src/db/client')).migrationAdapter,
