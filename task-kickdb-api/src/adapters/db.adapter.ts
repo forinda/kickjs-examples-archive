@@ -1,6 +1,6 @@
 import { defineAdapter } from '@forinda/kickjs'
 import { DB_PRIMARY } from '@forinda/kickjs-db'
-import { dbClient, pool } from './client'
+import { dbClient, pool } from '@/db/client'
 
 /**
  * Owns the Postgres pool's lifecycle: registers the query client under

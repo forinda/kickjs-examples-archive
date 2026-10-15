@@ -3,7 +3,7 @@
 import { Pool } from 'pg'
 import { createDbClient } from '@forinda/kickjs-db'
 import { pgAdapter, pgDialect } from '@forinda/kickjs-db/pg'
-import { env } from '../config'
+import { env } from '@/config'
 import * as schema from './schema'
 
 export const pool = new Pool({ connectionString: env.DATABASE_URL })

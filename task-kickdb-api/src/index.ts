@@ -6,7 +6,7 @@ import { kickDbAdapter } from '@forinda/kickjs-db'
 import express from 'express'
 import { modules } from './modules'
 import { migrationAdapter } from './db/client'
-import { DbAdapter } from './db/db.adapter'
+import { DbAdapter } from './adapters/db.adapter'
 
 export const app = await bootstrap({
   modules,

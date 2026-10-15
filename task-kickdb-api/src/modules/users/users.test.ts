@@ -3,8 +3,8 @@ import request from 'supertest'
 import { Container } from '@forinda/kickjs'
 import { createTestApp } from '@forinda/kickjs-testing'
 import { env } from '@/config'
-import { DbAdapter } from '@/db/db.adapter'
-import { TasksModule } from '../tasks/tasks.module'
+import { DbAdapter } from '@/adapters/db.adapter'
+import { TasksModule } from '@/modules/tasks/tasks.module'
 import { UsersModule } from './users.module'
 
 async function makeApp() {
