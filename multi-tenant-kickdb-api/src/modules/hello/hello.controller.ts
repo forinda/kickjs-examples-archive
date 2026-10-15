@@ -1,5 +1,5 @@
 import { Controller, Get, Autowired, type Ctx } from "@forinda/kickjs";
-import { Public } from "../../auth";
+import { Public } from "@/auth";
 import { HelloService } from "./hello.service";
 
 @Controller()

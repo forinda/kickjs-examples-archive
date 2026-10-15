@@ -3,9 +3,10 @@ import { env } from "./config";
 import express from "express";
 import { bootstrap, expressRuntime } from "@forinda/kickjs";
 import { kickDbAdapter } from "@forinda/kickjs-db";
-import { AuthAdapter, jwtStrategy } from "./auth";
+import { jwtStrategy } from "./auth";
+import { AuthAdapter } from "./adapters/auth.adapter";
 import { migrationAdapter } from "./db/client";
-import { DbAdapter } from "./db/db.adapter";
+import { DbAdapter } from "./adapters/db.adapter";
 import { modules } from "./modules";
 
 /**
@@ -15,7 +16,7 @@ import { modules } from "./modules";
  *      tenant from `x-tenant` or the subdomain into `ctx.get('tenant')`.
  *   2. kick/db's 'column' tenancy (src/db/tenancy.ts) reads that value and scopes
  *      every query on a tenanted table — repositories carry no tenant code.
- *   3. AuthAdapter (BYO, src/auth.ts) authenticates with a JWT whose `tenants`
+ *   3. AuthAdapter (BYO, src/adapters/auth.adapter.ts) authenticates with a JWT whose `tenants`
  *      claim lists the tenants the user belongs to; `LoadTenant` refuses any other.
  *
  * Guides: https://kickjs.app/guide/multi-tenancy · https://kickjs.app/guide/database/tenancy

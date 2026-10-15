@@ -5,9 +5,10 @@ import { Container } from "@forinda/kickjs";
 import { kickDbAdapter } from "@forinda/kickjs-db";
 import { createTestApp } from "@forinda/kickjs-testing";
 import { env } from "@/config";
-import { AuthAdapter, jwtStrategy } from "@/auth";
+import { jwtStrategy } from "@/auth";
+import { AuthAdapter } from "@/adapters/auth.adapter";
 import { migrationAdapter } from "@/db/client";
-import { DbAdapter } from "@/db/db.adapter";
+import { DbAdapter } from "@/adapters/db.adapter";
 import { ProjectModule } from "./project.module";
 
 async function makeApp() {
