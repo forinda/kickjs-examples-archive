@@ -1,11 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import type { Types } from 'mongoose'
-import type { ITaskRepository } from '../domain/repositories/task.repository'
 import type { TaskEntity } from '../domain/entities/task.entity'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
-class InMemoryTaskRepository implements ITaskRepository {
+class InMemoryTaskRepository {
   private tasks: TaskEntity[] = []
   private counter = 0
 
@@ -102,7 +101,7 @@ class InMemoryTaskRepository implements ITaskRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryTaskRepository', () => {
-  let repo: ITaskRepository
+  let repo: InMemoryTaskRepository
 
   const projectId = 'p1' as unknown as Types.ObjectId
   const workspaceId = 'ws1' as unknown as Types.ObjectId

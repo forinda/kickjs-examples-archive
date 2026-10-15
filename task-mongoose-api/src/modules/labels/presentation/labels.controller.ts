@@ -1,3 +1,4 @@
+import { Inject } from '@forinda/kickjs'
 import {
   reply,
   Controller,
@@ -6,7 +7,6 @@ import {
   Patch,
   Delete,
   Middleware,
-  Autowired,
   ApiQueryParams,
 } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
@@ -18,14 +18,17 @@ import { createLabelSchema } from '../application/dtos/create-label.dto'
 import { updateLabelSchema } from '../application/dtos/update-label.dto'
 import { successResponse } from '@/shared/application/api-response.dto'
 import { workspaceMembershipGuard } from '@/shared/guards/workspace-membership.guard'
-import { MongoLabelRepository } from '../infrastructure/repositories/mongo-label.repository'
 import { LABEL_QUERY_CONFIG } from '@/shared/constants/query-configs'
+import {
+  LABEL_REPOSITORY,
+  type LabelRepository,
+} from '@/modules/labels/infrastructure/repositories/label.repository'
 
 @ApiTags('Labels')
 @ApiBearerAuth()
 @Controller()
 export class LabelsController {
-  @Autowired() private labelRepo!: MongoLabelRepository
+  @Inject(LABEL_REPOSITORY) private labelRepo!: LabelRepository
 
   @Post('/workspaces/:workspaceId/labels', {
     params: z.object({ workspaceId: z.string() }),

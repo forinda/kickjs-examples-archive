@@ -1,10 +1,11 @@
 import Redis from 'ioredis'
-import { defineAdapter, Logger } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
+import { createToken, defineAdapter, Logger } from '@forinda/kickjs'
+
+export const REDIS_CLIENT = createToken<Redis>('app/Redis/client')
 
 const logger = Logger.for('RedisAdapter')
 
-/** Opens an ioredis client and registers it under `TOKENS.REDIS` (presence, health checks). */
+/** Opens an ioredis client and registers it under `REDIS_CLIENT` (presence, health checks). */
 export const RedisAdapter = defineAdapter<{ url: string }>({
   name: 'RedisAdapter',
   build: ({ url }) => {
@@ -13,7 +14,7 @@ export const RedisAdapter = defineAdapter<{ url: string }>({
       beforeStart({ container }) {
         client = new Redis(url)
         client.on('error', (err) => logger.error(err, 'Redis error'))
-        container.registerInstance(TOKENS.REDIS, client)
+        container.registerInstance(REDIS_CLIENT, client)
       },
       // Feeds GET /health/ready.
       async onHealthCheck() {

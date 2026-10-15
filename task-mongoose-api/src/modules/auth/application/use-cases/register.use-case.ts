@@ -2,20 +2,25 @@ import { Service, Inject, HttpException, Logger } from '@forinda/kickjs'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import { JOB_DISPATCHER, type JobDispatcher } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
 import { ErrorCode } from '@/shared/constants/error-codes'
 import { env } from '@/config'
-import type { IUserRepository } from '@/modules/users/domain/repositories/user.repository'
-import type { IRefreshTokenRepository } from '../../domain/repositories/refresh-token.repository'
 import type { RegisterDto } from '../dtos/register.dto'
+import {
+  REFRESH_TOKEN_REPOSITORY,
+  type RefreshTokenRepository,
+} from '@/modules/auth/infrastructure/repositories/refresh-token.repository'
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '@/modules/users/infrastructure/repositories/user.repository'
 
 const logger = Logger.for('RegisterUseCase')
 
 @Service()
 export class RegisterUseCase {
   constructor(
-    @Inject(TOKENS.USER_REPOSITORY) private userRepo: IUserRepository,
-    @Inject(TOKENS.REFRESH_TOKEN_REPOSITORY) private refreshTokenRepo: IRefreshTokenRepository,
+    @Inject(USER_REPOSITORY) private userRepo: UserRepository,
+    @Inject(REFRESH_TOKEN_REPOSITORY) private refreshTokenRepo: RefreshTokenRepository,
     @Inject(JOB_DISPATCHER) private jobs: JobDispatcher,
   ) {}
 

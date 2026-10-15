@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Delete, Middleware, Autowired } from '@forinda/kickjs'
+import { Inject, Controller, Get, Patch, Delete, Middleware } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { HttpException } from '@forinda/kickjs'
 import { z } from 'zod'
@@ -6,14 +6,17 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kick
 import { ErrorCode } from '@/shared/constants/error-codes'
 import { successResponse } from '@/shared/application/api-response.dto'
 import { channelMembershipGuard } from '@/shared/guards/channel-membership.guard'
-import { MongoMessageRepository } from '../infrastructure/repositories/mongo-message.repository'
 import { getUser } from '@/shared/utils/auth'
+import {
+  MESSAGE_REPOSITORY,
+  type MessageRepository,
+} from '@/modules/messages/infrastructure/repositories/message.repository'
 
 @ApiTags('Messages')
 @ApiBearerAuth()
 @Controller()
 export class MessagesController {
-  @Autowired() private messageRepo!: MongoMessageRepository
+  @Inject(MESSAGE_REPOSITORY) private messageRepo!: MessageRepository
 
   @ApiOperation({ summary: 'Get message history for a channel' })
   @ApiResponse({ status: 200, description: 'Paginated message history returned' })

@@ -1,12 +1,14 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
 import { ErrorCode } from '@/shared/constants/error-codes'
-import type { ITaskRepository } from '../../domain/repositories/task.repository'
 import type { UpdateTaskDto } from '../dtos/update-task.dto'
+import {
+  TASK_REPOSITORY,
+  type TaskRepository,
+} from '@/modules/tasks/infrastructure/repositories/task.repository'
 
 @Service()
 export class UpdateTaskUseCase {
-  constructor(@Inject(TOKENS.TASK_REPOSITORY) private taskRepo: ITaskRepository) {}
+  constructor(@Inject(TASK_REPOSITORY) private taskRepo: TaskRepository) {}
 
   async execute(taskId: string, dto: UpdateTaskDto) {
     const updateData: any = { ...dto }

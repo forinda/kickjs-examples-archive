@@ -1,17 +1,20 @@
-import { Controller, Get, Middleware, Autowired } from '@forinda/kickjs'
+import { Inject, Controller, Get, Middleware } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { workspaceMembershipGuard } from '@/shared/guards/workspace-membership.guard'
 import { projectAccessGuard } from '@/shared/guards/project-access.guard'
-import { MongoTaskRepository } from '@/modules/tasks/infrastructure/repositories/mongo-task.repository'
 import { getOnlineUsers } from '@/modules/messages/presentation/chat.ws-controller'
+import {
+  TASK_REPOSITORY,
+  type TaskRepository,
+} from '@/modules/tasks/infrastructure/repositories/task.repository'
 
 @ApiTags('Stats')
 @ApiBearerAuth()
 @Controller()
 export class StatsController {
-  @Autowired() private taskRepo!: MongoTaskRepository
+  @Inject(TASK_REPOSITORY) private taskRepo!: TaskRepository
 
   @ApiOperation({ summary: 'Stream live workspace stats via SSE' })
   @ApiResponse({ status: 200, description: 'SSE stream of workspace statistics' })

@@ -1,7 +1,10 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { MongoNotificationRepository } from './infrastructure/repositories/mongo-notification.repository'
 import { NotificationsController } from './presentation/notifications.controller'
+import {
+  NOTIFICATION_REPOSITORY,
+  createNotificationRepository,
+} from '@/modules/notifications/infrastructure/repositories/notification.repository'
+import { MONGO_CONNECTION } from '@/shared/infrastructure/database/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
 // decorators register in the DI container.
@@ -11,8 +14,8 @@ export const NotificationsModule = defineModule({
   name: 'NotificationsModule',
   build: () => ({
     register(container) {
-      container.registerFactory(TOKENS.NOTIFICATION_REPOSITORY, () =>
-        container.resolve(MongoNotificationRepository),
+      container.registerFactory(NOTIFICATION_REPOSITORY, () =>
+        createNotificationRepository(container.resolve(MONGO_CONNECTION)),
       )
     },
     routes: () => ({ path: '/notifications', controller: NotificationsController }),

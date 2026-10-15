@@ -1,17 +1,18 @@
-import mongoose from 'mongoose'
-import { defineAdapter, Logger } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
+import mongoose, { type Connection } from 'mongoose'
+import { createToken, defineAdapter, Logger } from '@forinda/kickjs'
+
+export const MONGO_CONNECTION = createToken<Connection>('app/Mongo/connection')
 
 const logger = Logger.for('MongooseAdapter')
 
-/** Connects mongoose before the app starts and registers the connection under `TOKENS.MONGOOSE`. */
+/** Connects mongoose before the app starts and registers the connection under `MONGO_CONNECTION`. */
 export const MongooseAdapter = defineAdapter<{ uri: string }>({
   name: 'MongooseAdapter',
   build: ({ uri }) => ({
     async beforeStart({ container }) {
       logger.info('Connecting to MongoDB...')
       await mongoose.connect(uri)
-      container.registerInstance(TOKENS.MONGOOSE, mongoose.connection)
+      container.registerInstance(MONGO_CONNECTION, mongoose.connection)
       logger.info('MongoDB connected')
     },
     // Feeds GET /health/ready.

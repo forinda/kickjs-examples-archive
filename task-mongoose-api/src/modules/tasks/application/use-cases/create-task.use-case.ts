@@ -1,14 +1,19 @@
 import { Service, Inject } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { ITaskRepository } from '../../domain/repositories/task.repository'
-import type { IProjectRepository } from '@/modules/projects/domain/repositories/project.repository'
 import type { CreateTaskDto } from '../dtos/create-task.dto'
+import {
+  PROJECT_REPOSITORY,
+  type ProjectRepository,
+} from '@/modules/projects/infrastructure/repositories/project.repository'
+import {
+  TASK_REPOSITORY,
+  type TaskRepository,
+} from '@/modules/tasks/infrastructure/repositories/task.repository'
 
 @Service()
 export class CreateTaskUseCase {
   constructor(
-    @Inject(TOKENS.TASK_REPOSITORY) private taskRepo: ITaskRepository,
-    @Inject(TOKENS.PROJECT_REPOSITORY) private projectRepo: IProjectRepository,
+    @Inject(TASK_REPOSITORY) private taskRepo: TaskRepository,
+    @Inject(PROJECT_REPOSITORY) private projectRepo: ProjectRepository,
   ) {}
 
   async execute(projectId: string, userId: string, dto: CreateTaskDto) {

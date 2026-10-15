@@ -5,6 +5,7 @@ A full task-management API (workspaces, projects, tasks, comments, labels, attac
 What it shows:
 
 - `src/auth/` — the [BYO Auth recipe](https://kickjs.app/guide/byo-recipes#auth): `AuthAdapter` with `defaultPolicy: 'protected'`, a JWT strategy, `@Public` route flag, `@RequireRole({ roles: ['superadmin'] })`. Replaces the removed `@forinda/kickjs-auth`. `LoadAuthUser` runs `beforeValidation`, so anonymous requests get 401 and the membership guards (`src/shared/guards`) can read `ctx.get('user')`.
+- Repositories — one file each (`modules/*/infrastructure/repositories/*.repository.ts`): `createXRepository(connection)` factory, `XRepository = ReturnType<…>`, `X_REPOSITORY` token, bound in the module's `register()` with the connection the Mongoose adapter registers (`MONGO_CONNECTION`).
 - `src/shared/infrastructure/` — Mongoose and Redis clients as `defineAdapter()`s: connect in `beforeStart`, `onHealthCheck` feeding `GET /health/ready`, close in `shutdown`.
 - Background jobs — `@Job` / `@Process` classes in `modules/queue`, run by `QueueAdapter` (`@forinda/kickjs-queue`, BullMQ) and enqueued through `JOB_DISPATCHER`.
 - Scheduled jobs — `@Cron` methods in `modules/cron`, run by `KickCronAdapter()`.

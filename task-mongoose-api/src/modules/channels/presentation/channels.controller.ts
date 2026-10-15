@@ -1,13 +1,5 @@
-import {
-  reply,
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Middleware,
-  Autowired,
-  ApiQueryParams,
-} from '@forinda/kickjs'
+import { Inject } from '@forinda/kickjs'
+import { reply, Controller, Get, Post, Delete, Middleware, ApiQueryParams } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { HttpException } from '@forinda/kickjs'
 import { z } from 'zod'
@@ -17,15 +9,18 @@ import { createChannelSchema } from '../application/dtos/create-channel.dto'
 import { successResponse } from '@/shared/application/api-response.dto'
 import { workspaceMembershipGuard } from '@/shared/guards/workspace-membership.guard'
 import { channelMembershipGuard } from '@/shared/guards/channel-membership.guard'
-import { MongoChannelRepository } from '../infrastructure/repositories/mongo-channel.repository'
 import { CHANNEL_QUERY_CONFIG } from '@/shared/constants/query-configs'
 import { getUser } from '@/shared/utils/auth'
+import {
+  CHANNEL_REPOSITORY,
+  type ChannelRepository,
+} from '@/modules/channels/infrastructure/repositories/channel.repository'
 
 @ApiTags('Channels')
 @ApiBearerAuth()
 @Controller()
 export class ChannelsController {
-  @Autowired() private channelRepo!: MongoChannelRepository
+  @Inject(CHANNEL_REPOSITORY) private channelRepo!: ChannelRepository
 
   @ApiOperation({ summary: 'Create a channel in a workspace' })
   @ApiResponse({ status: 201, description: 'Channel created successfully' })

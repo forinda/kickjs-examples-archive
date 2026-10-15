@@ -1,14 +1,17 @@
-import { Service, Autowired, Logger } from '@forinda/kickjs'
+import { Inject, Service, Logger } from '@forinda/kickjs'
 import { Job, Process } from '@forinda/kickjs'
 import type { Job as BullMQJob } from 'bullmq'
-import { MongoNotificationRepository } from '@/modules/notifications/infrastructure/repositories/mongo-notification.repository'
+import {
+  NOTIFICATION_REPOSITORY,
+  type NotificationRepository,
+} from '@/modules/notifications/infrastructure/repositories/notification.repository'
 
 const logger = Logger.for('NotificationProcessor')
 
 @Service()
 @Job('notifications')
 export class NotificationProcessor {
-  @Autowired() private notificationRepo!: MongoNotificationRepository
+  @Inject(NOTIFICATION_REPOSITORY) private notificationRepo!: NotificationRepository
 
   @Process('create-notification')
   async createNotification(

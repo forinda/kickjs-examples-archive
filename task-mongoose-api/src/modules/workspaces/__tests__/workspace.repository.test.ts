@@ -1,11 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import type { Types } from 'mongoose'
-import type { IWorkspaceRepository } from '../domain/repositories/workspace.repository'
 import type { WorkspaceEntity } from '../domain/entities/workspace.entity'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
-class InMemoryWorkspaceRepository implements IWorkspaceRepository {
+class InMemoryWorkspaceRepository {
   private workspaces: WorkspaceEntity[] = []
   private counter = 0
 
@@ -58,7 +57,7 @@ class InMemoryWorkspaceRepository implements IWorkspaceRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryWorkspaceRepository', () => {
-  let repo: IWorkspaceRepository
+  let repo: InMemoryWorkspaceRepository
 
   beforeEach(() => {
     repo = new InMemoryWorkspaceRepository()

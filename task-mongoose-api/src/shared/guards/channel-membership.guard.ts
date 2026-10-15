@@ -2,9 +2,8 @@ import './context'
 import type { RequestContext } from '@forinda/kickjs'
 import type { MiddlewareHandler } from '@forinda/kickjs'
 import { Container, HttpException } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
 import { ErrorCode } from '@/shared/constants/error-codes'
-import type { IChannelRepository } from '@/modules/channels/domain/repositories/channel.repository'
+import { CHANNEL_REPOSITORY } from '@/modules/channels/infrastructure/repositories/channel.repository'
 
 export const channelMembershipGuard: MiddlewareHandler = async (ctx: RequestContext, next) => {
   const user = ctx.get('user')
@@ -18,7 +17,7 @@ export const channelMembershipGuard: MiddlewareHandler = async (ctx: RequestCont
   }
 
   const container = Container.getInstance()
-  const channelRepo = container.resolve<IChannelRepository>(TOKENS.CHANNEL_REPOSITORY)
+  const channelRepo = container.resolve(CHANNEL_REPOSITORY)
   const channel = await channelRepo.findById(channelId)
 
   if (!channel) {

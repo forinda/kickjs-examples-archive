@@ -1,7 +1,10 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { MongoActivityRepository } from './infrastructure/repositories/mongo-activity.repository'
 import { ActivityController } from './presentation/activity.controller'
+import {
+  ACTIVITY_REPOSITORY,
+  createActivityRepository,
+} from '@/modules/activity/infrastructure/repositories/activity.repository'
+import { MONGO_CONNECTION } from '@/shared/infrastructure/database/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
 // decorators register in the DI container.
@@ -11,8 +14,8 @@ export const ActivityModule = defineModule({
   name: 'ActivityModule',
   build: () => ({
     register(container) {
-      container.registerFactory(TOKENS.ACTIVITY_REPOSITORY, () =>
-        container.resolve(MongoActivityRepository),
+      container.registerFactory(ACTIVITY_REPOSITORY, () =>
+        createActivityRepository(container.resolve(MONGO_CONNECTION)),
       )
     },
     routes: () => ({ path: '/', controller: ActivityController }),

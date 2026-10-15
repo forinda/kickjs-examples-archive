@@ -5,14 +5,16 @@ import { Container, Controller, Get, Delete, Inject } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
-import type { IWorkspaceRepository } from '../domain/repositories/workspace.repository'
 import type { WorkspaceEntity } from '../domain/entities/workspace.entity'
 import type { Types } from 'mongoose'
-import { TOKENS } from '@/shared/constants/tokens'
+import {
+  WORKSPACE_REPOSITORY,
+  type WorkspaceRepository,
+} from '@/modules/workspaces/infrastructure/repositories/workspace.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryWorkspaceRepository implements IWorkspaceRepository {
+class InMemoryWorkspaceRepository {
   private workspaces: WorkspaceEntity[] = [
     {
       _id: 'ws1' as unknown as Types.ObjectId,
@@ -75,7 +77,7 @@ class InMemoryWorkspaceRepository implements IWorkspaceRepository {
 
 @Controller()
 class TestWorkspaceController {
-  constructor(@Inject(TOKENS.WORKSPACE_REPOSITORY) private readonly repo: IWorkspaceRepository) {}
+  constructor(@Inject(WORKSPACE_REPOSITORY) private readonly repo: WorkspaceRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {
@@ -106,7 +108,7 @@ describe('WorkspaceController (integration)', () => {
   function buildTestModule() {
     return createTestModule({
       register: (c) => {
-        c.registerFactory(TOKENS.WORKSPACE_REPOSITORY, () => new InMemoryWorkspaceRepository())
+        c.registerFactory(WORKSPACE_REPOSITORY, () => new InMemoryWorkspaceRepository())
         c.register(TestWorkspaceController, TestWorkspaceController)
       },
       routes: () => ({

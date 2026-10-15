@@ -1,12 +1,14 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
 import { ErrorCode } from '@/shared/constants/error-codes'
-import type { IProjectRepository } from '../../domain/repositories/project.repository'
 import type { CreateProjectDto } from '../dtos/create-project.dto'
+import {
+  PROJECT_REPOSITORY,
+  type ProjectRepository,
+} from '@/modules/projects/infrastructure/repositories/project.repository'
 
 @Service()
 export class CreateProjectUseCase {
-  constructor(@Inject(TOKENS.PROJECT_REPOSITORY) private projectRepo: IProjectRepository) {}
+  constructor(@Inject(PROJECT_REPOSITORY) private projectRepo: ProjectRepository) {}
 
   async execute(workspaceId: string, dto: CreateProjectDto) {
     const existing = await this.projectRepo.findByKeyAndWorkspace(dto.key, workspaceId)

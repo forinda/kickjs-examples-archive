@@ -1,3 +1,4 @@
+import { Inject } from '@forinda/kickjs'
 import {
   reply,
   Controller,
@@ -17,18 +18,24 @@ import { createCommentSchema } from '../application/dtos/create-comment.dto'
 import { updateCommentSchema } from '../application/dtos/update-comment.dto'
 import { CreateCommentUseCase } from '../application/use-cases/create-comment.use-case'
 import { successResponse } from '@/shared/application/api-response.dto'
-import { MongoCommentRepository } from '../infrastructure/repositories/mongo-comment.repository'
-import { MongoTaskRepository } from '@/modules/tasks/infrastructure/repositories/mongo-task.repository'
 import { COMMENT_QUERY_CONFIG } from '@/shared/constants/query-configs'
 import { getUser } from '@/shared/utils/auth'
+import {
+  COMMENT_REPOSITORY,
+  type CommentRepository,
+} from '@/modules/comments/infrastructure/repositories/comment.repository'
+import {
+  TASK_REPOSITORY,
+  type TaskRepository,
+} from '@/modules/tasks/infrastructure/repositories/task.repository'
 
 @ApiTags('Comments')
 @ApiBearerAuth()
 @Controller()
 export class CommentsController {
   @Autowired() private createCommentUseCase!: CreateCommentUseCase
-  @Autowired() private commentRepo!: MongoCommentRepository
-  @Autowired() private taskRepo!: MongoTaskRepository
+  @Inject(COMMENT_REPOSITORY) private commentRepo!: CommentRepository
+  @Inject(TASK_REPOSITORY) private taskRepo!: TaskRepository
 
   @ApiOperation({ summary: 'Create a comment on a task' })
   @ApiResponse({ status: 201, description: 'Comment created successfully' })

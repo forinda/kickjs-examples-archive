@@ -1,3 +1,4 @@
+import { Inject } from '@forinda/kickjs'
 import {
   reply,
   Controller,
@@ -30,7 +31,10 @@ import {
 } from '@/shared/guards/workspace-membership.guard'
 import { getUser } from '@/shared/utils/auth'
 import { WORKSPACE_QUERY_CONFIG, MEMBER_QUERY_CONFIG } from '@/shared/constants/query-configs'
-import { MongoWorkspaceMemberRepository } from '../infrastructure/repositories/mongo-workspace-member.repository'
+import {
+  WORKSPACE_MEMBER_REPOSITORY,
+  type WorkspaceMemberRepository,
+} from '@/modules/workspaces/infrastructure/repositories/workspace-member.repository'
 
 @ApiTags('Workspaces')
 @ApiBearerAuth()
@@ -43,7 +47,7 @@ export class WorkspacesController {
   @Autowired() private updateMemberRoleUseCase!: UpdateMemberRoleUseCase
   @Autowired() private removeMemberUseCase!: RemoveMemberUseCase
   @Autowired() private leaveWorkspaceUseCase!: LeaveWorkspaceUseCase
-  @Autowired() private memberRepo!: MongoWorkspaceMemberRepository
+  @Inject(WORKSPACE_MEMBER_REPOSITORY) private memberRepo!: WorkspaceMemberRepository
 
   @Post('/', { body: createWorkspaceSchema })
   @ApiOperation({ summary: 'Create a new workspace' })

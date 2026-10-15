@@ -1,7 +1,10 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { MongoChannelRepository } from './infrastructure/repositories/mongo-channel.repository'
 import { ChannelsController } from './presentation/channels.controller'
+import {
+  CHANNEL_REPOSITORY,
+  createChannelRepository,
+} from '@/modules/channels/infrastructure/repositories/channel.repository'
+import { MONGO_CONNECTION } from '@/shared/infrastructure/database/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
 // decorators register in the DI container.
@@ -11,8 +14,8 @@ export const ChannelsModule = defineModule({
   name: 'ChannelsModule',
   build: () => ({
     register(container) {
-      container.registerFactory(TOKENS.CHANNEL_REPOSITORY, () =>
-        container.resolve(MongoChannelRepository),
+      container.registerFactory(CHANNEL_REPOSITORY, () =>
+        createChannelRepository(container.resolve(MONGO_CONNECTION)),
       )
     },
     routes: () => ({ path: '/', controller: ChannelsController }),

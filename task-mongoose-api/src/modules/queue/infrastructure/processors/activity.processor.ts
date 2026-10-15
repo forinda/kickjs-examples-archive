@@ -1,14 +1,17 @@
-import { Service, Autowired, Logger } from '@forinda/kickjs'
+import { Inject, Service, Logger } from '@forinda/kickjs'
 import { Job, Process } from '@forinda/kickjs'
 import type { Job as BullMQJob } from 'bullmq'
-import { MongoActivityRepository } from '@/modules/activity/infrastructure/repositories/mongo-activity.repository'
+import {
+  ACTIVITY_REPOSITORY,
+  type ActivityRepository,
+} from '@/modules/activity/infrastructure/repositories/activity.repository'
 
 const logger = Logger.for('ActivityProcessor')
 
 @Service()
 @Job('activity')
 export class ActivityProcessor {
-  @Autowired() private activityRepo!: MongoActivityRepository
+  @Inject(ACTIVITY_REPOSITORY) private activityRepo!: ActivityRepository
 
   @Process('log-activity')
   async logActivity(

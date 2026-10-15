@@ -1,19 +1,27 @@
 import { Service, Inject, Logger } from '@forinda/kickjs'
 import { JOB_DISPATCHER, type JobDispatcher } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { ICommentRepository } from '../../domain/repositories/comment.repository'
-import type { ITaskRepository } from '@/modules/tasks/domain/repositories/task.repository'
-import type { IUserRepository } from '@/modules/users/domain/repositories/user.repository'
 import type { CreateCommentDto } from '../dtos/create-comment.dto'
+import {
+  COMMENT_REPOSITORY,
+  type CommentRepository,
+} from '@/modules/comments/infrastructure/repositories/comment.repository'
+import {
+  TASK_REPOSITORY,
+  type TaskRepository,
+} from '@/modules/tasks/infrastructure/repositories/task.repository'
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '@/modules/users/infrastructure/repositories/user.repository'
 
 const logger = Logger.for('CreateCommentUseCase')
 
 @Service()
 export class CreateCommentUseCase {
   constructor(
-    @Inject(TOKENS.COMMENT_REPOSITORY) private commentRepo: ICommentRepository,
-    @Inject(TOKENS.TASK_REPOSITORY) private taskRepo: ITaskRepository,
-    @Inject(TOKENS.USER_REPOSITORY) private userRepo: IUserRepository,
+    @Inject(COMMENT_REPOSITORY) private commentRepo: CommentRepository,
+    @Inject(TASK_REPOSITORY) private taskRepo: TaskRepository,
+    @Inject(USER_REPOSITORY) private userRepo: UserRepository,
     @Inject(JOB_DISPATCHER) private jobs: JobDispatcher,
   ) {}
 

@@ -1,14 +1,19 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
 import { ErrorCode } from '@/shared/constants/error-codes'
-import type { IProjectRepository } from '../../domain/repositories/project.repository'
-import type { ITaskRepository } from '@/modules/tasks/domain/repositories/task.repository'
+import {
+  PROJECT_REPOSITORY,
+  type ProjectRepository,
+} from '@/modules/projects/infrastructure/repositories/project.repository'
+import {
+  TASK_REPOSITORY,
+  type TaskRepository,
+} from '@/modules/tasks/infrastructure/repositories/task.repository'
 
 @Service()
 export class GetBoardViewUseCase {
   constructor(
-    @Inject(TOKENS.PROJECT_REPOSITORY) private projectRepo: IProjectRepository,
-    @Inject(TOKENS.TASK_REPOSITORY) private taskRepo: ITaskRepository,
+    @Inject(PROJECT_REPOSITORY) private projectRepo: ProjectRepository,
+    @Inject(TASK_REPOSITORY) private taskRepo: TaskRepository,
   ) {}
 
   async execute(projectId: string) {

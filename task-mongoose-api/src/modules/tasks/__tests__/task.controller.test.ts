@@ -5,14 +5,16 @@ import { Container, Controller, Get, Delete, Inject, HttpException } from '@fori
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
-import type { ITaskRepository } from '../domain/repositories/task.repository'
 import type { TaskEntity } from '../domain/entities/task.entity'
 import type { Types } from 'mongoose'
-import { TOKENS } from '@/shared/constants/tokens'
+import {
+  TASK_REPOSITORY,
+  type TaskRepository,
+} from '@/modules/tasks/infrastructure/repositories/task.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryTaskRepository implements ITaskRepository {
+class InMemoryTaskRepository {
   private tasks: TaskEntity[] = [
     {
       _id: 't1' as unknown as Types.ObjectId,
@@ -121,7 +123,7 @@ class InMemoryTaskRepository implements ITaskRepository {
 
 @Controller()
 class TestTaskController {
-  constructor(@Inject(TOKENS.TASK_REPOSITORY) private readonly repo: ITaskRepository) {}
+  constructor(@Inject(TASK_REPOSITORY) private readonly repo: TaskRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {
@@ -152,7 +154,7 @@ describe('TaskController (integration)', () => {
   function buildTestModule() {
     return createTestModule({
       register: (c) => {
-        c.registerFactory(TOKENS.TASK_REPOSITORY, () => new InMemoryTaskRepository())
+        c.registerFactory(TASK_REPOSITORY, () => new InMemoryTaskRepository())
         c.register(TestTaskController, TestTaskController)
       },
       routes: () => ({

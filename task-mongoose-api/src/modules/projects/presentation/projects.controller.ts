@@ -1,3 +1,4 @@
+import { Inject } from '@forinda/kickjs'
 import {
   reply,
   Controller,
@@ -22,7 +23,10 @@ import { successResponse } from '@/shared/application/api-response.dto'
 import { workspaceMembershipGuard } from '@/shared/guards/workspace-membership.guard'
 import { projectAccessGuard } from '@/shared/guards/project-access.guard'
 import { PROJECT_QUERY_CONFIG } from '@/shared/constants/query-configs'
-import { MongoProjectRepository } from '../infrastructure/repositories/mongo-project.repository'
+import {
+  PROJECT_REPOSITORY,
+  type ProjectRepository,
+} from '@/modules/projects/infrastructure/repositories/project.repository'
 
 @ApiTags('Projects')
 @ApiBearerAuth()
@@ -32,7 +36,7 @@ export class ProjectsController {
   @Autowired() private updateProjectUseCase!: UpdateProjectUseCase
   @Autowired() private listProjectsUseCase!: ListProjectsUseCase
   @Autowired() private getBoardViewUseCase!: GetBoardViewUseCase
-  @Autowired() private projectRepo!: MongoProjectRepository
+  @Inject(PROJECT_REPOSITORY) private projectRepo!: ProjectRepository
 
   @Post('/workspaces/:workspaceId/projects', {
     params: z.object({ workspaceId: z.string() }),

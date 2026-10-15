@@ -5,14 +5,16 @@ import { Container, Controller, Get, Delete, Inject } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
-import type { IProjectRepository } from '../domain/repositories/project.repository'
 import type { ProjectEntity } from '../domain/entities/project.entity'
 import type { Types } from 'mongoose'
-import { TOKENS } from '@/shared/constants/tokens'
+import {
+  PROJECT_REPOSITORY,
+  type ProjectRepository,
+} from '@/modules/projects/infrastructure/repositories/project.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryProjectRepository implements IProjectRepository {
+class InMemoryProjectRepository {
   private projects: ProjectEntity[] = [
     {
       _id: 'p1' as unknown as Types.ObjectId,
@@ -91,7 +93,7 @@ class InMemoryProjectRepository implements IProjectRepository {
 
 @Controller()
 class TestProjectController {
-  constructor(@Inject(TOKENS.PROJECT_REPOSITORY) private readonly repo: IProjectRepository) {}
+  constructor(@Inject(PROJECT_REPOSITORY) private readonly repo: ProjectRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {
@@ -122,7 +124,7 @@ describe('ProjectController (integration)', () => {
   function buildTestModule() {
     return createTestModule({
       register: (c) => {
-        c.registerFactory(TOKENS.PROJECT_REPOSITORY, () => new InMemoryProjectRepository())
+        c.registerFactory(PROJECT_REPOSITORY, () => new InMemoryProjectRepository())
         c.register(TestProjectController, TestProjectController)
       },
       routes: () => ({

@@ -1,11 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import type { Types } from 'mongoose'
-import type { IUserRepository } from '../domain/repositories/user.repository'
 import type { UserEntity } from '../domain/entities/user.entity'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
-class InMemoryUserRepository implements IUserRepository {
+class InMemoryUserRepository {
   private users: UserEntity[] = []
   private counter = 0
 
@@ -53,7 +52,7 @@ class InMemoryUserRepository implements IUserRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryUserRepository', () => {
-  let repo: IUserRepository
+  let repo: InMemoryUserRepository
 
   beforeEach(() => {
     repo = new InMemoryUserRepository()
@@ -107,7 +106,7 @@ describe('InMemoryUserRepository', () => {
     await repo.create({ email: 'a@test.com', passwordHash: 'h', firstName: 'A', lastName: 'Test' })
     await repo.create({ email: 'b@test.com', passwordHash: 'h', firstName: 'B', lastName: 'Test' })
 
-    const result = await repo.findPaginated({})
+    const result = await repo.findPaginated()
     expect(result.data).toHaveLength(2)
     expect(result.total).toBe(2)
   })

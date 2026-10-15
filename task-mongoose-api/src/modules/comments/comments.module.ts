@@ -1,7 +1,10 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { MongoCommentRepository } from './infrastructure/repositories/mongo-comment.repository'
 import { CommentsController } from './presentation/comments.controller'
+import {
+  COMMENT_REPOSITORY,
+  createCommentRepository,
+} from '@/modules/comments/infrastructure/repositories/comment.repository'
+import { MONGO_CONNECTION } from '@/shared/infrastructure/database/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
 // decorators register in the DI container.
@@ -11,8 +14,8 @@ export const CommentsModule = defineModule({
   name: 'CommentsModule',
   build: () => ({
     register(container) {
-      container.registerFactory(TOKENS.COMMENT_REPOSITORY, () =>
-        container.resolve(MongoCommentRepository),
+      container.registerFactory(COMMENT_REPOSITORY, () =>
+        createCommentRepository(container.resolve(MONGO_CONNECTION)),
       )
     },
     routes: () => ({ path: '/', controller: CommentsController }),

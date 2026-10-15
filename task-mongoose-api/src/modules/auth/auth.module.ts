@@ -1,7 +1,10 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { MongoRefreshTokenRepository } from './infrastructure/repositories/mongo-refresh-token.repository'
 import { AuthController } from './presentation/auth.controller'
+import {
+  REFRESH_TOKEN_REPOSITORY,
+  createRefreshTokenRepository,
+} from '@/modules/auth/infrastructure/repositories/refresh-token.repository'
+import { MONGO_CONNECTION } from '@/shared/infrastructure/database/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
 // decorators register in the DI container.
@@ -11,8 +14,8 @@ export const AuthModule = defineModule({
   name: 'AuthModule',
   build: () => ({
     register(container) {
-      container.registerFactory(TOKENS.REFRESH_TOKEN_REPOSITORY, () =>
-        container.resolve(MongoRefreshTokenRepository),
+      container.registerFactory(REFRESH_TOKEN_REPOSITORY, () =>
+        createRefreshTokenRepository(container.resolve(MONGO_CONNECTION)),
       )
     },
     routes: () => ({ path: '/auth', controller: AuthController }),

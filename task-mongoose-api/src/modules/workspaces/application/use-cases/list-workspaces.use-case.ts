@@ -1,13 +1,18 @@
 import { Service, Inject } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { IWorkspaceRepository } from '../../domain/repositories/workspace.repository'
-import type { IWorkspaceMemberRepository } from '../../domain/repositories/workspace-member.repository'
+import {
+  WORKSPACE_MEMBER_REPOSITORY,
+  type WorkspaceMemberRepository,
+} from '@/modules/workspaces/infrastructure/repositories/workspace-member.repository'
+import {
+  WORKSPACE_REPOSITORY,
+  type WorkspaceRepository,
+} from '@/modules/workspaces/infrastructure/repositories/workspace.repository'
 
 @Service()
 export class ListWorkspacesUseCase {
   constructor(
-    @Inject(TOKENS.WORKSPACE_REPOSITORY) private workspaceRepo: IWorkspaceRepository,
-    @Inject(TOKENS.WORKSPACE_MEMBER_REPOSITORY) private memberRepo: IWorkspaceMemberRepository,
+    @Inject(WORKSPACE_REPOSITORY) private workspaceRepo: WorkspaceRepository,
+    @Inject(WORKSPACE_MEMBER_REPOSITORY) private memberRepo: WorkspaceMemberRepository,
   ) {}
 
   async execute(userId: string) {

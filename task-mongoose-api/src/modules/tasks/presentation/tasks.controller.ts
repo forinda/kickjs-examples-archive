@@ -1,3 +1,4 @@
+import { Inject } from '@forinda/kickjs'
 import {
   reply,
   Controller,
@@ -29,7 +30,10 @@ import { UpdateAssigneesUseCase } from '../application/use-cases/update-assignee
 import { ReorderTaskUseCase } from '../application/use-cases/reorder-task.use-case'
 import { successResponse } from '@/shared/application/api-response.dto'
 import { projectAccessGuard } from '@/shared/guards/project-access.guard'
-import { MongoTaskRepository } from '../infrastructure/repositories/mongo-task.repository'
+import {
+  TASK_REPOSITORY,
+  type TaskRepository,
+} from '@/modules/tasks/infrastructure/repositories/task.repository'
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
@@ -40,7 +44,7 @@ export class TasksController {
   @Autowired() private changeStatusUseCase!: ChangeStatusUseCase
   @Autowired() private updateAssigneesUseCase!: UpdateAssigneesUseCase
   @Autowired() private reorderTaskUseCase!: ReorderTaskUseCase
-  @Autowired() private taskRepo!: MongoTaskRepository
+  @Inject(TASK_REPOSITORY) private taskRepo!: TaskRepository
 
   @Post('/projects/:projectId/tasks', {
     params: z.object({ projectId: z.string() }),

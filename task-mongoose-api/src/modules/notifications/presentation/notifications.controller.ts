@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Post, ApiQueryParams, Autowired } from '@forinda/kickjs'
+import { Inject, Controller, Get, Patch, Post, ApiQueryParams } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
@@ -6,13 +6,16 @@ import { NOTIFICATION_QUERY_CONFIG } from '@/shared/constants/query-configs'
 import { getUser } from '@/shared/utils/auth'
 
 import { successResponse } from '@/shared/application/api-response.dto'
-import { MongoNotificationRepository } from '../infrastructure/repositories/mongo-notification.repository'
+import {
+  NOTIFICATION_REPOSITORY,
+  type NotificationRepository,
+} from '@/modules/notifications/infrastructure/repositories/notification.repository'
 
 @ApiTags('Notifications')
 @ApiBearerAuth()
 @Controller()
 export class NotificationsController {
-  @Autowired() private notificationRepo!: MongoNotificationRepository
+  @Inject(NOTIFICATION_REPOSITORY) private notificationRepo!: NotificationRepository
 
   @ApiOperation({ summary: 'List notifications for the current user' })
   @ApiResponse({ status: 200, description: 'Paginated list of notifications returned' })

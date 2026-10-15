@@ -1,4 +1,4 @@
-import { Controller, Get, Middleware, ApiQueryParams, Autowired } from '@forinda/kickjs'
+import { Inject, Controller, Get, Middleware, ApiQueryParams } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
@@ -6,13 +6,16 @@ import { ACTIVITY_QUERY_CONFIG } from '@/shared/constants/query-configs'
 import { successResponse } from '@/shared/application/api-response.dto'
 import { workspaceMembershipGuard } from '@/shared/guards/workspace-membership.guard'
 import { projectAccessGuard } from '@/shared/guards/project-access.guard'
-import { MongoActivityRepository } from '../infrastructure/repositories/mongo-activity.repository'
+import {
+  ACTIVITY_REPOSITORY,
+  type ActivityRepository,
+} from '@/modules/activity/infrastructure/repositories/activity.repository'
 
 @ApiTags('Activity')
 @ApiBearerAuth()
 @Controller()
 export class ActivityController {
-  @Autowired() private activityRepo!: MongoActivityRepository
+  @Inject(ACTIVITY_REPOSITORY) private activityRepo!: ActivityRepository
 
   @ApiOperation({ summary: 'Get activity feed for a workspace' })
   @ApiResponse({ status: 200, description: 'Paginated workspace activity returned' })

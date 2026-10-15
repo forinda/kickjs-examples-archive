@@ -1,12 +1,12 @@
 import { Service, Inject } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { IRefreshTokenRepository } from '../../domain/repositories/refresh-token.repository'
+import {
+  REFRESH_TOKEN_REPOSITORY,
+  type RefreshTokenRepository,
+} from '@/modules/auth/infrastructure/repositories/refresh-token.repository'
 
 @Service()
 export class LogoutUseCase {
-  constructor(
-    @Inject(TOKENS.REFRESH_TOKEN_REPOSITORY) private refreshTokenRepo: IRefreshTokenRepository,
-  ) {}
+  constructor(@Inject(REFRESH_TOKEN_REPOSITORY) private refreshTokenRepo: RefreshTokenRepository) {}
 
   async execute(refreshToken: string) {
     await this.refreshTokenRepo.deleteByToken(refreshToken)

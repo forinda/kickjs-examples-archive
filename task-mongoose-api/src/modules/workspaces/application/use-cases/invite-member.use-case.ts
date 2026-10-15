@@ -1,20 +1,28 @@
 import { Service, Inject, HttpException, Logger } from '@forinda/kickjs'
 import { JOB_DISPATCHER, type JobDispatcher } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
 import { ErrorCode } from '@/shared/constants/error-codes'
-import type { IUserRepository } from '@/modules/users/domain/repositories/user.repository'
-import type { IWorkspaceMemberRepository } from '../../domain/repositories/workspace-member.repository'
-import type { IWorkspaceRepository } from '../../domain/repositories/workspace.repository'
 import type { InviteMemberDto } from '../dtos/invite-member.dto'
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '@/modules/users/infrastructure/repositories/user.repository'
+import {
+  WORKSPACE_MEMBER_REPOSITORY,
+  type WorkspaceMemberRepository,
+} from '@/modules/workspaces/infrastructure/repositories/workspace-member.repository'
+import {
+  WORKSPACE_REPOSITORY,
+  type WorkspaceRepository,
+} from '@/modules/workspaces/infrastructure/repositories/workspace.repository'
 
 const logger = Logger.for('InviteMemberUseCase')
 
 @Service()
 export class InviteMemberUseCase {
   constructor(
-    @Inject(TOKENS.USER_REPOSITORY) private userRepo: IUserRepository,
-    @Inject(TOKENS.WORKSPACE_REPOSITORY) private workspaceRepo: IWorkspaceRepository,
-    @Inject(TOKENS.WORKSPACE_MEMBER_REPOSITORY) private memberRepo: IWorkspaceMemberRepository,
+    @Inject(USER_REPOSITORY) private userRepo: UserRepository,
+    @Inject(WORKSPACE_REPOSITORY) private workspaceRepo: WorkspaceRepository,
+    @Inject(WORKSPACE_MEMBER_REPOSITORY) private memberRepo: WorkspaceMemberRepository,
     @Inject(JOB_DISPATCHER) private jobs: JobDispatcher,
   ) {}
 

@@ -1,13 +1,15 @@
 import { Service, Autowired, Logger } from '@forinda/kickjs'
 import { Cron } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { IRefreshTokenRepository } from '@/modules/auth/domain/repositories/refresh-token.repository'
+import {
+  REFRESH_TOKEN_REPOSITORY,
+  type RefreshTokenRepository,
+} from '@/modules/auth/infrastructure/repositories/refresh-token.repository'
 
 const logger = Logger.for('CleanupCronJobs')
 
 @Service()
 export class CleanupCronJobs {
-  @Autowired(TOKENS.REFRESH_TOKEN_REPOSITORY) private tokenRepo!: IRefreshTokenRepository
+  @Autowired(REFRESH_TOKEN_REPOSITORY) private tokenRepo!: RefreshTokenRepository
 
   @Cron('0 3 * * *', { description: 'Clean up expired refresh tokens', timezone: 'UTC' })
   async cleanupTokens() {

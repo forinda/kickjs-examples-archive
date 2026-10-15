@@ -1,7 +1,7 @@
 import { Service, Autowired, Logger } from '@forinda/kickjs'
 import { Cron } from '@forinda/kickjs'
 import { QUEUE_MANAGER, type QueueService } from '@forinda/kickjs-queue'
-import { TOKENS } from '@/shared/constants/tokens'
+import { REDIS_CLIENT } from '@/shared/infrastructure/redis/redis.config'
 import mongoose from 'mongoose'
 import type { Redis } from 'ioredis'
 
@@ -9,7 +9,7 @@ const logger = Logger.for('HealthCheckCron')
 
 @Service()
 export class HealthCheckCronJobs {
-  @Autowired(TOKENS.REDIS) private redis!: Redis
+  @Autowired(REDIS_CLIENT) private redis!: Redis
   @Autowired(QUEUE_MANAGER) private queueService!: QueueService
 
   @Cron('* * * * *', { description: 'Run system health check every minute' })

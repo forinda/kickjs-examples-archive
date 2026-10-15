@@ -1,30 +1,28 @@
-import {
-  reply,
-  Controller,
-  Get,
-  Post,
-  Delete,
-  FileUpload,
-  Autowired,
-  ApiQueryParams,
-} from '@forinda/kickjs'
+import { Inject } from '@forinda/kickjs'
+import { reply, Controller, Get, Post, Delete, FileUpload, ApiQueryParams } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { HttpException } from '@forinda/kickjs'
 import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { ErrorCode } from '@/shared/constants/error-codes'
 import { successResponse } from '@/shared/application/api-response.dto'
-import { MongoAttachmentRepository } from '../infrastructure/repositories/mongo-attachment.repository'
-import { MongoTaskRepository } from '@/modules/tasks/infrastructure/repositories/mongo-task.repository'
 import { ATTACHMENT_QUERY_CONFIG } from '@/shared/constants/query-configs'
 import { getUser } from '@/shared/utils/auth'
+import {
+  ATTACHMENT_REPOSITORY,
+  type AttachmentRepository,
+} from '@/modules/attachments/infrastructure/repositories/attachment.repository'
+import {
+  TASK_REPOSITORY,
+  type TaskRepository,
+} from '@/modules/tasks/infrastructure/repositories/task.repository'
 
 @ApiTags('Attachments')
 @ApiBearerAuth()
 @Controller()
 export class AttachmentsController {
-  @Autowired() private attachmentRepo!: MongoAttachmentRepository
-  @Autowired() private taskRepo!: MongoTaskRepository
+  @Inject(ATTACHMENT_REPOSITORY) private attachmentRepo!: AttachmentRepository
+  @Inject(TASK_REPOSITORY) private taskRepo!: TaskRepository
 
   @ApiOperation({ summary: 'Upload an attachment for a task' })
   @ApiResponse({ status: 201, description: 'Attachment uploaded and stored' })

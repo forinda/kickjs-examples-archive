@@ -5,14 +5,16 @@ import { Container, Controller, Get, Inject } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
-import type { IUserRepository } from '../domain/repositories/user.repository'
 import type { UserEntity } from '../domain/entities/user.entity'
 import type { Types } from 'mongoose'
-import { TOKENS } from '@/shared/constants/tokens'
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '@/modules/users/infrastructure/repositories/user.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryUserRepository implements IUserRepository {
+class InMemoryUserRepository {
   private users: UserEntity[] = [
     {
       _id: 'u1' as unknown as Types.ObjectId,
@@ -78,7 +80,7 @@ class InMemoryUserRepository implements IUserRepository {
 
 @Controller()
 class TestUserController {
-  constructor(@Inject(TOKENS.USER_REPOSITORY) private readonly repo: IUserRepository) {}
+  constructor(@Inject(USER_REPOSITORY) private readonly repo: UserRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {
@@ -102,7 +104,7 @@ describe('UserController (integration)', () => {
   function buildTestModule() {
     return createTestModule({
       register: (c) => {
-        c.registerFactory(TOKENS.USER_REPOSITORY, () => new InMemoryUserRepository())
+        c.registerFactory(USER_REPOSITORY, () => new InMemoryUserRepository())
         c.register(TestUserController, TestUserController)
       },
       routes: () => ({

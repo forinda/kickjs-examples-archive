@@ -1,10 +1,12 @@
 import { Service, Inject } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { IProjectRepository } from '../../domain/repositories/project.repository'
+import {
+  PROJECT_REPOSITORY,
+  type ProjectRepository,
+} from '@/modules/projects/infrastructure/repositories/project.repository'
 
 @Service()
 export class ListProjectsUseCase {
-  constructor(@Inject(TOKENS.PROJECT_REPOSITORY) private projectRepo: IProjectRepository) {}
+  constructor(@Inject(PROJECT_REPOSITORY) private projectRepo: ProjectRepository) {}
 
   async execute(workspaceId: string) {
     return this.projectRepo.findByWorkspace(workspaceId)

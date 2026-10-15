@@ -1,11 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import type { Types } from 'mongoose'
-import type { IProjectRepository } from '../domain/repositories/project.repository'
 import type { ProjectEntity } from '../domain/entities/project.entity'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
-class InMemoryProjectRepository implements IProjectRepository {
+class InMemoryProjectRepository {
   private projects: ProjectEntity[] = []
   private counter = 0
 
@@ -71,7 +70,7 @@ class InMemoryProjectRepository implements IProjectRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryProjectRepository', () => {
-  let repo: IProjectRepository
+  let repo: InMemoryProjectRepository
 
   beforeEach(() => {
     repo = new InMemoryProjectRepository()

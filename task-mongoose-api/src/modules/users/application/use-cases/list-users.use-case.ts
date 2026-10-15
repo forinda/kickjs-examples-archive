@@ -1,10 +1,12 @@
 import { Service, Inject } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { IUserRepository } from '../../domain/repositories/user.repository'
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '@/modules/users/infrastructure/repositories/user.repository'
 
 @Service()
 export class ListUsersUseCase {
-  constructor(@Inject(TOKENS.USER_REPOSITORY) private userRepo: IUserRepository) {}
+  constructor(@Inject(USER_REPOSITORY) private userRepo: UserRepository) {}
 
   async execute(parsed: any) {
     return this.userRepo.findPaginated(parsed)
