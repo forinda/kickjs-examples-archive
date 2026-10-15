@@ -1,58 +1,55 @@
 # kickjs-examples-archive
 
-Reference applications built on [KickJS](https://github.com/forinda/kick-js). Each app demonstrates one stack combination end-to-end — controllers, modules, validation, and the relevant ORM / adapter wiring — without any framework-level dependencies bleeding through.
-
-These used to live inside the main `kick-js` repo as a workspace; they were moved here so they can release on their own cadence and stop dragging on the framework's CI install time.
+Reference applications built on [KickJS](https://github.com/forinda/kick-js). Each app installs straight from npm (`@forinda/kickjs*` caret ranges), matches what `kick new` scaffolds today (Vite + SWC, `kick.config.ts`, `src/config` env wiring, oxlint/oxfmt), and passes typecheck, build and tests.
 
 ## Apps
 
-| App | What it shows |
-|---|---|
-| [`minimal-api/`](./minimal-api) | Simplest possible app — bootstrap + one controller |
-| [`task-drizzle-api/`](./task-drizzle-api) | Full task management — PostgreSQL + Drizzle |
-| [`task-prisma-api/`](./task-prisma-api) | Full task management — PostgreSQL + Prisma 7 |
-| [`task-kickdb-api/`](./task-kickdb-api) | KickJS-native ORM — PostgreSQL + `@forinda/kickjs-db` |
-| [`task-mongoose-api/`](./task-mongoose-api) | Full task management — MongoDB + Mongoose |
-| [`multi-tenant-drizzle-api/`](./multi-tenant-drizzle-api) | Multi-tenant pattern — PostgreSQL + Drizzle |
-| [`multi-tenant-prisma-api/`](./multi-tenant-prisma-api) | Multi-tenant pattern — PostgreSQL + Prisma |
-| [`multi-tenant-mongoose-api/`](./multi-tenant-mongoose-api) | Multi-tenant pattern — MongoDB + Mongoose |
-| [`db-spike-api/`](./db-spike-api) | `@forinda/kickjs-db` exploration / spike |
+| App | What it shows | KickJS packages | Also uses | Needs |
+|---|---|---|---|---|
+| [`minimal-api/`](./minimal-api) | Smallest app: one module, one return-value controller, a `createTestApp` test | kickjs, kickjs-schema | zod | — |
+| [`task-kickdb-api/`](./task-kickdb-api) | kick/db on Postgres: 17-table schema with enums and relations, generated + reviewed migrations, migrations on boot, relational queries, a `DbAdapter` with a readiness check | kickjs, kickjs-db (`/pg`) | pg | Postgres |
+| [`task-drizzle-api/`](./task-drizzle-api) | Full task-management API (DDD modules): Drizzle wired directly through an adapter, JWT auth, queues, WebSockets, cron, Swagger, DevTools | kickjs, kickjs-swagger, kickjs-devtools, kickjs-ws, kickjs-queue | drizzle-orm, postgres, bullmq, ioredis, nodemailer | Postgres, Redis |
+| [`task-prisma-api/`](./task-prisma-api) | The same API on Prisma 7 (`@prisma/adapter-pg`), wired directly through an adapter | kickjs, kickjs-swagger, kickjs-devtools, kickjs-ws, kickjs-queue | prisma, @prisma/client, pg, bullmq, ioredis, nodemailer | Postgres, Redis |
+| [`task-mongoose-api/`](./task-mongoose-api) | The same API on MongoDB + Mongoose, with the BYO auth recipe (`@Public`, `RequireRole`) | kickjs, kickjs-swagger, kickjs-devtools, kickjs-ws, kickjs-queue | mongoose, bullmq, ioredis, nodemailer, resend | MongoDB, Redis |
+| [`multi-tenant-drizzle-api/`](./multi-tenant-drizzle-api) | BYO multi-tenancy (tenant context decorator + request-scoped DB factory) and BYO JWT auth | kickjs, kickjs-schema | jsonwebtoken | — (DB simulated) |
+| [`multi-tenant-prisma-api/`](./multi-tenant-prisma-api) | Same pattern, comments show the Prisma wiring | kickjs, kickjs-schema | jsonwebtoken | — (DB simulated) |
+| [`multi-tenant-mongoose-api/`](./multi-tenant-mongoose-api) | Same pattern, comments show the Mongoose wiring | kickjs, kickjs-schema | jsonwebtoken | — (DB simulated) |
+| [`db-spike-api/`](./db-spike-api) | Superseded by `task-kickdb-api` — the original `kick db generate` spike, schema → migration only | kickjs-db | — | — |
 
-## Quick start
+Every Express-based app also depends on `express`, `zod`, `dotenv` and `reflect-metadata`, and has `@forinda/kickjs-cli`, `@forinda/kickjs-vite` and `@forinda/kickjs-testing` as dev dependencies.
 
-Pick an app, install, run:
+Packages that no longer exist were replaced the way the KickJS docs recommend: `@forinda/kickjs-auth` → the [BYO Auth recipe](https://kickjs.app/guide/byo-recipes#auth); `@forinda/kickjs-drizzle` / `-prisma` → the ORM wired directly in an app-owned `defineAdapter()`; `@forinda/kickjs-db-pg` → `@forinda/kickjs-db/pg`.
+
+## Run an app
 
 ```bash
 git clone https://github.com/forinda/kickjs-examples-archive
 cd kickjs-examples-archive/minimal-api
-pnpm install
-pnpm dev
+
+pnpm install      # or: npm install
+pnpm dev          # or: npm run dev   — Vite HMR + typegen
+pnpm test         # or: npm test
+pnpm typecheck    # or: npm run typecheck
+pnpm build && pnpm start
 ```
 
-The task-* and multi-tenant-* apps need a database — each has its own `.env.example` and migration command. Open the app's README for the full recipe.
+Apps that need a database or Redis have a `.env.example` (copy it to `.env`) and a README with the docker commands and schema/migration step. Apps that issue JWTs refuse to start with `NODE_ENV=production` unless their secrets are set.
+
+Lockfiles are not committed — each app resolves the current published versions on install. With pnpm 10+, the allowed install scripts (`@swc/core`, `esbuild`, Prisma) are listed in each app's `pnpm-workspace.yaml`; npm reads `allowScripts` from `package.json`.
 
 ## Starting fresh — use the CLI
 
-These are reference apps, not project starters. To start a real project, scaffold a fresh one with the published CLI:
+These are reference apps, not starters. To start a project, scaffold one:
 
 ```bash
-npx @forinda/kickjs-cli new my-api
-cd my-api
-pnpm dev
+npx @forinda/kickjs-cli new my-api --template rest   # rest | minimal | fullstack
 ```
-
-The CLI scaffolds `tsconfig.json`, `vite.config.ts`, `kick.config.ts`, modules, and env wiring tailored to your chosen template (`rest` / `ddd` / `cqrs` / `minimal`) and repo type (`prisma` / `drizzle` / `inmemory` / `custom`).
-
-## Versions
-
-Each app pins the published `@forinda/kickjs*` versions it was last verified against. They may lag the latest framework release — open an issue on the main repo if a pattern needs updating for a newer KickJS.
 
 ## Contributing
 
-Improvements welcome. PRs to update an app, add a new variant, or sharpen a pattern. Major architectural shifts belong on the main framework repo, not here.
+PRs to update an app, add a variant, or sharpen a pattern are welcome. Framework changes belong in [forinda/kick-js](https://github.com/forinda/kick-js).
 
-- KickJS framework: [forinda/kick-js](https://github.com/forinda/kick-js)
-- Docs: [forinda.github.io/kick-js](https://forinda.github.io/kick-js)
+- Docs: [kickjs.app](https://kickjs.app)
 - npm: [`@forinda/kickjs`](https://www.npmjs.com/package/@forinda/kickjs)
 
 ## License
