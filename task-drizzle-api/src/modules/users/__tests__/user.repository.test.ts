@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import type {
-  IUserRepository,
-  UserWithCredentials as User,
   NewUser,
-} from '../domain/repositories/user.repository'
+  UserRepository,
+  UserWithCredentials as User,
+} from '@/modules/users/user.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
-class InMemoryUserRepository implements IUserRepository {
+class InMemoryUserRepository implements UserRepository {
   private users: User[] = []
 
   async findById(id: string) {
@@ -59,7 +59,7 @@ class InMemoryUserRepository implements IUserRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryUserRepository', () => {
-  let repo: IUserRepository
+  let repo: UserRepository
 
   beforeEach(() => {
     repo = new InMemoryUserRepository()

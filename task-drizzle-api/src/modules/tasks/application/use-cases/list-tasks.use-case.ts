@@ -1,13 +1,11 @@
-import { Service, Inject } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { ParsedQuery } from '@forinda/kickjs'
-import type { ITaskRepository } from '../../domain/repositories/task.repository'
+import { Service, Inject, type ParsedQuery } from '@forinda/kickjs'
+import { TASK_REPOSITORY, type TaskRepository } from '@/modules/tasks/task.repository'
 
 @Service()
 export class ListTasksUseCase {
   constructor(
-    @Inject(TOKENS.TASK_REPOSITORY)
-    private readonly repo: ITaskRepository,
+    @Inject(TASK_REPOSITORY)
+    private readonly repo: TaskRepository,
   ) {}
 
   async execute(parsed: ParsedQuery, projectId?: string) {

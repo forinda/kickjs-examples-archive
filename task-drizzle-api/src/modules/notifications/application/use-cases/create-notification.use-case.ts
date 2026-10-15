@@ -1,15 +1,15 @@
 import { Service, Inject } from '@forinda/kickjs'
+import type { CreateNotificationDTO } from '../dtos/create-notification.dto'
 import {
   NOTIFICATION_REPOSITORY,
-  type INotificationRepository,
-} from '../../domain/repositories/notification.repository'
-import type { CreateNotificationDTO } from '../dtos/create-notification.dto'
+  type NotificationRepository,
+} from '@/modules/notifications/notification.repository'
 
 @Service()
 export class CreateNotificationUseCase {
   constructor(
     @Inject(NOTIFICATION_REPOSITORY)
-    private readonly repo: INotificationRepository,
+    private readonly repo: NotificationRepository,
   ) {}
 
   async execute(dto: CreateNotificationDTO) {

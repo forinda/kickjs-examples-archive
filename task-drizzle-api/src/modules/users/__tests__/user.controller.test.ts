@@ -12,23 +12,24 @@ import {
   Service,
   reply,
   HttpException,
+  buildRoutes,
+  type RequestContext,
+  type ParsedQuery,
 } from '@forinda/kickjs'
-import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
-import {
-  USER_REPOSITORY,
-  type IUserRepository,
-  type UserWithCredentials as User,
-  type NewUser,
-} from '../domain/repositories/user.repository'
 import { GetUserUseCase } from '../application/use-cases/get-user.use-case'
 import { ListUsersUseCase } from '../application/use-cases/list-users.use-case'
 import { DeleteUserUseCase } from '../application/use-cases/delete-user.use-case'
+import {
+  USER_REPOSITORY,
+  type NewUser,
+  type UserRepository,
+  type UserWithCredentials as User,
+} from '@/modules/users/user.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryUserRepository implements IUserRepository {
+class InMemoryUserRepository implements UserRepository {
   private users: User[] = [
     {
       id: 'u1',
@@ -111,7 +112,7 @@ class InMemoryUserRepository implements IUserRepository {
 
 @Controller()
 class TestUserController {
-  constructor(@Inject(USER_REPOSITORY) private readonly repo: IUserRepository) {}
+  constructor(@Inject(USER_REPOSITORY) private readonly repo: UserRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

@@ -1,18 +1,18 @@
 import { Service, Inject } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type {
-  IChannelRepository,
-  IChannelMemberRepository,
-} from '../../domain/repositories/channel.repository'
 import type { CreateChannelDTO } from '../dtos/create-channel.dto'
+import {
+  CHANNEL_MEMBER_REPOSITORY,
+  type ChannelMemberRepository,
+} from '@/modules/channels/channel-member.repository'
+import { CHANNEL_REPOSITORY, type ChannelRepository } from '@/modules/channels/channel.repository'
 
 @Service()
 export class CreateChannelUseCase {
   constructor(
-    @Inject(TOKENS.CHANNEL_REPOSITORY)
-    private readonly repo: IChannelRepository,
-    @Inject(TOKENS.CHANNEL_MEMBER_REPOSITORY)
-    private readonly memberRepo: IChannelMemberRepository,
+    @Inject(CHANNEL_REPOSITORY)
+    private readonly repo: ChannelRepository,
+    @Inject(CHANNEL_MEMBER_REPOSITORY)
+    private readonly memberRepo: ChannelMemberRepository,
   ) {}
 
   async execute(dto: CreateChannelDTO, createdById: string) {

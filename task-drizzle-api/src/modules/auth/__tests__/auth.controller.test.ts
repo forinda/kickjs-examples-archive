@@ -10,23 +10,22 @@ import {
   Inject,
   Middleware,
   HttpException,
+  buildRoutes,
+  type MiddlewareHandler,
+  type RequestContext,
 } from '@forinda/kickjs'
-import type { MiddlewareHandler } from '@forinda/kickjs'
-import type { RequestContext } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
+import type {
+  NewRefreshToken,
+  RefreshToken,
+  RefreshTokenRepository,
+} from '@/modules/auth/refresh-token.repository'
 import {
   USER_REPOSITORY,
-  type IUserRepository,
-  type UserWithCredentials as User,
   type NewUser,
-} from '../../users/domain/repositories/user.repository'
-import type {
-  IRefreshTokenRepository,
-  RefreshToken,
-  NewRefreshToken,
-} from '../domain/repositories/refresh-token.repository'
-import { TOKENS } from '@/shared/constants/tokens'
+  type UserRepository,
+  type UserWithCredentials as User,
+} from '@/modules/users/user.repository'
 
 // ── Test JWT secret ──────────────────────────────────────────────────
 const TEST_JWT_SECRET = 'test-secret-that-is-at-least-32-chars-long!'
@@ -46,7 +45,7 @@ afterAll(() => {
 
 // ── In-memory repositories ───────────────────────────────────────────
 
-class InMemoryUserRepository implements IUserRepository {
+class InMemoryUserRepository implements UserRepository {
   private users: User[] = []
 
   async findById(id: string) {
@@ -95,7 +94,7 @@ class InMemoryUserRepository implements IUserRepository {
   }
 }
 
-class InMemoryRefreshTokenRepository implements IRefreshTokenRepository {
+class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
   private tokens: RefreshToken[] = []
 
   async create(data: NewRefreshToken) {

@@ -11,8 +11,11 @@
  *   infrastructure/  — Repository implementations (in-memory, Drizzle, Prisma, etc.)
  */
 import { defineModule } from '@forinda/kickjs'
-import { ATTACHMENT_REPOSITORY } from './domain/repositories/attachment.repository'
-import { DrizzleAttachmentRepository } from './infrastructure/repositories/drizzle-attachment.repository'
+import { DRIZZLE_DB } from '@/db'
+import {
+  createAttachmentRepository,
+  ATTACHMENT_REPOSITORY,
+} from '@/modules/attachments/attachment.repository'
 import { AttachmentController } from './presentation/attachment.controller'
 
 // Eagerly load decorated classes so @Service()/@Repository() decorators register in the DI container
@@ -26,7 +29,7 @@ export const AttachmentModule = defineModule({
   build: () => ({
     register(container) {
       container.registerFactory(ATTACHMENT_REPOSITORY, () =>
-        container.resolve(DrizzleAttachmentRepository),
+        createAttachmentRepository(container.resolve(DRIZZLE_DB)),
       )
     },
     routes: () => ({ path: '/attachments', controller: AttachmentController }),

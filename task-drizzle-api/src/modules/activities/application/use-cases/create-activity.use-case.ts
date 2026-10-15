@@ -1,13 +1,13 @@
 import { Service, Inject } from '@forinda/kickjs'
+import type { CreateActivityDTO } from '../dtos/create-activity.dto'
 import {
   ACTIVITY_REPOSITORY,
-  type IActivityRepository,
-} from '../../domain/repositories/activity.repository'
-import type { CreateActivityDTO } from '../dtos/create-activity.dto'
+  type ActivityRepository,
+} from '@/modules/activities/activity.repository'
 
 @Service()
 export class CreateActivityUseCase {
-  constructor(@Inject(ACTIVITY_REPOSITORY) private readonly repo: IActivityRepository) {}
+  constructor(@Inject(ACTIVITY_REPOSITORY) private readonly repo: ActivityRepository) {}
 
   async execute(dto: CreateActivityDTO, actorId: string) {
     return this.repo.create({ ...dto, actorId })

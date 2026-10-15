@@ -1,7 +1,10 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { DrizzleChannelRepository } from './infrastructure/repositories/drizzle-channel.repository'
-import { DrizzleChannelMemberRepository } from './infrastructure/repositories/drizzle-channel-member.repository'
+import { DRIZZLE_DB } from '@/db'
+import {
+  createChannelMemberRepository,
+  CHANNEL_MEMBER_REPOSITORY,
+} from '@/modules/channels/channel-member.repository'
+import { createChannelRepository, CHANNEL_REPOSITORY } from '@/modules/channels/channel.repository'
 import { ChannelController } from './presentation/channel.controller'
 
 import.meta.glob(
@@ -13,11 +16,11 @@ export const ChannelModule = defineModule({
   name: 'ChannelModule',
   build: () => ({
     register(container) {
-      container.registerFactory(TOKENS.CHANNEL_REPOSITORY, () =>
-        container.resolve(DrizzleChannelRepository),
+      container.registerFactory(CHANNEL_MEMBER_REPOSITORY, () =>
+        createChannelMemberRepository(container.resolve(DRIZZLE_DB)),
       )
-      container.registerFactory(TOKENS.CHANNEL_MEMBER_REPOSITORY, () =>
-        container.resolve(DrizzleChannelMemberRepository),
+      container.registerFactory(CHANNEL_REPOSITORY, () =>
+        createChannelRepository(container.resolve(DRIZZLE_DB)),
       )
     },
     routes: () => ({ path: '/channels', controller: ChannelController }),

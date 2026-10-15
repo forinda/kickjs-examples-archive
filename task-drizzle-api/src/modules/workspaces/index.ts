@@ -1,8 +1,13 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { WORKSPACE_REPOSITORY } from './domain/repositories/workspace.repository'
-import { DrizzleWorkspaceRepository } from './infrastructure/repositories/drizzle-workspace.repository'
-import { DrizzleWorkspaceMemberRepository } from './infrastructure/repositories/drizzle-workspace-member.repository'
+import { DRIZZLE_DB } from '@/db'
+import {
+  createWorkspaceMemberRepository,
+  WORKSPACE_MEMBER_REPOSITORY,
+} from '@/modules/workspaces/workspace-member.repository'
+import {
+  createWorkspaceRepository,
+  WORKSPACE_REPOSITORY,
+} from '@/modules/workspaces/workspace.repository'
 import { WorkspaceController } from './presentation/workspace.controller'
 
 import.meta.glob(
@@ -14,12 +19,12 @@ export const WorkspaceModule = defineModule({
   name: 'WorkspaceModule',
   build: () => ({
     register(container) {
-      const workspaceFactory = () => container.resolve(DrizzleWorkspaceRepository)
-      container.registerFactory(WORKSPACE_REPOSITORY, workspaceFactory)
-      container.registerFactory(TOKENS.WORKSPACE_REPOSITORY, workspaceFactory)
-
-      const memberFactory = () => container.resolve(DrizzleWorkspaceMemberRepository)
-      container.registerFactory(TOKENS.WORKSPACE_MEMBER_REPOSITORY, memberFactory)
+      container.registerFactory(WORKSPACE_MEMBER_REPOSITORY, () =>
+        createWorkspaceMemberRepository(container.resolve(DRIZZLE_DB)),
+      )
+      container.registerFactory(WORKSPACE_REPOSITORY, () =>
+        createWorkspaceRepository(container.resolve(DRIZZLE_DB)),
+      )
     },
     routes: () => ({ path: '/workspaces', controller: WorkspaceController }),
   }),

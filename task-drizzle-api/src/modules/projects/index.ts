@@ -1,7 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { PROJECT_REPOSITORY } from './domain/repositories/project.repository'
-import { DrizzleProjectRepository } from './infrastructure/repositories/drizzle-project.repository'
+import { DRIZZLE_DB } from '@/db'
+import { createProjectRepository, PROJECT_REPOSITORY } from '@/modules/projects/project.repository'
 import { ProjectController } from './presentation/project.controller'
 
 import.meta.glob(
@@ -13,9 +12,9 @@ export const ProjectModule = defineModule({
   name: 'ProjectModule',
   build: () => ({
     register(container) {
-      const factory = () => container.resolve(DrizzleProjectRepository)
-      container.registerFactory(PROJECT_REPOSITORY, factory)
-      container.registerFactory(TOKENS.PROJECT_REPOSITORY, factory)
+      container.registerFactory(PROJECT_REPOSITORY, () =>
+        createProjectRepository(container.resolve(DRIZZLE_DB)),
+      )
     },
     routes: () => ({ path: '/projects', controller: ProjectController }),
   }),

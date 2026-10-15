@@ -1,9 +1,6 @@
 import { Service, Inject } from '@forinda/kickjs'
-import {
-  COMMENT_REPOSITORY,
-  type ICommentRepository,
-} from '../../domain/repositories/comment.repository'
 import type { UpdateCommentDTO } from '../dtos/update-comment.dto'
+import { COMMENT_REPOSITORY, type CommentRepository } from '@/modules/comments/comment.repository'
 
 /** Extract @mentioned user IDs from comment content */
 function parseMentions(content: string): string[] {
@@ -14,7 +11,7 @@ function parseMentions(content: string): string[] {
 
 @Service()
 export class UpdateCommentUseCase {
-  constructor(@Inject(COMMENT_REPOSITORY) private readonly repo: ICommentRepository) {}
+  constructor(@Inject(COMMENT_REPOSITORY) private readonly repo: CommentRepository) {}
 
   async execute(id: string, dto: UpdateCommentDTO) {
     const mentions = parseMentions(dto.content)

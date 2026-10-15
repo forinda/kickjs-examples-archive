@@ -2,16 +2,16 @@ import { Service, Inject } from '@forinda/kickjs'
 import { DRIZZLE_DB } from '@/db'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import { eq, sql } from 'drizzle-orm'
+import { tasks } from '@/db/schema'
 import {
   ATTACHMENT_REPOSITORY,
-  type IAttachmentRepository,
-} from '../../domain/repositories/attachment.repository'
-import { tasks } from '@/db/schema'
+  type AttachmentRepository,
+} from '@/modules/attachments/attachment.repository'
 
 @Service()
 export class DeleteAttachmentUseCase {
   constructor(
-    @Inject(ATTACHMENT_REPOSITORY) private readonly repo: IAttachmentRepository,
+    @Inject(ATTACHMENT_REPOSITORY) private readonly repo: AttachmentRepository,
     @Inject(DRIZZLE_DB) private readonly db: PostgresJsDatabase,
   ) {}
 

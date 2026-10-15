@@ -1,14 +1,14 @@
 import { parseQuery } from '@forinda/kickjs'
 import { describe, it, expect, beforeEach } from 'vitest'
 import type {
-  IActivityRepository,
   Activity,
+  ActivityRepository,
   NewActivity,
-} from '../domain/repositories/activity.repository'
+} from '@/modules/activities/activity.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
-class InMemoryActivityRepository implements IActivityRepository {
+class InMemoryActivityRepository implements ActivityRepository {
   private activities: Activity[] = []
 
   async findPaginated(
@@ -43,7 +43,7 @@ class InMemoryActivityRepository implements IActivityRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryActivityRepository', () => {
-  let repo: IActivityRepository
+  let repo: ActivityRepository
 
   beforeEach(() => {
     repo = new InMemoryActivityRepository()

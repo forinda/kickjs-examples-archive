@@ -1,13 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type {
-  IStatsRepository,
-  WorkspaceStats,
-  ProjectStats,
-} from '../domain/repositories/stat.repository'
+import type { ProjectStats, StatsRepository, WorkspaceStats } from '@/modules/stats/stat.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
-class InMemoryStatsRepository implements IStatsRepository {
+class InMemoryStatsRepository implements StatsRepository {
   private workspaceData: Record<string, WorkspaceStats> = {}
   private projectData: Record<string, ProjectStats> = {}
 

@@ -2,16 +2,13 @@ import { Service, Inject } from '@forinda/kickjs'
 import { DRIZZLE_DB } from '@/db'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import { eq, sql } from 'drizzle-orm'
-import {
-  COMMENT_REPOSITORY,
-  type ICommentRepository,
-} from '../../domain/repositories/comment.repository'
 import { tasks } from '@/db/schema'
+import { COMMENT_REPOSITORY, type CommentRepository } from '@/modules/comments/comment.repository'
 
 @Service()
 export class DeleteCommentUseCase {
   constructor(
-    @Inject(COMMENT_REPOSITORY) private readonly repo: ICommentRepository,
+    @Inject(COMMENT_REPOSITORY) private readonly repo: CommentRepository,
     @Inject(DRIZZLE_DB) private readonly db: PostgresJsDatabase,
   ) {}
 

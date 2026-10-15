@@ -1,14 +1,14 @@
 import { parseQuery } from '@forinda/kickjs'
 import { describe, it, expect, beforeEach } from 'vitest'
 import type {
-  INotificationRepository,
-  Notification,
   NewNotification,
-} from '../domain/repositories/notification.repository'
+  Notification,
+  NotificationRepository,
+} from '@/modules/notifications/notification.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
-class InMemoryNotificationRepository implements INotificationRepository {
+class InMemoryNotificationRepository implements NotificationRepository {
   private notifications: Notification[] = []
 
   async findById(id: string) {
@@ -64,7 +64,7 @@ class InMemoryNotificationRepository implements INotificationRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryNotificationRepository', () => {
-  let repo: INotificationRepository
+  let repo: NotificationRepository
 
   beforeEach(() => {
     repo = new InMemoryNotificationRepository()

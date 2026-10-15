@@ -1,4 +1,4 @@
-import { definePlugin, createToken, Logger } from '@forinda/kickjs'
+import { definePlugin, createToken, Logger, Inject } from '@forinda/kickjs'
 import nodemailer, { type Transporter } from 'nodemailer'
 
 const log = Logger.for('Mailer')

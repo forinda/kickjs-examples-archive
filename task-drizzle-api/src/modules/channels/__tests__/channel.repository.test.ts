@@ -1,13 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type {
-  IChannelRepository,
-  Channel,
-  NewChannel,
-} from '../domain/repositories/channel.repository'
+import type { Channel, ChannelRepository, NewChannel } from '@/modules/channels/channel.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
-class InMemoryChannelRepository implements IChannelRepository {
+class InMemoryChannelRepository implements ChannelRepository {
   private channels: Channel[] = []
 
   async findById(id: string) {
@@ -49,7 +45,7 @@ class InMemoryChannelRepository implements IChannelRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryChannelRepository', () => {
-  let repo: IChannelRepository
+  let repo: ChannelRepository
 
   beforeEach(() => {
     repo = new InMemoryChannelRepository()

@@ -1,14 +1,14 @@
 import { parseQuery } from '@forinda/kickjs'
 import { describe, it, expect, beforeEach } from 'vitest'
 import type {
-  IAttachmentRepository,
   Attachment,
+  AttachmentRepository,
   NewAttachment,
-} from '../domain/repositories/attachment.repository'
+} from '@/modules/attachments/attachment.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
-class InMemoryAttachmentRepository implements IAttachmentRepository {
+class InMemoryAttachmentRepository implements AttachmentRepository {
   private attachments: Attachment[] = []
 
   async findById(id: string) {
@@ -51,7 +51,7 @@ class InMemoryAttachmentRepository implements IAttachmentRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryAttachmentRepository', () => {
-  let repo: IAttachmentRepository
+  let repo: AttachmentRepository
 
   beforeEach(() => {
     repo = new InMemoryAttachmentRepository()

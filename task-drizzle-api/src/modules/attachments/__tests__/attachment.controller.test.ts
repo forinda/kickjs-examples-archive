@@ -10,20 +10,21 @@ import {
   parseQuery,
   reply,
   HttpException,
+  buildRoutes,
+  type RequestContext,
+  type ParsedQuery,
 } from '@forinda/kickjs'
-import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   ATTACHMENT_REPOSITORY,
-  type IAttachmentRepository,
   type Attachment,
+  type AttachmentRepository,
   type NewAttachment,
-} from '../domain/repositories/attachment.repository'
+} from '@/modules/attachments/attachment.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryAttachmentRepository implements IAttachmentRepository {
+class InMemoryAttachmentRepository implements AttachmentRepository {
   private attachments: Attachment[] = [
     {
       id: 'att1',
@@ -88,7 +89,7 @@ class InMemoryAttachmentRepository implements IAttachmentRepository {
 
 @Controller()
 class TestAttachmentController {
-  constructor(@Inject(ATTACHMENT_REPOSITORY) private readonly repo: IAttachmentRepository) {}
+  constructor(@Inject(ATTACHMENT_REPOSITORY) private readonly repo: AttachmentRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

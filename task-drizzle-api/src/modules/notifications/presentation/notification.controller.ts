@@ -1,5 +1,13 @@
-import { Controller, Get, Put, Autowired, Middleware, ApiQueryParams, reply } from '@forinda/kickjs'
-import type { RequestContext } from '@forinda/kickjs'
+import {
+  Controller,
+  Get,
+  Put,
+  Autowired,
+  Middleware,
+  ApiQueryParams,
+  reply,
+  type RequestContext,
+} from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/shared/presentation/middlewares/auth-bridge.middleware'
 import { getUser } from '@/shared/utils/auth'

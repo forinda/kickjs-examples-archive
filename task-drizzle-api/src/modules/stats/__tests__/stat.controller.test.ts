@@ -1,20 +1,25 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Inject } from '@forinda/kickjs'
-import type { RequestContext } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import {
+  Container,
+  Controller,
+  Get,
+  Inject,
+  buildRoutes,
+  type RequestContext,
+} from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   STATS_REPOSITORY,
-  type IStatsRepository,
-  type WorkspaceStats,
   type ProjectStats,
-} from '../domain/repositories/stat.repository'
+  type StatsRepository,
+  type WorkspaceStats,
+} from '@/modules/stats/stat.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryStatsRepository implements IStatsRepository {
+class InMemoryStatsRepository implements StatsRepository {
   private workspaceData: Record<string, WorkspaceStats> = {
     ws1: {
       memberCount: 5,
@@ -66,7 +71,7 @@ class InMemoryStatsRepository implements IStatsRepository {
 
 @Controller()
 class TestStatController {
-  constructor(@Inject(STATS_REPOSITORY) private readonly repo: IStatsRepository) {}
+  constructor(@Inject(STATS_REPOSITORY) private readonly repo: StatsRepository) {}
 
   @Get('/workspace/:workspaceId')
   async workspaceStats(ctx: RequestContext) {

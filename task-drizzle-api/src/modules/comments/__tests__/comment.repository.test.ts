@@ -1,13 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type {
-  ICommentRepository,
-  Comment,
-  NewComment,
-} from '../domain/repositories/comment.repository'
+import type { Comment, CommentRepository, NewComment } from '@/modules/comments/comment.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
-class InMemoryCommentRepository implements ICommentRepository {
+class InMemoryCommentRepository implements CommentRepository {
   private comments: Comment[] = []
 
   async findById(id: string) {
@@ -55,7 +51,7 @@ class InMemoryCommentRepository implements ICommentRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryCommentRepository', () => {
-  let repo: ICommentRepository
+  let repo: CommentRepository
 
   beforeEach(() => {
     repo = new InMemoryCommentRepository()

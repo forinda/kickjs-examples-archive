@@ -1,20 +1,29 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Delete, Inject, reply, HttpException } from '@forinda/kickjs'
-import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import {
+  Container,
+  Controller,
+  Get,
+  Delete,
+  Inject,
+  reply,
+  HttpException,
+  buildRoutes,
+  type RequestContext,
+  type ParsedQuery,
+} from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   WORKSPACE_REPOSITORY,
-  type IWorkspaceRepository,
-  type Workspace,
   type NewWorkspace,
-} from '../domain/repositories/workspace.repository'
+  type Workspace,
+  type WorkspaceRepository,
+} from '@/modules/workspaces/workspace.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryWorkspaceRepository implements IWorkspaceRepository {
+class InMemoryWorkspaceRepository implements WorkspaceRepository {
   private workspaces: Workspace[] = [
     {
       id: 'ws1',
@@ -88,7 +97,7 @@ class InMemoryWorkspaceRepository implements IWorkspaceRepository {
 
 @Controller()
 class TestWorkspaceController {
-  constructor(@Inject(WORKSPACE_REPOSITORY) private readonly repo: IWorkspaceRepository) {}
+  constructor(@Inject(WORKSPACE_REPOSITORY) private readonly repo: WorkspaceRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

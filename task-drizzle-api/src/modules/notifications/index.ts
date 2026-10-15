@@ -11,8 +11,11 @@
  *   infrastructure/  — Repository implementations (in-memory, Drizzle, Prisma, etc.)
  */
 import { defineModule } from '@forinda/kickjs'
-import { NOTIFICATION_REPOSITORY } from './domain/repositories/notification.repository'
-import { DrizzleNotificationRepository } from './infrastructure/repositories/drizzle-notification.repository'
+import { DRIZZLE_DB } from '@/db'
+import {
+  createNotificationRepository,
+  NOTIFICATION_REPOSITORY,
+} from '@/modules/notifications/notification.repository'
 import { NotificationController } from './presentation/notification.controller'
 
 // Eagerly load decorated classes so @Service()/@Repository() decorators register in the DI container
@@ -26,7 +29,7 @@ export const NotificationModule = defineModule({
   build: () => ({
     register(container) {
       container.registerFactory(NOTIFICATION_REPOSITORY, () =>
-        container.resolve(DrizzleNotificationRepository),
+        createNotificationRepository(container.resolve(DRIZZLE_DB)),
       )
     },
     routes: () => ({ path: '/notifications', controller: NotificationController }),

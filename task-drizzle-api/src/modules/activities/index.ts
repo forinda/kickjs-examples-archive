@@ -11,8 +11,11 @@
  *   infrastructure/  — Repository implementations (in-memory, Drizzle, Prisma, etc.)
  */
 import { defineModule } from '@forinda/kickjs'
-import { ACTIVITY_REPOSITORY } from './domain/repositories/activity.repository'
-import { DrizzleActivityRepository } from './infrastructure/repositories/drizzle-activity.repository'
+import { DRIZZLE_DB } from '@/db'
+import {
+  createActivityRepository,
+  ACTIVITY_REPOSITORY,
+} from '@/modules/activities/activity.repository'
 import { ActivityController } from './presentation/activity.controller'
 
 // Eagerly load decorated classes so @Service()/@Repository() decorators register in the DI container
@@ -26,7 +29,7 @@ export const ActivityModule = defineModule({
   build: () => ({
     register(container) {
       container.registerFactory(ACTIVITY_REPOSITORY, () =>
-        container.resolve(DrizzleActivityRepository),
+        createActivityRepository(container.resolve(DRIZZLE_DB)),
       )
     },
     routes: () => ({ path: '/activities', controller: ActivityController }),

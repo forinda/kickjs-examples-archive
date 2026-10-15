@@ -1,20 +1,29 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Delete, Inject, reply, HttpException } from '@forinda/kickjs'
-import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import {
+  Container,
+  Controller,
+  Get,
+  Delete,
+  Inject,
+  reply,
+  HttpException,
+  buildRoutes,
+  type RequestContext,
+  type ParsedQuery,
+} from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   TASK_REPOSITORY,
-  type ITaskRepository,
-  type Task,
   type NewTask,
-} from '../domain/repositories/task.repository'
+  type Task,
+  type TaskRepository,
+} from '@/modules/tasks/task.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryTaskRepository implements ITaskRepository {
+class InMemoryTaskRepository implements TaskRepository {
   private tasks: Task[] = [
     {
       id: 't1',
@@ -115,7 +124,7 @@ class InMemoryTaskRepository implements ITaskRepository {
 
 @Controller()
 class TestTaskController {
-  constructor(@Inject(TASK_REPOSITORY) private readonly repo: ITaskRepository) {}
+  constructor(@Inject(TASK_REPOSITORY) private readonly repo: TaskRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

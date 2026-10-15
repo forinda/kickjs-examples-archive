@@ -1,6 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { DrizzleMessageRepository } from './infrastructure/repositories/drizzle-message.repository'
+import { DRIZZLE_DB } from '@/db'
+import { createMessageRepository, MESSAGE_REPOSITORY } from '@/modules/messages/message.repository'
 import { MessageController } from './presentation/message.controller'
 
 import.meta.glob(
@@ -12,8 +12,8 @@ export const MessageModule = defineModule({
   name: 'MessageModule',
   build: () => ({
     register(container) {
-      container.registerFactory(TOKENS.MESSAGE_REPOSITORY, () =>
-        container.resolve(DrizzleMessageRepository),
+      container.registerFactory(MESSAGE_REPOSITORY, () =>
+        createMessageRepository(container.resolve(DRIZZLE_DB)),
       )
     },
     routes: () => ({ path: '/messages', controller: MessageController }),

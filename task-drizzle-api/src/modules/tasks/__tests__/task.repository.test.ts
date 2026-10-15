@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type { ITaskRepository, Task, NewTask } from '../domain/repositories/task.repository'
+import type { NewTask, Task, TaskRepository } from '@/modules/tasks/task.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
-class InMemoryTaskRepository implements ITaskRepository {
+class InMemoryTaskRepository implements TaskRepository {
   private tasks: Task[] = []
 
   async findById(id: string) {
@@ -61,7 +61,7 @@ class InMemoryTaskRepository implements ITaskRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryTaskRepository', () => {
-  let repo: ITaskRepository
+  let repo: TaskRepository
 
   beforeEach(() => {
     repo = new InMemoryTaskRepository()

@@ -1,15 +1,14 @@
-import { Service, Inject } from '@forinda/kickjs'
+import { Service, Inject, type ParsedQuery } from '@forinda/kickjs'
 import {
   NOTIFICATION_REPOSITORY,
-  type INotificationRepository,
-} from '../../domain/repositories/notification.repository'
-import type { ParsedQuery } from '@forinda/kickjs'
+  type NotificationRepository,
+} from '@/modules/notifications/notification.repository'
 
 @Service()
 export class ListNotificationsUseCase {
   constructor(
     @Inject(NOTIFICATION_REPOSITORY)
-    private readonly repo: INotificationRepository,
+    private readonly repo: NotificationRepository,
   ) {}
 
   async execute(parsed: ParsedQuery, recipientId: string) {

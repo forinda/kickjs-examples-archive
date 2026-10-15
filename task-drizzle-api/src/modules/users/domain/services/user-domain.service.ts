@@ -1,11 +1,10 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
 import { ErrorCode } from '@/shared/constants/error-codes'
-import type { IUserRepository, User } from '../repositories/user.repository'
+import { USER_REPOSITORY, type User, type UserRepository } from '@/modules/users/user.repository'
 
 @Service()
 export class UserDomainService {
-  constructor(@Inject(TOKENS.USER_REPOSITORY) private readonly repo: IUserRepository) {}
+  constructor(@Inject(USER_REPOSITORY) private readonly repo: UserRepository) {}
 
   async ensureExists(id: string): Promise<User> {
     const user = await this.repo.findById(id)

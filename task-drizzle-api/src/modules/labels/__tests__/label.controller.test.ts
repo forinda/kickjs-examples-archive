@@ -1,20 +1,29 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Delete, Inject, reply, HttpException } from '@forinda/kickjs'
-import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import {
+  Container,
+  Controller,
+  Get,
+  Delete,
+  Inject,
+  reply,
+  HttpException,
+  buildRoutes,
+  type RequestContext,
+  type ParsedQuery,
+} from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   LABEL_REPOSITORY,
-  type ILabelRepository,
-  type Label,
+  type LabelRepository,
   type NewLabel,
-} from '../domain/repositories/label.repository'
+} from '@/modules/labels/label.repository'
+import { type Label } from '@/modules/labels/task-label.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryLabelRepository implements ILabelRepository {
+class InMemoryLabelRepository implements LabelRepository {
   private labels: Label[] = [
     {
       id: 'l1',
@@ -78,7 +87,7 @@ class InMemoryLabelRepository implements ILabelRepository {
 
 @Controller()
 class TestLabelController {
-  constructor(@Inject(LABEL_REPOSITORY) private readonly repo: ILabelRepository) {}
+  constructor(@Inject(LABEL_REPOSITORY) private readonly repo: LabelRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

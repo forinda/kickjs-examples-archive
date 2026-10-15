@@ -1,8 +1,10 @@
 import { defineModule } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import { TASK_REPOSITORY } from './domain/repositories/task.repository'
-import { DrizzleTaskRepository } from './infrastructure/repositories/drizzle-task.repository'
-import { DrizzleTaskAssigneeRepository } from './infrastructure/repositories/drizzle-task-assignee.repository'
+import { DRIZZLE_DB } from '@/db'
+import {
+  createTaskAssigneeRepository,
+  TASK_ASSIGNEE_REPOSITORY,
+} from '@/modules/tasks/task-assignee.repository'
+import { createTaskRepository, TASK_REPOSITORY } from '@/modules/tasks/task.repository'
 import { TaskController } from './presentation/task.controller'
 
 import.meta.glob(
@@ -14,12 +16,11 @@ export const TaskModule = defineModule({
   name: 'TaskModule',
   build: () => ({
     register(container) {
-      const taskFactory = () => container.resolve(DrizzleTaskRepository)
-      container.registerFactory(TASK_REPOSITORY, taskFactory)
-      container.registerFactory(TOKENS.TASK_REPOSITORY, taskFactory)
-
-      container.registerFactory(TOKENS.TASK_ASSIGNEE_REPOSITORY, () =>
-        container.resolve(DrizzleTaskAssigneeRepository),
+      container.registerFactory(TASK_ASSIGNEE_REPOSITORY, () =>
+        createTaskAssigneeRepository(container.resolve(DRIZZLE_DB)),
+      )
+      container.registerFactory(TASK_REPOSITORY, () =>
+        createTaskRepository(container.resolve(DRIZZLE_DB)),
       )
     },
     routes: () => ({ path: '/tasks', controller: TaskController }),

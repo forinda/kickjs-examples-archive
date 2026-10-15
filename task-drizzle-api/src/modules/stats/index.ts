@@ -1,6 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
-import { STATS_REPOSITORY } from './domain/repositories/stat.repository'
-import { DrizzleStatsRepository } from './infrastructure/repositories/drizzle-stat.repository'
+import { DRIZZLE_DB } from '@/db'
+import { createStatsRepository, STATS_REPOSITORY } from '@/modules/stats/stat.repository'
 import { StatController } from './presentation/stat.controller'
 
 import.meta.glob(
@@ -12,7 +12,9 @@ export const StatModule = defineModule({
   name: 'StatModule',
   build: () => ({
     register(container) {
-      container.registerFactory(STATS_REPOSITORY, () => container.resolve(DrizzleStatsRepository))
+      container.registerFactory(STATS_REPOSITORY, () =>
+        createStatsRepository(container.resolve(DRIZZLE_DB)),
+      )
     },
     routes: () => ({ path: '/stats', controller: StatController }),
   }),

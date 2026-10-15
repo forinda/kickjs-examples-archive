@@ -1,12 +1,14 @@
 import { Service, Inject } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { IWorkspaceRepository } from '../../domain/repositories/workspace.repository'
+import {
+  WORKSPACE_REPOSITORY,
+  type WorkspaceRepository,
+} from '@/modules/workspaces/workspace.repository'
 
 @Service()
 export class DeleteWorkspaceUseCase {
   constructor(
-    @Inject(TOKENS.WORKSPACE_REPOSITORY)
-    private readonly repo: IWorkspaceRepository,
+    @Inject(WORKSPACE_REPOSITORY)
+    private readonly repo: WorkspaceRepository,
   ) {}
 
   async execute(id: string) {

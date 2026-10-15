@@ -1,8 +1,4 @@
-import type { RequestContext } from '@forinda/kickjs'
-import { HttpException } from '@forinda/kickjs'
-import type { IProjectRepository } from '@/modules/projects/domain/repositories/project.repository'
-import type { IWorkspaceMemberRepository } from '@/modules/workspaces/domain/repositories/workspace-member.repository'
-import type { IChannelMemberRepository } from '@/modules/channels/domain/repositories/channel.repository'
+import { HttpException, type RequestContext } from '@forinda/kickjs'
 
 export interface AuthUser {
   id: string
@@ -10,15 +6,10 @@ export interface AuthUser {
   globalRole: string
 }
 
-type Found<T> = NonNullable<Awaited<T>>
-
-// Values the auth middleware and the membership guards put on ctx.
+// Set by the auth middleware.
 declare module '@forinda/kickjs' {
   interface ContextMeta {
     user: AuthUser
-    project: Found<ReturnType<IProjectRepository['findById']>>
-    workspaceMember: Found<ReturnType<IWorkspaceMemberRepository['findByWorkspaceAndUser']>>
-    channelMember: Found<ReturnType<IChannelMemberRepository['findByChannelAndUser']>>
   }
 }
 

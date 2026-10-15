@@ -1,20 +1,29 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Delete, Inject, reply, HttpException } from '@forinda/kickjs'
-import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import {
+  Container,
+  Controller,
+  Get,
+  Delete,
+  Inject,
+  reply,
+  HttpException,
+  buildRoutes,
+  type RequestContext,
+  type ParsedQuery,
+} from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   COMMENT_REPOSITORY,
-  type ICommentRepository,
   type Comment,
+  type CommentRepository,
   type NewComment,
-} from '../domain/repositories/comment.repository'
+} from '@/modules/comments/comment.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryCommentRepository implements ICommentRepository {
+class InMemoryCommentRepository implements CommentRepository {
   private comments: Comment[] = [
     {
       id: 'c1',
@@ -85,7 +94,7 @@ class InMemoryCommentRepository implements ICommentRepository {
 
 @Controller()
 class TestCommentController {
-  constructor(@Inject(COMMENT_REPOSITORY) private readonly repo: ICommentRepository) {}
+  constructor(@Inject(COMMENT_REPOSITORY) private readonly repo: CommentRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

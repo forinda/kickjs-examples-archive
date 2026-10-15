@@ -1,13 +1,16 @@
-import { Service, Autowired, Logger, Job, Process } from '@forinda/kickjs'
+import { Service, Autowired, Logger, Job, Process, Inject } from '@forinda/kickjs'
 import type { Job as BullMQJob } from 'bullmq'
-import { DrizzleActivityRepository } from '@/modules/activities/infrastructure/repositories/drizzle-activity.repository'
+import {
+  ACTIVITY_REPOSITORY,
+  type ActivityRepository,
+} from '@/modules/activities/activity.repository'
 
 const logger = Logger.for('ActivityProcessor')
 
 @Service()
 @Job('activity')
 export class ActivityProcessor {
-  @Autowired() private activityRepo!: DrizzleActivityRepository
+  @Inject(ACTIVITY_REPOSITORY) private activityRepo!: ActivityRepository
 
   @Process('log-activity')
   async logActivity(

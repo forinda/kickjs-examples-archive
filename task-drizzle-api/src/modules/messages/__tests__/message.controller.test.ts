@@ -1,20 +1,30 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Post, Put, Delete, Inject, reply } from '@forinda/kickjs'
-import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import {
+  Container,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Inject,
+  reply,
+  buildRoutes,
+  type RequestContext,
+  type ParsedQuery,
+} from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   MESSAGE_REPOSITORY,
-  type IMessageRepository,
   type Message,
+  type MessageRepository,
   type NewMessage,
-} from '../domain/repositories/message.repository'
+} from '@/modules/messages/message.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryMessageRepository implements IMessageRepository {
+class InMemoryMessageRepository implements MessageRepository {
   private messages: Message[] = [
     {
       id: 'm1',
@@ -101,7 +111,7 @@ class InMemoryMessageRepository implements IMessageRepository {
 
 @Controller()
 class TestMessageController {
-  constructor(@Inject(MESSAGE_REPOSITORY) private readonly repo: IMessageRepository) {}
+  constructor(@Inject(MESSAGE_REPOSITORY) private readonly repo: MessageRepository) {}
 
   @Get('/channel/:channelId')
   async listByChannel(ctx: RequestContext) {

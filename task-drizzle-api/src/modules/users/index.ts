@@ -11,9 +11,8 @@
  *   infrastructure/  — Repository implementations (in-memory, Drizzle, Prisma, etc.)
  */
 import { defineModule } from '@forinda/kickjs'
-import { USER_REPOSITORY } from './domain/repositories/user.repository'
-import { TOKENS } from '@/shared/constants/tokens'
-import { DrizzleUserRepository } from './infrastructure/repositories/drizzle-user.repository'
+import { DRIZZLE_DB } from '@/db'
+import { createUserRepository, USER_REPOSITORY } from '@/modules/users/user.repository'
 import { UserController } from './presentation/user.controller'
 
 // Eagerly load decorated classes so @Service()/@Repository() decorators register in the DI container
@@ -26,10 +25,9 @@ export const UserModule = defineModule({
   name: 'UserModule',
   build: () => ({
     register(container) {
-      const factory = () => container.resolve(DrizzleUserRepository)
-      container.registerFactory(USER_REPOSITORY, factory)
-      // Also register under shared TOKENS so other modules (auth) can resolve it
-      container.registerFactory(TOKENS.USER_REPOSITORY, factory)
+      container.registerFactory(USER_REPOSITORY, () =>
+        createUserRepository(container.resolve(DRIZZLE_DB)),
+      )
     },
     routes: () => ({ path: '/users', controller: UserController }),
   }),

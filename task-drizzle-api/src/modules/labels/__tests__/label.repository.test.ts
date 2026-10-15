@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type { ILabelRepository, Label, NewLabel } from '../domain/repositories/label.repository'
+import type { LabelRepository, NewLabel } from '@/modules/labels/label.repository'
+import type { Label } from '@/modules/labels/task-label.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
-class InMemoryLabelRepository implements ILabelRepository {
+class InMemoryLabelRepository implements LabelRepository {
   private labels: Label[] = []
 
   async findById(id: string) {
@@ -46,7 +47,7 @@ class InMemoryLabelRepository implements ILabelRepository {
 // ── Tests ────────────────────────────────────────────────────────────
 
 describe('InMemoryLabelRepository', () => {
-  let repo: ILabelRepository
+  let repo: LabelRepository
 
   beforeEach(() => {
     repo = new InMemoryLabelRepository()

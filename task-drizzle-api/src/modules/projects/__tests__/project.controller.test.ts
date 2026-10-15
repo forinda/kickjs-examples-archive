@@ -1,20 +1,29 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Delete, Inject, reply, HttpException } from '@forinda/kickjs'
-import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import {
+  Container,
+  Controller,
+  Get,
+  Delete,
+  Inject,
+  reply,
+  HttpException,
+  buildRoutes,
+  type RequestContext,
+  type ParsedQuery,
+} from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   PROJECT_REPOSITORY,
-  type IProjectRepository,
-  type Project,
   type NewProject,
-} from '../domain/repositories/project.repository'
+  type Project,
+  type ProjectRepository,
+} from '@/modules/projects/project.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryProjectRepository implements IProjectRepository {
+class InMemoryProjectRepository implements ProjectRepository {
   private projects: Project[] = [
     {
       id: 'p1',
@@ -103,7 +112,7 @@ class InMemoryProjectRepository implements IProjectRepository {
 
 @Controller()
 class TestProjectController {
-  constructor(@Inject(PROJECT_REPOSITORY) private readonly repo: IProjectRepository) {}
+  constructor(@Inject(PROJECT_REPOSITORY) private readonly repo: ProjectRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

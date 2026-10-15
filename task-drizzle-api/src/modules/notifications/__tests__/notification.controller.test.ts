@@ -10,20 +10,21 @@ import {
   parseQuery,
   reply,
   HttpException,
+  buildRoutes,
+  type RequestContext,
+  type ParsedQuery,
 } from '@forinda/kickjs'
-import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   NOTIFICATION_REPOSITORY,
-  type INotificationRepository,
-  type Notification,
   type NewNotification,
-} from '../domain/repositories/notification.repository'
+  type Notification,
+  type NotificationRepository,
+} from '@/modules/notifications/notification.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
-class InMemoryNotificationRepository implements INotificationRepository {
+class InMemoryNotificationRepository implements NotificationRepository {
   private notifications: Notification[] = [
     {
       id: 'n1',
@@ -109,7 +110,7 @@ class InMemoryNotificationRepository implements INotificationRepository {
 
 @Controller()
 class TestNotificationController {
-  constructor(@Inject(NOTIFICATION_REPOSITORY) private readonly repo: INotificationRepository) {}
+  constructor(@Inject(NOTIFICATION_REPOSITORY) private readonly repo: NotificationRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

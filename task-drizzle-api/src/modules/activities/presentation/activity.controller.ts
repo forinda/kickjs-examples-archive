@@ -5,8 +5,8 @@ import {
   Middleware,
   ApiQueryParams,
   HttpException,
+  type RequestContext,
 } from '@forinda/kickjs'
-import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/shared/presentation/middlewares/auth-bridge.middleware'
 import { ListActivitiesUseCase } from '../application/use-cases/list-activities.use-case'

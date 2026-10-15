@@ -4,7 +4,7 @@
 import postgres from 'postgres'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import { sql } from 'drizzle-orm'
-import { createToken, defineAdapter } from '@forinda/kickjs'
+import { createToken, defineAdapter, Inject } from '@forinda/kickjs'
 import * as schema from './schema'
 
 export function createDb(url: string, max = 10) {

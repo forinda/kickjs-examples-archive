@@ -1,12 +1,11 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
-import { TOKENS } from '@/shared/constants/tokens'
-import type { IMessageRepository } from '../repositories/message.repository'
+import { MESSAGE_REPOSITORY, type MessageRepository } from '@/modules/messages/message.repository'
 
 @Service()
 export class MessageDomainService {
   constructor(
-    @Inject(TOKENS.MESSAGE_REPOSITORY)
-    private readonly repo: IMessageRepository,
+    @Inject(MESSAGE_REPOSITORY)
+    private readonly repo: MessageRepository,
   ) {}
 
   async ensureExists(id: string) {

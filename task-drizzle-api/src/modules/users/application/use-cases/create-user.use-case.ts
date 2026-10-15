@@ -6,13 +6,13 @@
  * Keep business rules in the domain service, not here.
  */
 import { Service, Inject } from '@forinda/kickjs'
-import { USER_REPOSITORY, type IUserRepository } from '../../domain/repositories/user.repository'
 import type { CreateUserDTO } from '../dtos/create-user.dto'
 import type { UserResponseDTO } from '../dtos/user-response.dto'
+import { USER_REPOSITORY, type UserRepository } from '@/modules/users/user.repository'
 
 @Service()
 export class CreateUserUseCase {
-  constructor(@Inject(USER_REPOSITORY) private readonly repo: IUserRepository) {}
+  constructor(@Inject(USER_REPOSITORY) private readonly repo: UserRepository) {}
 
   async execute(dto: CreateUserDTO): Promise<UserResponseDTO> {
     return this.repo.create(dto)

@@ -1,14 +1,14 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
 import {
   NOTIFICATION_REPOSITORY,
-  type INotificationRepository,
-} from '../repositories/notification.repository'
+  type NotificationRepository,
+} from '@/modules/notifications/notification.repository'
 
 @Service()
 export class NotificationDomainService {
   constructor(
     @Inject(NOTIFICATION_REPOSITORY)
-    private readonly repo: INotificationRepository,
+    private readonly repo: NotificationRepository,
   ) {}
 
   async ensureExists(id: string) {
