@@ -13,13 +13,13 @@ Guides: [Multi-tenancy](https://kickjs.app/guide/multi-tenancy) · [BYO Auth](ht
 
 ```bash
 pnpm install        # or: npm install
-cp .env.example .env
+cp .env.example .env  # JWT_SECRET is optional in dev, required in production (openssl rand -hex 32)
 pnpm dev            # or: npm run dev
 ```
 
 ```bash
 curl http://localhost:3000/api/v1/hello
-TOKEN=$(node -e "console.log(require('jsonwebtoken').sign({sub:'u1',email:'me@acme.test'},'dev-secret-change-me'))")
+TOKEN=$(node -e "console.log(require('jsonwebtoken').sign({sub:'u1',email:'me@acme.test'},process.argv[1]))" "${JWT_SECRET:-dev-secret-change-me}")
 curl -H "Host: acme.localhost" -H "Authorization: Bearer $TOKEN" http://localhost:3000/api/v1/projects
 ```
 
