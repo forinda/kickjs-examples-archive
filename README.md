@@ -11,14 +11,14 @@ Reference applications built on [KickJS](https://github.com/forinda/kick-js). Ea
 | [`task-drizzle-api/`](./task-drizzle-api) | Full task-management API (DDD modules): Drizzle wired directly through an adapter, JWT auth, queues, WebSockets, cron, Swagger, DevTools | kickjs, kickjs-swagger, kickjs-devtools, kickjs-ws, kickjs-queue | drizzle-orm, postgres, bullmq, ioredis, nodemailer | Postgres, Redis |
 | [`task-prisma-api/`](./task-prisma-api) | The same API on Prisma 7 (`@prisma/adapter-pg`), wired directly through an adapter | kickjs, kickjs-swagger, kickjs-devtools, kickjs-ws, kickjs-queue | prisma, @prisma/client, pg, bullmq, ioredis, nodemailer | Postgres, Redis |
 | [`task-mongoose-api/`](./task-mongoose-api) | The same API on MongoDB + Mongoose, with the BYO auth recipe (`@Public`, `RequireRole`) | kickjs, kickjs-swagger, kickjs-devtools, kickjs-ws, kickjs-queue | mongoose, bullmq, ioredis, nodemailer, resend | MongoDB, Redis |
-| [`multi-tenant-drizzle-api/`](./multi-tenant-drizzle-api) | BYO multi-tenancy (tenant context decorator + request-scoped DB factory) and BYO JWT auth | kickjs, kickjs-schema | jsonwebtoken | — (DB simulated) |
-| [`multi-tenant-prisma-api/`](./multi-tenant-prisma-api) | Same pattern, comments show the Prisma wiring | kickjs, kickjs-schema | jsonwebtoken | — (DB simulated) |
-| [`multi-tenant-mongoose-api/`](./multi-tenant-mongoose-api) | Same pattern, comments show the Mongoose wiring | kickjs, kickjs-schema | jsonwebtoken | — (DB simulated) |
+| [`multi-tenant-kickdb-api/`](./multi-tenant-kickdb-api) | Multi-tenancy with kick/db's `'column'` tenancy on SQLite (tenant resolved per request, no tenant code in repositories), committed migrations incl. a seed, BYO JWT auth, readiness check | kickjs, kickjs-schema, kickjs-db (`/sqlite`) | better-sqlite3, jsonwebtoken | — (SQLite file) |
 | [`db-spike-api/`](./db-spike-api) | Superseded by `task-kickdb-api` — the original `kick db generate` spike, schema → migration only | kickjs-db | — | — |
 
 Every Express-based app also depends on `express`, `zod`, `dotenv` and `reflect-metadata`, and has `@forinda/kickjs-cli`, `@forinda/kickjs-vite` and `@forinda/kickjs-testing` as dev dependencies.
 
 Packages that no longer exist were replaced the way the KickJS docs recommend: `@forinda/kickjs-auth` → the [BYO Auth recipe](https://kickjs.app/guide/byo-recipes#auth); `@forinda/kickjs-drizzle` / `-prisma` → the ORM wired directly in an app-owned `defineAdapter()`; `@forinda/kickjs-db-pg` → `@forinda/kickjs-db/pg`.
+
+The three earlier `multi-tenant-{drizzle,prisma,mongoose}-api` apps were identical (none used its named ORM — the database was simulated in memory) and were merged into `multi-tenant-kickdb-api`.
 
 ## Run an app
 
@@ -35,7 +35,7 @@ pnpm build && pnpm start
 
 Apps that need a database or Redis have a `.env.example` (copy it to `.env`) and a README with the docker commands and schema/migration step. Apps that issue JWTs refuse to start with `NODE_ENV=production` unless their secrets are set.
 
-Lockfiles are not committed — each app resolves the current published versions on install. With pnpm 10+, the allowed install scripts (`@swc/core`, `esbuild`, Prisma) are listed in each app's `pnpm-workspace.yaml`; npm reads `allowScripts` from `package.json`.
+Lockfiles are not committed — each app resolves the current published versions on install. With pnpm 10+, the allowed install scripts (`@swc/core`, `esbuild`, Prisma, better-sqlite3) are listed in each app's `pnpm-workspace.yaml`; npm reads `allowScripts` from `package.json`.
 
 ## Starting fresh — use the CLI
 
