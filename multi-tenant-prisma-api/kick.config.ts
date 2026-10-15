@@ -2,40 +2,53 @@ import { defineConfig } from '@forinda/kickjs-cli'
 
 export default defineConfig({
   pattern: 'minimal',
+  // The HTTP engine this app boots on (matches `bootstrap({ runtime })` in
+  // src/index.ts). Dep-aware commands read it: `kick add upload` installs the
+  // engine's multipart driver, `kick doctor` checks the engine peers, and
+  // `kick typegen` flips the runtime escape-hatch types to this engine.
+  runtime: 'express',
   modules: {
     dir: 'src/modules',
-    repo: 'prisma',
+    repo: 'inmemory',
     pluralize: true,
   },
 
   // `kick typegen` populates `.kickjs/types/` so `Ctx<KickRoutes.X['method']>`
   // resolves to fully-typed params/body/query. Auto-runs on `kick dev`.
-  // Set `schemaValidator: false` to skip schema-driven body typing entirely.
+  // `'kickjs-schema'` routes inference through `InferSchemaOutput` so the
+  // typegen works for any wrapped schema (Zod / Valibot / Yup). Switch
+  // to `'zod'` if you ship Zod schemas without `fromZod()` wrapping, or
+  // set `schemaValidator: false` to skip schema-driven body typing.
   typegen: {
-    schemaValidator: 'zod',
+    schemaValidator: 'kickjs-schema',
   },
 
   commands: [
     {
       name: 'test',
       description: 'Run tests with Vitest',
-      steps: 'npx vitest run',
+      steps: 'vitest run --passWithNoTests',
+    },
+    {
+      name: 'lint',
+      description: 'Lint with oxlint',
+      steps: 'oxlint src/',
     },
     {
       name: 'format',
-      description: 'Format code with Prettier',
-      steps: 'npx prettier --write src/',
+      description: 'Format code with oxfmt',
+      steps: 'oxfmt src/',
     },
     {
       name: 'format:check',
       description: 'Check formatting without writing',
-      steps: 'npx prettier --check src/',
+      steps: 'oxfmt --check src/',
     },
     {
-      name: 'check',
-      description: 'Run typecheck + format check',
-      steps: ['npx tsc --noEmit', 'npx prettier --check src/'],
-      aliases: ['verify', 'ci'],
+      name: 'ci:check',
+      description: 'Run typecheck + lint + format check',
+      steps: ['kick typecheck', 'oxlint src/', 'oxfmt --check src/'],
+      aliases: ['verify'],
     },
   ],
 })

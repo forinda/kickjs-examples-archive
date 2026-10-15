@@ -46,7 +46,7 @@ export class TenantConnectionManager<TDb> {
 //   export type TenantDb = PrismaClient
 //
 // And create connections with:
-//   new PrismaClient({ datasourceUrl: tenantRecord.dbUrl })
+//   new PrismaClient({ adapter: new PrismaPg({ connectionString: tenantRecord.dbUrl }) })
 
 export interface SimulatedDb {
   tenantId: string
@@ -66,8 +66,8 @@ function createSimulatedDb(tenantId: string): SimulatedDb {
 
 // ── Tenant Manager Instance ───────────────────────────────────────────
 
-export const tenantManager = new TenantConnectionManager<SimulatedDb>(
-  (tenantId) => createSimulatedDb(tenantId),
+export const tenantManager = new TenantConnectionManager<SimulatedDb>((tenantId) =>
+  createSimulatedDb(tenantId),
 )
 
 // ── Helpers ───────────────────────────────────────────────────────────
