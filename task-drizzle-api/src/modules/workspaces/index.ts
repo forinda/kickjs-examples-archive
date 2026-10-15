@@ -1,5 +1,4 @@
-import { Container, type AppModule, type ModuleRoutes } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import { defineModule } from '@forinda/kickjs'
 import { TOKENS } from '@/shared/constants/tokens'
 import { WORKSPACE_REPOSITORY } from './domain/repositories/workspace.repository'
 import { DrizzleWorkspaceRepository } from './infrastructure/repositories/drizzle-workspace.repository'
@@ -11,21 +10,17 @@ import.meta.glob(
   { eager: true },
 )
 
-export class WorkspaceModule implements AppModule {
-  register(container: Container): void {
-    const workspaceFactory = () => container.resolve(DrizzleWorkspaceRepository)
-    container.registerFactory(WORKSPACE_REPOSITORY, workspaceFactory)
-    container.registerFactory(TOKENS.WORKSPACE_REPOSITORY, workspaceFactory)
+export const WorkspaceModule = defineModule({
+  name: 'WorkspaceModule',
+  build: () => ({
+    register(container) {
+      const workspaceFactory = () => container.resolve(DrizzleWorkspaceRepository)
+      container.registerFactory(WORKSPACE_REPOSITORY, workspaceFactory)
+      container.registerFactory(TOKENS.WORKSPACE_REPOSITORY, workspaceFactory)
 
-    const memberFactory = () => container.resolve(DrizzleWorkspaceMemberRepository)
-    container.registerFactory(TOKENS.WORKSPACE_MEMBER_REPOSITORY, memberFactory)
-  }
-
-  routes(): ModuleRoutes {
-    return {
-      path: '/workspaces',
-      router: buildRoutes(WorkspaceController),
-      controller: WorkspaceController,
-    }
-  }
-}
+      const memberFactory = () => container.resolve(DrizzleWorkspaceMemberRepository)
+      container.registerFactory(TOKENS.WORKSPACE_MEMBER_REPOSITORY, memberFactory)
+    },
+    routes: () => ({ path: '/workspaces', controller: WorkspaceController }),
+  }),
+})

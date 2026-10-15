@@ -10,8 +10,7 @@
  *   domain/          — Entities, value objects, repository interfaces, domain services
  *   infrastructure/  — Repository implementations (in-memory, Drizzle, Prisma, etc.)
  */
-import { Container, type AppModule, type ModuleRoutes } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import { defineModule } from '@forinda/kickjs'
 import { NOTIFICATION_REPOSITORY } from './domain/repositories/notification.repository'
 import { DrizzleNotificationRepository } from './infrastructure/repositories/drizzle-notification.repository'
 import { NotificationController } from './presentation/notification.controller'
@@ -22,28 +21,14 @@ import.meta.glob(
   { eager: true },
 )
 
-export class NotificationModule implements AppModule {
-  /**
-   * Register module dependencies in the DI container.
-   * Bind repository interface tokens to their implementations here.
-   * To swap implementations (e.g. in-memory -> Drizzle), change the factory target.
-   */
-  register(container: Container): void {
-    container.registerFactory(NOTIFICATION_REPOSITORY, () =>
-      container.resolve(DrizzleNotificationRepository),
-    )
-  }
-
-  /**
-   * Declare HTTP routes for this module.
-   * The path is prefixed with the global apiPrefix and version (e.g. /api/v1/notifications).
-   * Passing 'controller' enables automatic OpenAPI spec generation via SwaggerAdapter.
-   */
-  routes(): ModuleRoutes {
-    return {
-      path: '/notifications',
-      router: buildRoutes(NotificationController),
-      controller: NotificationController,
-    }
-  }
-}
+export const NotificationModule = defineModule({
+  name: 'NotificationModule',
+  build: () => ({
+    register(container) {
+      container.registerFactory(NOTIFICATION_REPOSITORY, () =>
+        container.resolve(DrizzleNotificationRepository),
+      )
+    },
+    routes: () => ({ path: '/notifications', controller: NotificationController }),
+  }),
+})

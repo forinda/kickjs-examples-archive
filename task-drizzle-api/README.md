@@ -1,63 +1,46 @@
-# kick-jira-app-drizzle
+# task-drizzle-api
 
-A **REST API** built with [KickJS](https://forinda.github.io/kick-js/) — a decorator-driven Node.js framework on Express 5 and TypeScript.
+A Jira-style task-management API (workspaces, projects, tasks, labels, comments, attachments, channels + chat, notifications, activity, stats) on **PostgreSQL + Drizzle**, in a DDD layout (`domain/ application/ infrastructure/ presentation/` per module).
 
-## Getting Started
+What it shows:
 
-```bash
-pnpm install
-kick dev
-```
+- **Drizzle wired directly** (the replacement for the removed `@forinda/kickjs-drizzle`): `src/db/index.ts` exports `DRIZZLE_DB` and a `DrizzleAdapter` that connects in `beforeStart`, answers `GET /health/ready` via `onHealthCheck`, and closes the pool on shutdown. `src/shared/infrastructure/query-adapter.ts` turns `ctx.paginate()` query strings (filters, sort, search, pagination) into Drizzle `where` / `orderBy`.
+- Return-value handlers (`return value`, `reply.created()`, `reply.noContent()`), `HttpException` for errors.
+- JWT auth as a `@Middleware` guard (`src/shared/presentation/middlewares/auth-bridge.middleware.ts`) plus workspace / project / channel membership guards.
+- `@forinda/kickjs-queue` (BullMQ) jobs with `@Job` / `@Process`, `@Cron` jobs run by `KickCronAdapter`, `@forinda/kickjs-ws` chat (`/ws/chat`), `@forinda/kickjs-swagger` (`/docs`), `@forinda/kickjs-devtools` (`/_debug`), and a BYO nodemailer `MailerPlugin`.
 
-## Scripts
+Packages: `@forinda/kickjs`, `-schema`, `-swagger`, `-devtools`, `-ws`, `-queue`, `-cli`, `-vite`, `-testing`; `drizzle-orm`, `postgres`, `bullmq`, `ioredis`, `jsonwebtoken`, `bcryptjs`, `nodemailer`, `croner`.
 
-| Command                              | Description                          |
-| ------------------------------------ | ------------------------------------ |
-| `kick dev`                           | Start dev server with Vite HMR       |
-| `kick build`                         | Production build                     |
-| `kick start`                         | Run production build                 |
-| `pnpm run test`                      | Run tests with Vitest                |
-| `kick g module <name>`               | Generate a DDD module                |
-| `kick g scaffold <name> <fields...>` | Generate CRUD from field definitions |
-| `kick add <package>`                 | Add a KickJS package                 |
-
-## Project Structure
-
-```
-src/
-├── index.ts           # Application entry point
-├── modules/           # Feature modules (controllers, services, repos)
-│   └── index.ts       # Module registry
-└── ...
-```
-
-## Packages
-
-- `@forinda/kickjs-swagger`
-- `@forinda/kickjs-devtools`
-
-## Adding Features
+## Run
 
 ```bash
-kick add auth          # Authentication (JWT, API key, OAuth)
-kick add swagger       # OpenAPI documentation
-kick add ws            # WebSocket support
-kick add queue         # Background job processing
-kick add mailer        # Email sending
-kick add cron          # Scheduled tasks
-kick add --list        # Show all available packages
+docker run -d --name task-pg -p 127.0.0.1:5432:5432 \
+  -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=task_drizzle postgres:18-alpine
+docker run -d --name task-redis -p 127.0.0.1:6379:6379 redis:7-alpine
+
+pnpm install            # or: npm install
+cp .env.example .env    # then set JWT_SECRET and JWT_REFRESH_SECRET (openssl rand -hex 32)
+
+# drizzle-kit does not read .env — export it first
+set -a; . ./.env; set +a
+pnpm db:push            # or: npm run db:push — creates the tables from src/db/schema
+pnpm dev                # or: npm run dev
 ```
 
-## Environment Variables
+`pnpm test` runs without a database (in-memory repositories). `pnpm typecheck`, `pnpm build && pnpm start` as usual.
 
-Copy `.env.example` to `.env` and configure:
+```bash
+curl -X POST localhost:3000/api/v1/auth/register -H 'content-type: application/json' \
+  -d '{"email":"ada@example.com","password":"Password123!","firstName":"Ada","lastName":"L"}'
+curl localhost:3000/health/ready
+```
 
-| Variable   | Default       | Description |
-| ---------- | ------------- | ----------- |
-| `PORT`     | `3000`        | Server port |
-| `NODE_ENV` | `development` | Environment |
+## Environment
 
-## Learn More
-
-- [KickJS Documentation](https://forinda.github.io/kick-js/)
-- [CLI Reference](https://forinda.github.io/kick-js/api/cli.html)
+| Variable                                 | Required | Notes                                     |
+| ---------------------------------------- | -------- | ----------------------------------------- |
+| `DATABASE_URL`                           | yes      | Postgres connection string                |
+| `JWT_SECRET`, `JWT_REFRESH_SECRET`       | yes      | 32+ characters each, no defaults          |
+| `REDIS_URL`                              | no       | default `redis://localhost:6379`          |
+| `SMTP_URL`                               | no       | empty → mail is logged to the console     |
+| `JWT_*_EXPIRES_IN`, `APP_*`, `MAIL_FROM_*` | no     | see `.env.example`                        |

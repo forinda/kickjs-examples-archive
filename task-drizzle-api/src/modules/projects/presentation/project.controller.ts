@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Autowired, Middleware } from '@forinda/kickjs'
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Autowired,
+  Middleware,
+  reply,
+  HttpException,
+} from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/shared/presentation/middlewares/auth-bridge.middleware'
@@ -25,35 +35,35 @@ export class ProjectController {
   @ApiTags('Project')
   async create(ctx: RequestContext) {
     const result = await this.createProjectUseCase.execute(ctx.body)
-    ctx.created(successResponse(result))
+    return reply.created(successResponse(result))
   }
 
   @Get('/workspace/:workspaceId')
   @ApiTags('Project')
   async listByWorkspace(ctx: RequestContext) {
     const projects = await this.listProjectsUseCase.executeByWorkspace(ctx.params.workspaceId)
-    ctx.json(successResponse(projects))
+    return successResponse(projects)
   }
 
   @Get('/:id')
   @ApiTags('Project')
   async getById(ctx: RequestContext) {
     const result = await this.getProjectUseCase.execute(ctx.params.id)
-    if (!result) return ctx.notFound('Project not found')
-    ctx.json(successResponse(result))
+    if (!result) throw HttpException.notFound('Project not found')
+    return successResponse(result)
   }
 
   @Put('/:id', { body: updateProjectSchema, name: 'UpdateProject' })
   @ApiTags('Project')
   async update(ctx: RequestContext) {
     const result = await this.updateProjectUseCase.execute(ctx.params.id, ctx.body)
-    ctx.json(successResponse(result))
+    return successResponse(result)
   }
 
   @Delete('/:id')
   @ApiTags('Project')
   async remove(ctx: RequestContext) {
     await this.deleteProjectUseCase.execute(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }

@@ -1,4 +1,4 @@
-import type { DrizzleQueryParamsConfig } from '@forinda/kickjs-drizzle'
+import type { DrizzleQueryParamsConfig } from '@/shared/infrastructure/query-adapter'
 import { comments } from '@/db/schema'
 
 export const COMMENT_QUERY_CONFIG: DrizzleQueryParamsConfig = {

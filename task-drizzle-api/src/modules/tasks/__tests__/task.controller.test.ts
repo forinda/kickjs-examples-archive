@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Delete, Inject } from '@forinda/kickjs'
+import { Container, Controller, Get, Delete, Inject, reply, HttpException } from '@forinda/kickjs'
 import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
@@ -115,27 +115,25 @@ class InMemoryTaskRepository implements ITaskRepository {
 
 @Controller()
 class TestTaskController {
-  constructor(
-    @Inject(TASK_REPOSITORY) private readonly repo: ITaskRepository,
-  ) {}
+  constructor(@Inject(TASK_REPOSITORY) private readonly repo: ITaskRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {
     const tasks = await this.repo.findByProject('p1')
-    ctx.json({ data: tasks, total: tasks.length })
+    return { data: tasks, total: tasks.length }
   }
 
   @Get('/:id')
   async getById(ctx: RequestContext) {
     const task = await this.repo.findById(ctx.params.id)
-    if (!task) return ctx.notFound('Task not found')
-    ctx.json({ data: task })
+    if (!task) throw HttpException.notFound('Task not found')
+    return { data: task }
   }
 
   @Delete('/:id')
   async remove(ctx: RequestContext) {
     await this.repo.delete(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }
 
@@ -159,9 +157,9 @@ describe('TaskController (integration)', () => {
   }
 
   it('GET /api/v1/tasks returns task list', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/tasks').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/tasks').expect(200)
 
     expect(res.body.data).toHaveLength(2)
     expect(res.body.total).toBe(2)
@@ -169,34 +167,34 @@ describe('TaskController (integration)', () => {
   })
 
   it('GET /api/v1/tasks/:id returns a single task', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/tasks/t1').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/tasks/t1').expect(200)
 
     expect(res.body.data.title).toBe('Setup CI')
     expect(res.body.data.key).toBe('ALP-1')
   })
 
   it('GET /api/v1/tasks/:id returns 404 for unknown task', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).get('/api/v1/tasks/unknown').expect(404)
+    await request(app.handle.bind(app)).get('/api/v1/tasks/unknown').expect(404)
   })
 
   it('DELETE /api/v1/tasks/:id removes the task', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).delete('/api/v1/tasks/t1').expect(204)
+    await request(app.handle.bind(app)).delete('/api/v1/tasks/t1').expect(204)
 
-    await request(expressApp).get('/api/v1/tasks/t1').expect(404)
+    await request(app.handle.bind(app)).get('/api/v1/tasks/t1').expect(404)
   })
 
   it('DELETE then list shows reduced count', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).delete('/api/v1/tasks/t1').expect(204)
+    await request(app.handle.bind(app)).delete('/api/v1/tasks/t1').expect(204)
 
-    const res = await request(expressApp).get('/api/v1/tasks').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/tasks').expect(200)
     expect(res.body.data).toHaveLength(1)
     expect(res.body.data[0].title).toBe('Write tests')
   })

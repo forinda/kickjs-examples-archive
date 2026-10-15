@@ -1,8 +1,7 @@
 import 'reflect-metadata'
-import postgres from 'postgres'
-import { drizzle } from 'drizzle-orm/postgres-js'
 import { sql } from 'drizzle-orm'
 import * as schema from './schema'
+import { createDb } from './index'
 
 const connectionString = process.env.DATABASE_URL!
 if (!connectionString) {
@@ -10,8 +9,7 @@ if (!connectionString) {
   process.exit(1)
 }
 
-const client = postgres(connectionString, { max: 1 })
-const db = drizzle(client, { schema })
+const { client, db } = createDb(connectionString, 1)
 
 async function reset() {
   console.log('Resetting database...\n')

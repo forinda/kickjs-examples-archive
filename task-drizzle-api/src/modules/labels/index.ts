@@ -1,5 +1,4 @@
-import { Container, type AppModule, type ModuleRoutes } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import { defineModule } from '@forinda/kickjs'
 import { LABEL_REPOSITORY } from './domain/repositories/label.repository'
 import { TASK_LABEL_REPOSITORY } from './domain/repositories/task-label.repository'
 import { DrizzleLabelRepository } from './infrastructure/repositories/drizzle-label.repository'
@@ -11,19 +10,15 @@ import.meta.glob(
   { eager: true },
 )
 
-export class LabelModule implements AppModule {
-  register(container: Container): void {
-    container.registerFactory(LABEL_REPOSITORY, () => container.resolve(DrizzleLabelRepository))
-    container.registerFactory(TASK_LABEL_REPOSITORY, () =>
-      container.resolve(DrizzleTaskLabelRepository),
-    )
-  }
-
-  routes(): ModuleRoutes {
-    return {
-      path: '/labels',
-      router: buildRoutes(LabelController),
-      controller: LabelController,
-    }
-  }
-}
+export const LabelModule = defineModule({
+  name: 'LabelModule',
+  build: () => ({
+    register(container) {
+      container.registerFactory(LABEL_REPOSITORY, () => container.resolve(DrizzleLabelRepository))
+      container.registerFactory(TASK_LABEL_REPOSITORY, () =>
+        container.resolve(DrizzleTaskLabelRepository),
+      )
+    },
+    routes: () => ({ path: '/labels', controller: LabelController }),
+  }),
+})

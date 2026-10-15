@@ -18,7 +18,7 @@ import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   USER_REPOSITORY,
   type IUserRepository,
-  type User,
+  type UserWithCredentials as User,
   type NewUser,
 } from '../../users/domain/repositories/user.repository'
 import type {
@@ -161,7 +161,7 @@ class TestProtectedController {
   @Middleware(testAuthMiddleware)
   async getProfile(ctx: RequestContext) {
     const user = ctx.get('user')
-    ctx.json({ data: user })
+    return { data: user }
   }
 }
 
@@ -169,7 +169,7 @@ class TestProtectedController {
 class TestPublicController {
   @Get('/')
   async health(ctx: RequestContext) {
-    ctx.json({ status: 'ok' })
+    return { status: 'ok' }
   }
 }
 
@@ -190,25 +190,25 @@ describe('Auth middleware', () => {
   }
 
   it('rejects requests without Authorization header', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildProtectedModule()] })
+    const { app } = await createTestApp({ modules: [buildProtectedModule()] })
 
-    const res = await request(expressApp).get('/api/v1/protected').expect(401)
-    expect(res.body.message).toMatch(/Missing or invalid/)
+    const res = await request(app.handle.bind(app)).get('/api/v1/protected').expect(401)
+    expect(res.body.detail).toMatch(/Missing or invalid/)
   })
 
   it('rejects requests with invalid token', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildProtectedModule()] })
+    const { app } = await createTestApp({ modules: [buildProtectedModule()] })
 
-    const res = await request(expressApp)
+    const res = await request(app.handle.bind(app))
       .get('/api/v1/protected')
       .set('Authorization', 'Bearer invalid.token.here')
       .expect(401)
 
-    expect(res.body.message).toMatch(/Invalid or expired/)
+    expect(res.body.detail).toMatch(/Invalid or expired/)
   })
 
   it('accepts requests with valid JWT and exposes user', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildProtectedModule()] })
+    const { app } = await createTestApp({ modules: [buildProtectedModule()] })
 
     const token = jwt.sign(
       { sub: 'u1', email: 'alice@test.com', globalRole: 'user' },
@@ -216,7 +216,7 @@ describe('Auth middleware', () => {
       { expiresIn: '1h' },
     )
 
-    const res = await request(expressApp)
+    const res = await request(app.handle.bind(app))
       .get('/api/v1/protected')
       .set('Authorization', `Bearer ${token}`)
       .expect(200)
@@ -226,7 +226,7 @@ describe('Auth middleware', () => {
   })
 
   it('rejects expired tokens', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildProtectedModule()] })
+    const { app } = await createTestApp({ modules: [buildProtectedModule()] })
 
     const token = jwt.sign(
       { sub: 'u1', email: 'alice@test.com', globalRole: 'user' },
@@ -234,7 +234,7 @@ describe('Auth middleware', () => {
       { expiresIn: '-1s' }, // already expired
     )
 
-    await request(expressApp)
+    await request(app.handle.bind(app))
       .get('/api/v1/protected')
       .set('Authorization', `Bearer ${token}`)
       .expect(401)
@@ -250,9 +250,9 @@ describe('Auth middleware', () => {
       }),
     })
 
-    const { expressApp } = await createTestApp({ modules: [PublicModule] })
+    const { app } = await createTestApp({ modules: [PublicModule] })
 
-    const res = await request(expressApp).get('/api/v1/health').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/health').expect(200)
     expect(res.body.status).toBe('ok')
   })
 })

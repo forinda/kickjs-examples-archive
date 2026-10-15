@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Delete, Inject } from '@forinda/kickjs'
+import { Container, Controller, Get, Delete, Inject, reply, HttpException } from '@forinda/kickjs'
 import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
@@ -78,27 +78,25 @@ class InMemoryLabelRepository implements ILabelRepository {
 
 @Controller()
 class TestLabelController {
-  constructor(
-    @Inject(LABEL_REPOSITORY) private readonly repo: ILabelRepository,
-  ) {}
+  constructor(@Inject(LABEL_REPOSITORY) private readonly repo: ILabelRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {
     const labels = await this.repo.findByWorkspace('ws1')
-    ctx.json({ data: labels, total: labels.length })
+    return { data: labels, total: labels.length }
   }
 
   @Get('/:id')
   async getById(ctx: RequestContext) {
     const label = await this.repo.findById(ctx.params.id)
-    if (!label) return ctx.notFound('Label not found')
-    ctx.json({ data: label })
+    if (!label) throw HttpException.notFound('Label not found')
+    return { data: label }
   }
 
   @Delete('/:id')
   async remove(ctx: RequestContext) {
     await this.repo.delete(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }
 
@@ -122,9 +120,9 @@ describe('LabelController (integration)', () => {
   }
 
   it('GET /api/v1/labels returns label list', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/labels').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/labels').expect(200)
 
     expect(res.body.data).toHaveLength(2)
     expect(res.body.total).toBe(2)
@@ -132,25 +130,25 @@ describe('LabelController (integration)', () => {
   })
 
   it('GET /api/v1/labels/:id returns a single label', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/labels/l1').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/labels/l1').expect(200)
 
     expect(res.body.data.name).toBe('bug')
     expect(res.body.data.color).toBe('#ff0000')
   })
 
   it('GET /api/v1/labels/:id returns 404 for unknown label', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).get('/api/v1/labels/unknown').expect(404)
+    await request(app.handle.bind(app)).get('/api/v1/labels/unknown').expect(404)
   })
 
   it('DELETE /api/v1/labels/:id removes the label', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).delete('/api/v1/labels/l1').expect(204)
+    await request(app.handle.bind(app)).delete('/api/v1/labels/l1').expect(204)
 
-    await request(expressApp).get('/api/v1/labels/l1').expect(404)
+    await request(app.handle.bind(app)).get('/api/v1/labels/l1').expect(404)
   })
 })

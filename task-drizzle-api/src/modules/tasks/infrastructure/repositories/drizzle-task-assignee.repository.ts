@@ -1,5 +1,5 @@
 import { Repository, Inject } from '@forinda/kickjs'
-import { DRIZZLE_DB } from '@forinda/kickjs-drizzle'
+import { DRIZZLE_DB } from '@/db'
 import { eq, and } from 'drizzle-orm'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import { taskAssignees } from '@/db/schema'

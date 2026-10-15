@@ -1,6 +1,6 @@
 import { eq, and, lt, sql, desc } from 'drizzle-orm'
 import { Repository, HttpException, Inject } from '@forinda/kickjs'
-import { DRIZZLE_DB } from '@forinda/kickjs-drizzle'
+import { DRIZZLE_DB } from '@/db'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import type { ParsedQuery } from '@forinda/kickjs'
 import type { IMessageRepository, NewMessage } from '../../domain/repositories/message.repository'

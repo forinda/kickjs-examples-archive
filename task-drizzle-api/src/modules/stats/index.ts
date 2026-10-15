@@ -1,5 +1,4 @@
-import { Container, type AppModule, type ModuleRoutes } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import { defineModule } from '@forinda/kickjs'
 import { STATS_REPOSITORY } from './domain/repositories/stat.repository'
 import { DrizzleStatsRepository } from './infrastructure/repositories/drizzle-stat.repository'
 import { StatController } from './presentation/stat.controller'
@@ -9,16 +8,12 @@ import.meta.glob(
   { eager: true },
 )
 
-export class StatModule implements AppModule {
-  register(container: Container): void {
-    container.registerFactory(STATS_REPOSITORY, () => container.resolve(DrizzleStatsRepository))
-  }
-
-  routes(): ModuleRoutes {
-    return {
-      path: '/stats',
-      router: buildRoutes(StatController),
-      controller: StatController,
-    }
-  }
-}
+export const StatModule = defineModule({
+  name: 'StatModule',
+  build: () => ({
+    register(container) {
+      container.registerFactory(STATS_REPOSITORY, () => container.resolve(DrizzleStatsRepository))
+    },
+    routes: () => ({ path: '/stats', controller: StatController }),
+  }),
+})

@@ -1,3 +1,4 @@
+import { parseQuery } from '@forinda/kickjs'
 import { describe, it, expect, beforeEach } from 'vitest'
 import type {
   IAttachmentRepository,
@@ -18,10 +19,7 @@ class InMemoryAttachmentRepository implements IAttachmentRepository {
     return this.attachments.filter((a) => a.taskId === taskId)
   }
 
-  async findPaginated(
-    parsed: { pagination?: { page?: number; limit?: number } },
-    taskId?: string,
-  ) {
+  async findPaginated(parsed: { pagination?: { page?: number; limit?: number } }, taskId?: string) {
     let filtered = this.attachments
     if (taskId) filtered = filtered.filter((a) => a.taskId === taskId)
     const page = parsed.pagination?.page ?? 1
@@ -142,7 +140,7 @@ describe('InMemoryAttachmentRepository', () => {
       data: 'data',
     })
 
-    const result = await repo.findPaginated({}, 't1')
+    const result = await repo.findPaginated(parseQuery({}), 't1')
     expect(result.data).toHaveLength(1)
     expect(result.total).toBe(1)
   })
@@ -180,7 +178,7 @@ describe('InMemoryAttachmentRepository', () => {
       data: 'data',
     })
 
-    const result = await repo.findPaginated({})
+    const result = await repo.findPaginated(parseQuery({}))
     expect(result.data).toHaveLength(2)
     expect(result.total).toBe(2)
   })

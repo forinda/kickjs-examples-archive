@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Delete, Inject } from '@forinda/kickjs'
+import { Container, Controller, Get, Delete, Inject, reply, HttpException } from '@forinda/kickjs'
 import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
@@ -84,27 +84,25 @@ class InMemoryChannelRepository implements IChannelRepository {
 
 @Controller()
 class TestChannelController {
-  constructor(
-    @Inject(CHANNEL_REPOSITORY) private readonly repo: IChannelRepository,
-  ) {}
+  constructor(@Inject(CHANNEL_REPOSITORY) private readonly repo: IChannelRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {
     const result = await this.repo.findPaginated({} as ParsedQuery, 'ws1')
-    ctx.json({ data: result.data, total: result.total })
+    return { data: result.data, total: result.total }
   }
 
   @Get('/:id')
   async getById(ctx: RequestContext) {
     const channel = await this.repo.findById(ctx.params.id)
-    if (!channel) return ctx.notFound('Channel not found')
-    ctx.json({ data: channel })
+    if (!channel) throw HttpException.notFound('Channel not found')
+    return { data: channel }
   }
 
   @Delete('/:id')
   async remove(ctx: RequestContext) {
     await this.repo.delete(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }
 
@@ -128,9 +126,9 @@ describe('ChannelController (integration)', () => {
   }
 
   it('GET /api/v1/channels returns channel list', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/channels').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/channels').expect(200)
 
     expect(res.body.data).toHaveLength(2)
     expect(res.body.total).toBe(2)
@@ -138,34 +136,34 @@ describe('ChannelController (integration)', () => {
   })
 
   it('GET /api/v1/channels/:id returns a single channel', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/channels/ch1').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/channels/ch1').expect(200)
 
     expect(res.body.data.name).toBe('general')
     expect(res.body.data.type).toBe('public')
   })
 
   it('GET /api/v1/channels/:id returns 404 for unknown channel', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).get('/api/v1/channels/unknown').expect(404)
+    await request(app.handle.bind(app)).get('/api/v1/channels/unknown').expect(404)
   })
 
   it('DELETE /api/v1/channels/:id removes the channel', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).delete('/api/v1/channels/ch1').expect(204)
+    await request(app.handle.bind(app)).delete('/api/v1/channels/ch1').expect(204)
 
-    await request(expressApp).get('/api/v1/channels/ch1').expect(404)
+    await request(app.handle.bind(app)).get('/api/v1/channels/ch1').expect(404)
   })
 
   it('DELETE then list shows reduced count', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).delete('/api/v1/channels/ch1').expect(204)
+    await request(app.handle.bind(app)).delete('/api/v1/channels/ch1').expect(204)
 
-    const res = await request(expressApp).get('/api/v1/channels').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/channels').expect(200)
     expect(res.body.data).toHaveLength(1)
     expect(res.body.data[0].name).toBe('dev')
   })

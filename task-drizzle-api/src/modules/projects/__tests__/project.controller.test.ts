@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Delete, Inject } from '@forinda/kickjs'
+import { Container, Controller, Get, Delete, Inject, reply, HttpException } from '@forinda/kickjs'
 import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
@@ -103,27 +103,25 @@ class InMemoryProjectRepository implements IProjectRepository {
 
 @Controller()
 class TestProjectController {
-  constructor(
-    @Inject(PROJECT_REPOSITORY) private readonly repo: IProjectRepository,
-  ) {}
+  constructor(@Inject(PROJECT_REPOSITORY) private readonly repo: IProjectRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {
     const projects = await this.repo.findByWorkspace('ws1')
-    ctx.json({ data: projects, total: projects.length })
+    return { data: projects, total: projects.length }
   }
 
   @Get('/:id')
   async getById(ctx: RequestContext) {
     const project = await this.repo.findById(ctx.params.id)
-    if (!project) return ctx.notFound('Project not found')
-    ctx.json({ data: project })
+    if (!project) throw HttpException.notFound('Project not found')
+    return { data: project }
   }
 
   @Delete('/:id')
   async remove(ctx: RequestContext) {
     await this.repo.delete(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }
 
@@ -147,9 +145,9 @@ describe('ProjectController (integration)', () => {
   }
 
   it('GET /api/v1/projects returns project list', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/projects').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/projects').expect(200)
 
     expect(res.body.data).toHaveLength(2)
     expect(res.body.total).toBe(2)
@@ -157,34 +155,34 @@ describe('ProjectController (integration)', () => {
   })
 
   it('GET /api/v1/projects/:id returns a single project', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/projects/p1').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/projects/p1').expect(200)
 
     expect(res.body.data.name).toBe('Alpha')
     expect(res.body.data.key).toBe('ALP')
   })
 
   it('GET /api/v1/projects/:id returns 404 for unknown project', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).get('/api/v1/projects/unknown').expect(404)
+    await request(app.handle.bind(app)).get('/api/v1/projects/unknown').expect(404)
   })
 
   it('DELETE /api/v1/projects/:id removes the project', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).delete('/api/v1/projects/p1').expect(204)
+    await request(app.handle.bind(app)).delete('/api/v1/projects/p1').expect(204)
 
-    await request(expressApp).get('/api/v1/projects/p1').expect(404)
+    await request(app.handle.bind(app)).get('/api/v1/projects/p1').expect(404)
   })
 
   it('DELETE then list shows reduced count', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).delete('/api/v1/projects/p1').expect(204)
+    await request(app.handle.bind(app)).delete('/api/v1/projects/p1').expect(204)
 
-    const res = await request(expressApp).get('/api/v1/projects').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/projects').expect(200)
     expect(res.body.data).toHaveLength(1)
     expect(res.body.data[0].name).toBe('Beta')
   })

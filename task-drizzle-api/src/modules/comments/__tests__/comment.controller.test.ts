@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Delete, Inject } from '@forinda/kickjs'
+import { Container, Controller, Get, Delete, Inject, reply, HttpException } from '@forinda/kickjs'
 import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
@@ -85,27 +85,25 @@ class InMemoryCommentRepository implements ICommentRepository {
 
 @Controller()
 class TestCommentController {
-  constructor(
-    @Inject(COMMENT_REPOSITORY) private readonly repo: ICommentRepository,
-  ) {}
+  constructor(@Inject(COMMENT_REPOSITORY) private readonly repo: ICommentRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {
     const comments = await this.repo.findByTask('t1')
-    ctx.json({ data: comments, total: comments.length })
+    return { data: comments, total: comments.length }
   }
 
   @Get('/:id')
   async getById(ctx: RequestContext) {
     const comment = await this.repo.findById(ctx.params.id)
-    if (!comment) return ctx.notFound('Comment not found')
-    ctx.json({ data: comment })
+    if (!comment) throw HttpException.notFound('Comment not found')
+    return { data: comment }
   }
 
   @Delete('/:id')
   async remove(ctx: RequestContext) {
     await this.repo.delete(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }
 
@@ -129,9 +127,9 @@ describe('CommentController (integration)', () => {
   }
 
   it('GET /api/v1/comments returns comment list', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/comments').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/comments').expect(200)
 
     expect(res.body.data).toHaveLength(2)
     expect(res.body.total).toBe(2)
@@ -139,25 +137,25 @@ describe('CommentController (integration)', () => {
   })
 
   it('GET /api/v1/comments/:id returns a single comment', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/comments/c1').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/comments/c1').expect(200)
 
     expect(res.body.data.content).toBe('First comment')
     expect(res.body.data.authorId).toBe('u1')
   })
 
   it('GET /api/v1/comments/:id returns 404 for unknown comment', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).get('/api/v1/comments/unknown').expect(404)
+    await request(app.handle.bind(app)).get('/api/v1/comments/unknown').expect(404)
   })
 
   it('DELETE /api/v1/comments/:id removes the comment', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).delete('/api/v1/comments/c1').expect(204)
+    await request(app.handle.bind(app)).delete('/api/v1/comments/c1').expect(204)
 
-    await request(expressApp).get('/api/v1/comments/c1').expect(404)
+    await request(app.handle.bind(app)).get('/api/v1/comments/c1').expect(404)
   })
 })

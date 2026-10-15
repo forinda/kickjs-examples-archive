@@ -1,6 +1,6 @@
 import { Service, Inject, Logger } from '@forinda/kickjs'
-import { Cron } from '../../cron.decorator'
-import { DRIZZLE_DB } from '@forinda/kickjs-drizzle'
+import { Cron } from '@forinda/kickjs'
+import { DRIZZLE_DB } from '@/db'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import { lt, sql } from 'drizzle-orm'
 import { refreshTokens } from '@/db/schema'

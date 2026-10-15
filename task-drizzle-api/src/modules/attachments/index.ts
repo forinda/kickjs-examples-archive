@@ -10,8 +10,7 @@
  *   domain/          — Entities, value objects, repository interfaces, domain services
  *   infrastructure/  — Repository implementations (in-memory, Drizzle, Prisma, etc.)
  */
-import { Container, type AppModule, type ModuleRoutes } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import { defineModule } from '@forinda/kickjs'
 import { ATTACHMENT_REPOSITORY } from './domain/repositories/attachment.repository'
 import { DrizzleAttachmentRepository } from './infrastructure/repositories/drizzle-attachment.repository'
 import { AttachmentController } from './presentation/attachment.controller'
@@ -22,28 +21,14 @@ import.meta.glob(
   { eager: true },
 )
 
-export class AttachmentModule implements AppModule {
-  /**
-   * Register module dependencies in the DI container.
-   * Bind repository interface tokens to their implementations here.
-   * To swap implementations (e.g. in-memory -> Drizzle), change the factory target.
-   */
-  register(container: Container): void {
-    container.registerFactory(ATTACHMENT_REPOSITORY, () =>
-      container.resolve(DrizzleAttachmentRepository),
-    )
-  }
-
-  /**
-   * Declare HTTP routes for this module.
-   * The path is prefixed with the global apiPrefix and version (e.g. /api/v1/attachments).
-   * Passing 'controller' enables automatic OpenAPI spec generation via SwaggerAdapter.
-   */
-  routes(): ModuleRoutes {
-    return {
-      path: '/attachments',
-      router: buildRoutes(AttachmentController),
-      controller: AttachmentController,
-    }
-  }
-}
+export const AttachmentModule = defineModule({
+  name: 'AttachmentModule',
+  build: () => ({
+    register(container) {
+      container.registerFactory(ATTACHMENT_REPOSITORY, () =>
+        container.resolve(DrizzleAttachmentRepository),
+      )
+    },
+    routes: () => ({ path: '/attachments', controller: AttachmentController }),
+  }),
+})

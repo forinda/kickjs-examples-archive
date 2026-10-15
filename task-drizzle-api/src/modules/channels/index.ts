@@ -1,5 +1,4 @@
-import { Container, type AppModule, type ModuleRoutes } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import { defineModule } from '@forinda/kickjs'
 import { TOKENS } from '@/shared/constants/tokens'
 import { DrizzleChannelRepository } from './infrastructure/repositories/drizzle-channel.repository'
 import { DrizzleChannelMemberRepository } from './infrastructure/repositories/drizzle-channel-member.repository'
@@ -10,21 +9,17 @@ import.meta.glob(
   { eager: true },
 )
 
-export class ChannelModule implements AppModule {
-  register(container: Container): void {
-    container.registerFactory(TOKENS.CHANNEL_REPOSITORY, () =>
-      container.resolve(DrizzleChannelRepository),
-    )
-    container.registerFactory(TOKENS.CHANNEL_MEMBER_REPOSITORY, () =>
-      container.resolve(DrizzleChannelMemberRepository),
-    )
-  }
-
-  routes(): ModuleRoutes {
-    return {
-      path: '/channels',
-      router: buildRoutes(ChannelController),
-      controller: ChannelController,
-    }
-  }
-}
+export const ChannelModule = defineModule({
+  name: 'ChannelModule',
+  build: () => ({
+    register(container) {
+      container.registerFactory(TOKENS.CHANNEL_REPOSITORY, () =>
+        container.resolve(DrizzleChannelRepository),
+      )
+      container.registerFactory(TOKENS.CHANNEL_MEMBER_REPOSITORY, () =>
+        container.resolve(DrizzleChannelMemberRepository),
+      )
+    },
+    routes: () => ({ path: '/channels', controller: ChannelController }),
+  }),
+})

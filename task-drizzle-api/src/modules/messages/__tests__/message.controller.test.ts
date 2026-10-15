@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Post, Put, Delete, Inject } from '@forinda/kickjs'
+import { Container, Controller, Get, Post, Put, Delete, Inject, reply } from '@forinda/kickjs'
 import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
@@ -101,9 +101,7 @@ class InMemoryMessageRepository implements IMessageRepository {
 
 @Controller()
 class TestMessageController {
-  constructor(
-    @Inject(MESSAGE_REPOSITORY) private readonly repo: IMessageRepository,
-  ) {}
+  constructor(@Inject(MESSAGE_REPOSITORY) private readonly repo: IMessageRepository) {}
 
   @Get('/channel/:channelId')
   async listByChannel(ctx: RequestContext) {
@@ -112,19 +110,19 @@ class TestMessageController {
       ctx.query.cursor as string | undefined,
       ctx.query.limit ? Number(ctx.query.limit) : undefined,
     )
-    ctx.json({ data: messages })
+    return { data: messages }
   }
 
   @Put('/:id')
   async update(ctx: RequestContext) {
     const result = await this.repo.update(ctx.params.id, ctx.body)
-    ctx.json({ data: result })
+    return { data: result }
   }
 
   @Delete('/:id')
   async remove(ctx: RequestContext) {
     await this.repo.delete(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }
 
@@ -148,26 +146,28 @@ describe('MessageController (integration)', () => {
   }
 
   it('GET /api/v1/messages/channel/:channelId returns messages for a channel', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/messages/channel/ch1').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/messages/channel/ch1').expect(200)
 
     expect(res.body.data).toHaveLength(2)
     expect(res.body.data[0]).toHaveProperty('content', 'Hello everyone')
   })
 
   it('GET /api/v1/messages/channel/:channelId returns empty for unknown channel', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/messages/channel/unknown').expect(200)
+    const res = await request(app.handle.bind(app))
+      .get('/api/v1/messages/channel/unknown')
+      .expect(200)
 
     expect(res.body.data).toHaveLength(0)
   })
 
   it('PUT /api/v1/messages/:id updates a message', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp)
+    const res = await request(app.handle.bind(app))
       .put('/api/v1/messages/m1')
       .send({ content: 'Updated content' })
       .expect(200)
@@ -176,12 +176,12 @@ describe('MessageController (integration)', () => {
   })
 
   it('DELETE /api/v1/messages/:id removes the message', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).delete('/api/v1/messages/m1').expect(204)
+    await request(app.handle.bind(app)).delete('/api/v1/messages/m1').expect(204)
 
     // Verify message is gone from channel listing
-    const res = await request(expressApp).get('/api/v1/messages/channel/ch1').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/messages/channel/ch1').expect(200)
     expect(res.body.data).toHaveLength(1)
     expect(res.body.data[0].content).toBe('Hi there')
   })

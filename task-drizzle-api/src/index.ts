@@ -1,13 +1,16 @@
 import 'reflect-metadata'
-import { bootstrap } from '@forinda/kickjs'
+// Side-effect import — registers the env schema before anything resolves @Value / ConfigService.
+import './config/env'
+import { bootstrap, expressRuntime } from '@forinda/kickjs'
 import { modules } from './modules'
-import { adapters, middleware, plugins } from './config'
+import { adapters, middlewares, plugins } from './config'
 
 export const app = await bootstrap({
   modules,
+  runtime: expressRuntime(),
   adapters,
   plugins,
-  middleware,
+  middlewares,
   apiPrefix: '/api',
   defaultVersion: 1,
 })

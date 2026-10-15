@@ -1,31 +1,23 @@
-import { DrizzleAdapter } from '@forinda/kickjs-drizzle'
 import { DevToolsAdapter } from '@forinda/kickjs-devtools'
 import { SwaggerAdapter } from '@forinda/kickjs-swagger'
 import { WsAdapter } from '@forinda/kickjs-ws'
 import { QueueAdapter } from '@forinda/kickjs-queue'
-import { CronAdapter } from '@/modules/cron/cron.adapter'
-import { db, client } from '@/db'
-import { AppAdapter } from '@forinda/kickjs'
+import { KickCronAdapter, type AppAdapter } from '@forinda/kickjs'
+import { DrizzleAdapter } from '@/db'
 import { env } from './env'
 
 // Side-effect imports: register decorated classes
 import '@/modules/messages/presentation/chat.ws-controller'
 import '@/modules/queue/queue.module'
 
-// Cron job classes
-import { TaskCronJobs } from '@/modules/cron/infrastructure/jobs/overdue-reminders.cron'
-import { CleanupCronJobs } from '@/modules/cron/infrastructure/jobs/token-cleanup.cron'
-import { HealthCheckCronJobs } from '@/modules/cron/infrastructure/jobs/health-check.cron'
-import { DigestCronJobs } from '@/modules/cron/infrastructure/jobs/daily-digest.cron'
-import { PresenceCronJobs } from '@/modules/cron/infrastructure/jobs/presence-cleanup.cron'
+// Cron job classes — imported so their @Cron methods register with KickCronAdapter
+import '@/modules/cron/infrastructure/jobs/overdue-reminders.cron'
+import '@/modules/cron/infrastructure/jobs/token-cleanup.cron'
+import '@/modules/cron/infrastructure/jobs/health-check.cron'
+import '@/modules/cron/infrastructure/jobs/daily-digest.cron'
+import '@/modules/cron/infrastructure/jobs/presence-cleanup.cron'
 
 const redisUrl = new URL(env.REDIS_URL)
-
-const drizzleAdapter = DrizzleAdapter({
-  db,
-  logging: true,
-  onShutdown: () => client.end(),
-})
 
 const wsAdapter = WsAdapter({
   path: '/ws',
@@ -44,19 +36,10 @@ const queueAdapter = QueueAdapter({
 })
 
 export const adapters: AppAdapter[] = [
-  drizzleAdapter,
+  DrizzleAdapter({ url: env.DATABASE_URL }),
   wsAdapter,
   queueAdapter,
-  CronAdapter({
-    services: [
-      TaskCronJobs,
-      CleanupCronJobs,
-      HealthCheckCronJobs,
-      DigestCronJobs,
-      PresenceCronJobs,
-    ],
-    enabled: true,
-  }),
+  KickCronAdapter(),
   DevToolsAdapter({ adapters: [wsAdapter, queueAdapter] }),
   SwaggerAdapter({
     info: { title: 'Vibed (Drizzle Edition)', version: '1.0.0' },

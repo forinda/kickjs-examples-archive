@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm'
 import { Repository, Inject } from '@forinda/kickjs'
-import { DRIZZLE_DB } from '@forinda/kickjs-drizzle'
+import { DRIZZLE_DB } from '@/db'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import type { IChannelMemberRepository } from '../../domain/repositories/channel.repository'
 import { channelMembers } from '@/db/schema'

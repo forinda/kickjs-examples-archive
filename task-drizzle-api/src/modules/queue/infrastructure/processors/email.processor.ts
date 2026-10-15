@@ -1,5 +1,4 @@
-import { Service, Logger, Autowired } from '@forinda/kickjs'
-import { Job, Process } from '@forinda/kickjs-queue'
+import { Service, Logger, Autowired, Job, Process } from '@forinda/kickjs'
 import type { Job as BullMQJob } from 'bullmq'
 import { MAILER, type MailerService } from '@/plugins/mailer.plugin'
 

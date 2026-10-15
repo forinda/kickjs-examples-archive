@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Inject } from '@forinda/kickjs'
+import { Container, Controller, Get, Inject, parseQuery, HttpException } from '@forinda/kickjs'
 import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
@@ -81,25 +81,20 @@ class InMemoryActivityRepository implements IActivityRepository {
 
 @Controller()
 class TestActivityController {
-  constructor(
-    @Inject(ACTIVITY_REPOSITORY) private readonly repo: IActivityRepository,
-  ) {}
+  constructor(@Inject(ACTIVITY_REPOSITORY) private readonly repo: IActivityRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {
     const workspaceId = ctx.query.workspaceId as string
     if (!workspaceId) {
-      return ctx.badRequest('workspaceId query parameter is required')
+      throw HttpException.badRequest('workspaceId query parameter is required')
     }
-    const result = await this.repo.findPaginated(
-      {},
-      {
-        workspaceId,
-        projectId: ctx.query.projectId as string | undefined,
-        taskId: ctx.query.taskId as string | undefined,
-      },
-    )
-    ctx.json({ data: result.data, total: result.total })
+    const result = await this.repo.findPaginated(parseQuery({}), {
+      workspaceId,
+      projectId: ctx.query.projectId as string | undefined,
+      taskId: ctx.query.taskId as string | undefined,
+    })
+    return { data: result.data, total: result.total }
   }
 }
 
@@ -123,9 +118,11 @@ describe('ActivityController (integration)', () => {
   }
 
   it('GET /api/v1/activities?workspaceId=ws1 returns filtered activities', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/activities?workspaceId=ws1').expect(200)
+    const res = await request(app.handle.bind(app))
+      .get('/api/v1/activities?workspaceId=ws1')
+      .expect(200)
 
     expect(res.body.data).toHaveLength(2)
     expect(res.body.total).toBe(2)
@@ -133,15 +130,15 @@ describe('ActivityController (integration)', () => {
   })
 
   it('GET /api/v1/activities without workspaceId returns 400', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).get('/api/v1/activities').expect(400)
+    await request(app.handle.bind(app)).get('/api/v1/activities').expect(400)
   })
 
   it('GET /api/v1/activities filters by projectId', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp)
+    const res = await request(app.handle.bind(app))
       .get('/api/v1/activities?workspaceId=ws1&projectId=p1')
       .expect(200)
 
@@ -150,9 +147,9 @@ describe('ActivityController (integration)', () => {
   })
 
   it('GET /api/v1/activities for unknown workspace returns empty list', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp)
+    const res = await request(app.handle.bind(app))
       .get('/api/v1/activities?workspaceId=unknown')
       .expect(200)
 

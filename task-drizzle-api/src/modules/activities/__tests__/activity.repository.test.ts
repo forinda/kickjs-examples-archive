@@ -1,3 +1,4 @@
+import { parseQuery } from '@forinda/kickjs'
 import { describe, it, expect, beforeEach } from 'vitest'
 import type {
   IActivityRepository,
@@ -89,7 +90,7 @@ describe('InMemoryActivityRepository', () => {
     await repo.create({ workspaceId: 'ws2', actorId: 'u1', action: 'task.deleted' })
     await repo.create({ workspaceId: 'ws1', actorId: 'u2', action: 'comment.added' })
 
-    const result = await repo.findPaginated({}, { workspaceId: 'ws1' })
+    const result = await repo.findPaginated(parseQuery({}), { workspaceId: 'ws1' })
     expect(result.data).toHaveLength(2)
     expect(result.total).toBe(2)
   })
@@ -98,7 +99,7 @@ describe('InMemoryActivityRepository', () => {
     await repo.create({ workspaceId: 'ws1', projectId: 'p1', actorId: 'u1', action: 'a' })
     await repo.create({ workspaceId: 'ws1', projectId: 'p2', actorId: 'u1', action: 'b' })
 
-    const result = await repo.findPaginated({}, { workspaceId: 'ws1', projectId: 'p1' })
+    const result = await repo.findPaginated(parseQuery({}), { workspaceId: 'ws1', projectId: 'p1' })
     expect(result.data).toHaveLength(1)
     expect(result.data[0].action).toBe('a')
   })
@@ -107,7 +108,7 @@ describe('InMemoryActivityRepository', () => {
     await repo.create({ workspaceId: 'ws1', taskId: 't1', actorId: 'u1', action: 'x' })
     await repo.create({ workspaceId: 'ws1', taskId: 't2', actorId: 'u1', action: 'y' })
 
-    const result = await repo.findPaginated({}, { workspaceId: 'ws1', taskId: 't1' })
+    const result = await repo.findPaginated(parseQuery({}), { workspaceId: 'ws1', taskId: 't1' })
     expect(result.data).toHaveLength(1)
     expect(result.data[0].action).toBe('x')
   })
@@ -117,10 +118,9 @@ describe('InMemoryActivityRepository', () => {
       await repo.create({ workspaceId: 'ws1', actorId: 'u1', action: `action-${i}` })
     }
 
-    const result = await repo.findPaginated(
-      { pagination: { page: 2, limit: 2 } },
-      { workspaceId: 'ws1' },
-    )
+    const result = await repo.findPaginated(parseQuery({ page: '2', limit: '2' }), {
+      workspaceId: 'ws1',
+    })
     expect(result.data).toHaveLength(2)
     expect(result.total).toBe(5)
   })

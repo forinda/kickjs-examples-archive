@@ -1,4 +1,4 @@
-import type { DrizzleQueryParamsConfig } from '@forinda/kickjs-drizzle'
+import type { DrizzleQueryParamsConfig } from '@/shared/infrastructure/query-adapter'
 import { attachments } from '@/db/schema'
 
 export const ATTACHMENT_QUERY_CONFIG: DrizzleQueryParamsConfig = {

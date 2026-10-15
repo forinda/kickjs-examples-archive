@@ -1,5 +1,5 @@
 import { Repository, Inject, HttpException } from '@forinda/kickjs'
-import { DRIZZLE_DB } from '@forinda/kickjs-drizzle'
+import { DRIZZLE_DB } from '@/db'
 import { eq, sql } from 'drizzle-orm'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import type { ParsedQuery } from '@forinda/kickjs'

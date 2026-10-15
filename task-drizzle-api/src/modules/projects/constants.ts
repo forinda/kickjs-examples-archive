@@ -1,4 +1,4 @@
-import type { DrizzleQueryParamsConfig } from '@forinda/kickjs-drizzle'
+import type { DrizzleQueryParamsConfig } from '@/shared/infrastructure/query-adapter'
 import { projects } from '@/db/schema'
 
 export const PROJECT_QUERY_CONFIG: DrizzleQueryParamsConfig = {

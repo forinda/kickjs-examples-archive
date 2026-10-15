@@ -1,14 +1,25 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Post, Put, Delete, Inject, Service } from '@forinda/kickjs'
+import {
+  Container,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Inject,
+  Service,
+  reply,
+  HttpException,
+} from '@forinda/kickjs'
 import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   USER_REPOSITORY,
   type IUserRepository,
-  type User,
+  type UserWithCredentials as User,
   type NewUser,
 } from '../domain/repositories/user.repository'
 import { GetUserUseCase } from '../application/use-cases/get-user.use-case'
@@ -100,27 +111,25 @@ class InMemoryUserRepository implements IUserRepository {
 
 @Controller()
 class TestUserController {
-  constructor(
-    @Inject(USER_REPOSITORY) private readonly repo: IUserRepository,
-  ) {}
+  constructor(@Inject(USER_REPOSITORY) private readonly repo: IUserRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {
     const users = await this.repo.findAll()
-    ctx.json({ data: users, total: users.length })
+    return { data: users, total: users.length }
   }
 
   @Get('/:id')
   async getById(ctx: RequestContext) {
     const user = await this.repo.findById(ctx.params.id)
-    if (!user) return ctx.notFound('User not found')
-    ctx.json({ data: user })
+    if (!user) throw HttpException.notFound('User not found')
+    return { data: user }
   }
 
   @Delete('/:id')
   async remove(ctx: RequestContext) {
     await this.repo.delete(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }
 
@@ -144,9 +153,9 @@ describe('UserController (integration)', () => {
   }
 
   it('GET /api/v1/users returns paginated user list', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/users').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/users').expect(200)
 
     expect(res.body.data).toHaveLength(2)
     expect(res.body.total).toBe(2)
@@ -154,35 +163,35 @@ describe('UserController (integration)', () => {
   })
 
   it('GET /api/v1/users/:id returns a single user', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/users/u1').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/users/u1').expect(200)
 
     expect(res.body.data.email).toBe('alice@test.com')
     expect(res.body.data.firstName).toBe('Alice')
   })
 
   it('GET /api/v1/users/:id returns 404 for unknown user', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).get('/api/v1/users/unknown').expect(404)
+    await request(app.handle.bind(app)).get('/api/v1/users/unknown').expect(404)
   })
 
   it('DELETE /api/v1/users/:id removes the user', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).delete('/api/v1/users/u1').expect(204)
+    await request(app.handle.bind(app)).delete('/api/v1/users/u1').expect(204)
 
     // Verify user is gone
-    await request(expressApp).get('/api/v1/users/u1').expect(404)
+    await request(app.handle.bind(app)).get('/api/v1/users/u1').expect(404)
   })
 
   it('DELETE then list shows reduced count', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).delete('/api/v1/users/u1').expect(204)
+    await request(app.handle.bind(app)).delete('/api/v1/users/u1').expect(204)
 
-    const res = await request(expressApp).get('/api/v1/users').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/users').expect(200)
     expect(res.body.data).toHaveLength(1)
     expect(res.body.data[0].email).toBe('bob@test.com')
   })

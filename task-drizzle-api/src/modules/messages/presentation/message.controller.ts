@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Autowired, Middleware } from '@forinda/kickjs'
+import { Controller, Get, Post, Put, Delete, Autowired, Middleware, reply } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/shared/presentation/middlewares/auth-bridge.middleware'
@@ -25,7 +25,7 @@ export class MessageController {
   async create(ctx: RequestContext) {
     const user = getUser(ctx)
     const result = await this.createMessageUseCase.execute(ctx.body, user.id)
-    ctx.created(successResponse(result))
+    return reply.created(successResponse(result))
   }
 
   @Get('/channel/:channelId')
@@ -36,20 +36,20 @@ export class MessageController {
       ctx.query.cursor as string | undefined,
       ctx.query.limit ? Number(ctx.query.limit) : undefined,
     )
-    ctx.json(successResponse(messages))
+    return successResponse(messages)
   }
 
   @Put('/:id', { body: updateMessageSchema, name: 'UpdateMessage' })
   @ApiTags('Message')
   async update(ctx: RequestContext) {
     const result = await this.updateMessageUseCase.execute(ctx.params.id, ctx.body)
-    ctx.json(successResponse(result))
+    return successResponse(result)
   }
 
   @Delete('/:id')
   @ApiTags('Message')
   async remove(ctx: RequestContext) {
     await this.deleteMessageUseCase.execute(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }

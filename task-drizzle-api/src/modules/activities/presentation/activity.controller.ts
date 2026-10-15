@@ -1,4 +1,11 @@
-import { Controller, Get, Autowired, Middleware, ApiQueryParams } from '@forinda/kickjs'
+import {
+  Controller,
+  Get,
+  Autowired,
+  Middleware,
+  ApiQueryParams,
+  HttpException,
+} from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/shared/presentation/middlewares/auth-bridge.middleware'
@@ -17,7 +24,7 @@ export class ActivityController {
   async list(ctx: RequestContext) {
     const workspaceId = ctx.query.workspaceId as string
     if (!workspaceId) {
-      return ctx.badRequest('workspaceId query parameter is required')
+      throw HttpException.badRequest('workspaceId query parameter is required')
     }
 
     return ctx.paginate(

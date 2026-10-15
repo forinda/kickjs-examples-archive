@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type { IUserRepository, User, NewUser } from '../domain/repositories/user.repository'
+import type {
+  IUserRepository,
+  UserWithCredentials as User,
+  NewUser,
+} from '../domain/repositories/user.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
@@ -75,7 +79,12 @@ describe('InMemoryUserRepository', () => {
   })
 
   it('findById returns the correct user', async () => {
-    const created = await repo.create({ email: 'bob@test.com', passwordHash: 'h', firstName: 'Bob', lastName: 'Test' })
+    const created = await repo.create({
+      email: 'bob@test.com',
+      passwordHash: 'h',
+      firstName: 'Bob',
+      lastName: 'Test',
+    })
     const found = await repo.findById(created.id)
 
     expect(found).not.toBeNull()
@@ -88,7 +97,12 @@ describe('InMemoryUserRepository', () => {
   })
 
   it('findByEmail returns the correct user', async () => {
-    await repo.create({ email: 'carol@test.com', passwordHash: 'h', firstName: 'Carol', lastName: 'Test' })
+    await repo.create({
+      email: 'carol@test.com',
+      passwordHash: 'h',
+      firstName: 'Carol',
+      lastName: 'Test',
+    })
     const found = await repo.findByEmail('carol@test.com')
 
     expect(found).not.toBeNull()
@@ -104,7 +118,12 @@ describe('InMemoryUserRepository', () => {
   })
 
   it('update modifies user fields', async () => {
-    const user = await repo.create({ email: 'dave@test.com', passwordHash: 'h', firstName: 'Dave', lastName: 'Test' })
+    const user = await repo.create({
+      email: 'dave@test.com',
+      passwordHash: 'h',
+      firstName: 'Dave',
+      lastName: 'Test',
+    })
     const updated = await repo.update(user.id, { firstName: 'Dave' })
 
     expect(updated.firstName).toBe('Dave')
@@ -112,7 +131,12 @@ describe('InMemoryUserRepository', () => {
   })
 
   it('delete removes the user', async () => {
-    const user = await repo.create({ email: 'eve@test.com', passwordHash: 'h', firstName: 'Eve', lastName: 'Test' })
+    const user = await repo.create({
+      email: 'eve@test.com',
+      passwordHash: 'h',
+      firstName: 'Eve',
+      lastName: 'Test',
+    })
     await repo.delete(user.id)
 
     const found = await repo.findById(user.id)

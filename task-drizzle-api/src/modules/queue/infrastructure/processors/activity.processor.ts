@@ -1,5 +1,4 @@
-import { Service, Autowired, Logger } from '@forinda/kickjs'
-import { Job, Process } from '@forinda/kickjs-queue'
+import { Service, Autowired, Logger, Job, Process } from '@forinda/kickjs'
 import type { Job as BullMQJob } from 'bullmq'
 import { DrizzleActivityRepository } from '@/modules/activities/infrastructure/repositories/drizzle-activity.repository'
 

@@ -7,6 +7,8 @@ import {
   Autowired,
   Middleware,
   ApiQueryParams,
+  reply,
+  HttpException,
 } from '@forinda/kickjs'
 
 import type { RequestContext } from '@forinda/kickjs'
@@ -42,7 +44,7 @@ export class TaskController {
   async create(ctx: RequestContext) {
     const user = getUser(ctx)
     const result = await this.createTaskUseCase.execute(ctx.body, user.id)
-    ctx.created(successResponse(result))
+    return reply.created(successResponse(result))
   }
 
   @Get('/')
@@ -59,22 +61,22 @@ export class TaskController {
   @ApiTags('Task')
   async getById(ctx: RequestContext) {
     const result = await this.getTaskUseCase.execute(ctx.params.id)
-    if (!result) return ctx.notFound('Task not found')
-    ctx.json(successResponse(result))
+    if (!result) throw HttpException.notFound('Task not found')
+    return successResponse(result)
   }
 
   @Put('/:id', { body: updateTaskSchema, name: 'UpdateTask' })
   @ApiTags('Task')
   async update(ctx: RequestContext) {
     const result = await this.updateTaskUseCase.execute(ctx.params.id, ctx.body)
-    ctx.json(successResponse(result))
+    return successResponse(result)
   }
 
   @Delete('/:id')
   @ApiTags('Task')
   async remove(ctx: RequestContext) {
     await this.deleteTaskUseCase.execute(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 
   // --- Assignees ---
@@ -83,21 +85,21 @@ export class TaskController {
   @ApiTags('Task')
   async getAssignees(ctx: RequestContext) {
     const assignees = await this.manageAssigneesUseCase.getAssignees(ctx.params.id)
-    ctx.json(successResponse(assignees))
+    return successResponse(assignees)
   }
 
   @Post('/:id/assignees/:userId')
   @ApiTags('Task')
   async addAssignee(ctx: RequestContext) {
     const result = await this.manageAssigneesUseCase.addAssignee(ctx.params.id, ctx.params.userId)
-    ctx.created(successResponse(result))
+    return reply.created(successResponse(result))
   }
 
   @Delete('/:id/assignees/:userId')
   @ApiTags('Task')
   async removeAssignee(ctx: RequestContext) {
     await this.manageAssigneesUseCase.removeAssignee(ctx.params.id, ctx.params.userId)
-    ctx.noContent()
+    return reply.noContent()
   }
 
   // --- Subtasks ---
@@ -106,6 +108,6 @@ export class TaskController {
   @ApiTags('Task')
   async listSubtasks(ctx: RequestContext) {
     const subtasks = await this.listSubtasksUseCase.execute(ctx.params.id)
-    ctx.json(successResponse(subtasks))
+    return successResponse(subtasks)
   }
 }

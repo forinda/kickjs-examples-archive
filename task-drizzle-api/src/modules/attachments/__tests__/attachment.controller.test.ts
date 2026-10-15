@@ -1,7 +1,16 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Delete, Inject } from '@forinda/kickjs'
+import {
+  Container,
+  Controller,
+  Get,
+  Delete,
+  Inject,
+  parseQuery,
+  reply,
+  HttpException,
+} from '@forinda/kickjs'
 import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
@@ -79,27 +88,28 @@ class InMemoryAttachmentRepository implements IAttachmentRepository {
 
 @Controller()
 class TestAttachmentController {
-  constructor(
-    @Inject(ATTACHMENT_REPOSITORY) private readonly repo: IAttachmentRepository,
-  ) {}
+  constructor(@Inject(ATTACHMENT_REPOSITORY) private readonly repo: IAttachmentRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {
-    const result = await this.repo.findPaginated({}, ctx.query.taskId as string | undefined)
-    ctx.json({ data: result.data, total: result.total })
+    const result = await this.repo.findPaginated(
+      parseQuery({}),
+      ctx.query.taskId as string | undefined,
+    )
+    return { data: result.data, total: result.total }
   }
 
   @Get('/:id')
   async getById(ctx: RequestContext) {
     const result = await this.repo.findById(ctx.params.id)
-    if (!result) return ctx.notFound('Attachment not found')
-    ctx.json({ data: result })
+    if (!result) throw HttpException.notFound('Attachment not found')
+    return { data: result }
   }
 
   @Delete('/:id')
   async remove(ctx: RequestContext) {
     await this.repo.delete(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }
 
@@ -123,9 +133,9 @@ describe('AttachmentController (integration)', () => {
   }
 
   it('GET /api/v1/attachments returns all attachments', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/attachments').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/attachments').expect(200)
 
     expect(res.body.data).toHaveLength(2)
     expect(res.body.total).toBe(2)
@@ -133,34 +143,34 @@ describe('AttachmentController (integration)', () => {
   })
 
   it('GET /api/v1/attachments/:id returns a single attachment', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/attachments/att1').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/attachments/att1').expect(200)
 
     expect(res.body.data.fileName).toBe('report.pdf')
     expect(res.body.data.mimeType).toBe('application/pdf')
   })
 
   it('GET /api/v1/attachments/:id returns 404 for unknown attachment', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).get('/api/v1/attachments/unknown').expect(404)
+    await request(app.handle.bind(app)).get('/api/v1/attachments/unknown').expect(404)
   })
 
   it('DELETE /api/v1/attachments/:id removes the attachment', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).delete('/api/v1/attachments/att1').expect(204)
+    await request(app.handle.bind(app)).delete('/api/v1/attachments/att1').expect(204)
 
-    await request(expressApp).get('/api/v1/attachments/att1').expect(404)
+    await request(app.handle.bind(app)).get('/api/v1/attachments/att1').expect(404)
   })
 
   it('DELETE then list shows reduced count', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).delete('/api/v1/attachments/att1').expect(204)
+    await request(app.handle.bind(app)).delete('/api/v1/attachments/att1').expect(204)
 
-    const res = await request(expressApp).get('/api/v1/attachments').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/attachments').expect(200)
     expect(res.body.data).toHaveLength(1)
     expect(res.body.data[0].fileName).toBe('image.png')
   })

@@ -1,4 +1,4 @@
-import type { AppModuleClass } from '@forinda/kickjs'
+import { defineModules } from '@forinda/kickjs'
 import { UserModule } from './users'
 import { AuthModule } from './auth'
 import { WorkspaceModule } from './workspaces'
@@ -14,19 +14,18 @@ import { MessageModule } from './messages'
 import { StatModule } from './stats'
 import { QueueModule } from './queue/queue.module'
 
-export const modules: AppModuleClass[] = [
-  UserModule,
-  AuthModule,
-  WorkspaceModule,
-  ProjectModule,
-  TaskModule,
-  LabelModule,
-  CommentModule,
-  AttachmentModule,
-  NotificationModule,
-  ActivityModule,
-  ChannelModule,
-  MessageModule,
-  StatModule,
-  QueueModule,
-]
+export const modules = defineModules()
+  .mount(UserModule())
+  .mount(AuthModule())
+  .mount(WorkspaceModule())
+  .mount(ProjectModule())
+  .mount(TaskModule())
+  .mount(LabelModule())
+  .mount(CommentModule())
+  .mount(AttachmentModule())
+  .mount(NotificationModule())
+  .mount(ActivityModule())
+  .mount(ChannelModule())
+  .mount(MessageModule())
+  .mount(StatModule())
+  .mount(QueueModule())

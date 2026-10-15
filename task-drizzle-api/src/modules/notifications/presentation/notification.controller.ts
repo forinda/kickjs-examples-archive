@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Autowired, Middleware, ApiQueryParams } from '@forinda/kickjs'
+import { Controller, Get, Put, Autowired, Middleware, ApiQueryParams, reply } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/shared/presentation/middlewares/auth-bridge.middleware'
@@ -35,14 +35,14 @@ export class NotificationController {
   async unreadCount(ctx: RequestContext) {
     const user = getUser(ctx)
     const count = await this.unreadCountUseCase.execute(user.id)
-    ctx.json(successResponse({ count }))
+    return successResponse({ count })
   }
 
   @Put('/:id/read')
   @ApiTags('Notification')
   async markRead(ctx: RequestContext) {
     await this.markReadUseCase.execute(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 
   @Put('/read-all')
@@ -50,6 +50,6 @@ export class NotificationController {
   async markAllRead(ctx: RequestContext) {
     const user = getUser(ctx)
     await this.markAllReadUseCase.execute(user.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }

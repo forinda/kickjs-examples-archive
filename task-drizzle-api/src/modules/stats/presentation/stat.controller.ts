@@ -17,14 +17,14 @@ export class StatController {
   @ApiTags('Stats')
   async workspaceStats(ctx: RequestContext) {
     const stats = await this.workspaceStatsUseCase.execute(ctx.params.workspaceId)
-    ctx.json(successResponse(stats))
+    return successResponse(stats)
   }
 
   @Get('/project/:projectId')
   @ApiTags('Stats')
   async projectStats(ctx: RequestContext) {
     const stats = await this.projectStatsUseCase.execute(ctx.params.projectId)
-    ctx.json(successResponse(stats))
+    return successResponse(stats)
   }
 
   @Get('/workspace/:workspaceId/stream')

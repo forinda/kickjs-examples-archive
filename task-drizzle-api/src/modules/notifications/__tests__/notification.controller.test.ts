@@ -1,7 +1,16 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Put, Inject } from '@forinda/kickjs'
+import {
+  Container,
+  Controller,
+  Get,
+  Put,
+  Inject,
+  parseQuery,
+  reply,
+  HttpException,
+} from '@forinda/kickjs'
 import type { RequestContext, ParsedQuery } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
@@ -100,38 +109,36 @@ class InMemoryNotificationRepository implements INotificationRepository {
 
 @Controller()
 class TestNotificationController {
-  constructor(
-    @Inject(NOTIFICATION_REPOSITORY) private readonly repo: INotificationRepository,
-  ) {}
+  constructor(@Inject(NOTIFICATION_REPOSITORY) private readonly repo: INotificationRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {
     const recipientId = ctx.headers['x-user-id'] as string
-    if (!recipientId) return ctx.badRequest('x-user-id header is required')
-    const result = await this.repo.findPaginated({}, recipientId)
-    ctx.json({ data: result.data, total: result.total })
+    if (!recipientId) throw HttpException.badRequest('x-user-id header is required')
+    const result = await this.repo.findPaginated(parseQuery({}), recipientId)
+    return { data: result.data, total: result.total }
   }
 
   @Get('/unread-count')
   async unreadCount(ctx: RequestContext) {
     const recipientId = ctx.headers['x-user-id'] as string
-    if (!recipientId) return ctx.badRequest('x-user-id header is required')
+    if (!recipientId) throw HttpException.badRequest('x-user-id header is required')
     const count = await this.repo.unreadCount(recipientId)
-    ctx.json({ data: { count } })
+    return { data: { count } }
   }
 
   @Put('/:id/read')
   async markRead(ctx: RequestContext) {
     await this.repo.markRead(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 
   @Put('/read-all')
   async markAllRead(ctx: RequestContext) {
     const recipientId = ctx.headers['x-user-id'] as string
-    if (!recipientId) return ctx.badRequest('x-user-id header is required')
+    if (!recipientId) throw HttpException.badRequest('x-user-id header is required')
     await this.repo.markAllRead(recipientId)
-    ctx.noContent()
+    return reply.noContent()
   }
 }
 
@@ -155,9 +162,9 @@ describe('NotificationController (integration)', () => {
   }
 
   it('GET /api/v1/notifications returns notifications for a user', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp)
+    const res = await request(app.handle.bind(app))
       .get('/api/v1/notifications')
       .set('x-user-id', 'u1')
       .expect(200)
@@ -167,9 +174,9 @@ describe('NotificationController (integration)', () => {
   })
 
   it('GET /api/v1/notifications/unread-count returns unread count', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp)
+    const res = await request(app.handle.bind(app))
       .get('/api/v1/notifications/unread-count')
       .set('x-user-id', 'u1')
       .expect(200)
@@ -178,11 +185,11 @@ describe('NotificationController (integration)', () => {
   })
 
   it('PUT /api/v1/notifications/:id/read marks a notification as read', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp).put('/api/v1/notifications/n1/read').expect(204)
+    await request(app.handle.bind(app)).put('/api/v1/notifications/n1/read').expect(204)
 
-    const res = await request(expressApp)
+    const res = await request(app.handle.bind(app))
       .get('/api/v1/notifications/unread-count')
       .set('x-user-id', 'u1')
       .expect(200)
@@ -191,14 +198,14 @@ describe('NotificationController (integration)', () => {
   })
 
   it('PUT /api/v1/notifications/read-all marks all as read for a user', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    await request(expressApp)
+    await request(app.handle.bind(app))
       .put('/api/v1/notifications/read-all')
       .set('x-user-id', 'u1')
       .expect(204)
 
-    const res = await request(expressApp)
+    const res = await request(app.handle.bind(app))
       .get('/api/v1/notifications/unread-count')
       .set('x-user-id', 'u1')
       .expect(200)
@@ -206,7 +213,7 @@ describe('NotificationController (integration)', () => {
     expect(res.body.data.count).toBe(0)
 
     // u2 should still have unread notifications
-    const res2 = await request(expressApp)
+    const res2 = await request(app.handle.bind(app))
       .get('/api/v1/notifications/unread-count')
       .set('x-user-id', 'u2')
       .expect(200)

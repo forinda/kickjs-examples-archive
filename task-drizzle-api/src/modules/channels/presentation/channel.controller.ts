@@ -7,6 +7,8 @@ import {
   Autowired,
   Middleware,
   ApiQueryParams,
+  reply,
+  HttpException,
 } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
@@ -39,7 +41,7 @@ export class ChannelController {
   async create(ctx: RequestContext) {
     const user = getUser(ctx)
     const result = await this.createChannelUseCase.execute(ctx.body, user.id)
-    ctx.created(successResponse(result))
+    return reply.created(successResponse(result))
   }
 
   @Get('/')
@@ -48,7 +50,7 @@ export class ChannelController {
   async list(ctx: RequestContext) {
     const workspaceId = ctx.query.workspaceId as string
     if (!workspaceId) {
-      return ctx.badRequest('workspaceId query parameter is required')
+      throw HttpException.badRequest('workspaceId query parameter is required')
     }
 
     return ctx.paginate(
@@ -61,22 +63,22 @@ export class ChannelController {
   @ApiTags('Channel')
   async getById(ctx: RequestContext) {
     const result = await this.getChannelUseCase.execute(ctx.params.id)
-    if (!result) return ctx.notFound('Channel not found')
-    ctx.json(successResponse(result))
+    if (!result) throw HttpException.notFound('Channel not found')
+    return successResponse(result)
   }
 
   @Put('/:id', { body: updateChannelSchema, name: 'UpdateChannel' })
   @ApiTags('Channel')
   async update(ctx: RequestContext) {
     const result = await this.updateChannelUseCase.execute(ctx.params.id, ctx.body)
-    ctx.json(successResponse(result))
+    return successResponse(result)
   }
 
   @Delete('/:id')
   @ApiTags('Channel')
   async remove(ctx: RequestContext) {
     await this.deleteChannelUseCase.execute(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 
   // --- Members ---
@@ -85,20 +87,20 @@ export class ChannelController {
   @ApiTags('Channel')
   async listMembers(ctx: RequestContext) {
     const members = await this.manageMembersUseCase.listMembers(ctx.params.id)
-    ctx.json(successResponse(members))
+    return successResponse(members)
   }
 
   @Post('/:id/members/:userId')
   @ApiTags('Channel')
   async addMember(ctx: RequestContext) {
     const result = await this.manageMembersUseCase.addMember(ctx.params.id, ctx.params.userId)
-    ctx.created(successResponse(result))
+    return reply.created(successResponse(result))
   }
 
   @Delete('/:id/members/:userId')
   @ApiTags('Channel')
   async removeMember(ctx: RequestContext) {
     await this.manageMembersUseCase.removeMember(ctx.params.id, ctx.params.userId)
-    ctx.noContent()
+    return reply.noContent()
   }
 }

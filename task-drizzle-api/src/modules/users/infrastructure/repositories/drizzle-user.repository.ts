@@ -1,6 +1,6 @@
 import { Repository, Inject, HttpException } from '@forinda/kickjs'
-import { DRIZZLE_DB } from '@forinda/kickjs-drizzle'
-import { eq, sql } from 'drizzle-orm'
+import { DRIZZLE_DB } from '@/db'
+import { eq, getTableColumns, sql } from 'drizzle-orm'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import type { ParsedQuery } from '@forinda/kickjs'
 import { users } from '@/db/schema'
@@ -11,12 +11,15 @@ import { USER_QUERY_CONFIG } from '../../constants'
 import type { AppDatabase } from '@/db'
 import { queryAdapter } from '@/shared/infrastructure/query-adapter'
 
+// Every read/write except findByEmail (the credential lookup) omits the hash.
+const { passwordHash: _passwordHash, ...publicColumns } = getTableColumns(users)
+
 @Repository()
 export class DrizzleUserRepository implements IUserRepository {
   constructor(@Inject(DRIZZLE_DB) private db: AppDatabase) {}
 
   async findById(id: string) {
-    const [user] = await this.db.select().from(users).where(eq(users.id, id))
+    const [user] = await this.db.select(publicColumns).from(users).where(eq(users.id, id))
     return user ?? null
   }
 
@@ -26,7 +29,7 @@ export class DrizzleUserRepository implements IUserRepository {
   }
 
   async findAll() {
-    return this.db.select().from(users)
+    return this.db.select(publicColumns).from(users)
   }
 
   async findPaginated(parsed: ParsedQuery) {
@@ -34,7 +37,7 @@ export class DrizzleUserRepository implements IUserRepository {
 
     const [data, countResult] = await Promise.all([
       this.db
-        .select()
+        .select(publicColumns)
         .from(users)
         .where(query.where)
         .orderBy(...query.orderBy)
@@ -50,12 +53,16 @@ export class DrizzleUserRepository implements IUserRepository {
   }
 
   async create(dto: CreateUserDTO) {
-    const [user] = await this.db.insert(users).values(dto).returning()
+    const [user] = await this.db.insert(users).values(dto).returning(publicColumns)
     return user
   }
 
   async update(id: string, dto: UpdateUserDTO) {
-    const [user] = await this.db.update(users).set(dto).where(eq(users.id, id)).returning()
+    const [user] = await this.db
+      .update(users)
+      .set(dto)
+      .where(eq(users.id, id))
+      .returning(publicColumns)
     if (!user) throw HttpException.notFound('User not found')
     return user
   }

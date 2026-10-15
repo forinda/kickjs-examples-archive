@@ -66,20 +66,18 @@ class InMemoryStatsRepository implements IStatsRepository {
 
 @Controller()
 class TestStatController {
-  constructor(
-    @Inject(STATS_REPOSITORY) private readonly repo: IStatsRepository,
-  ) {}
+  constructor(@Inject(STATS_REPOSITORY) private readonly repo: IStatsRepository) {}
 
   @Get('/workspace/:workspaceId')
   async workspaceStats(ctx: RequestContext) {
     const stats = await this.repo.getWorkspaceStats(ctx.params.workspaceId)
-    ctx.json({ data: stats })
+    return { data: stats }
   }
 
   @Get('/project/:projectId')
   async projectStats(ctx: RequestContext) {
     const stats = await this.repo.getProjectStats(ctx.params.projectId)
-    ctx.json({ data: stats })
+    return { data: stats }
   }
 }
 
@@ -103,9 +101,9 @@ describe('StatController (integration)', () => {
   }
 
   it('GET /api/v1/stats/workspace/:workspaceId returns workspace stats', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/stats/workspace/ws1').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/stats/workspace/ws1').expect(200)
 
     expect(res.body.data.memberCount).toBe(5)
     expect(res.body.data.projectCount).toBe(3)
@@ -116,18 +114,20 @@ describe('StatController (integration)', () => {
   })
 
   it('GET /api/v1/stats/workspace/:workspaceId returns defaults for unknown workspace', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/stats/workspace/unknown').expect(200)
+    const res = await request(app.handle.bind(app))
+      .get('/api/v1/stats/workspace/unknown')
+      .expect(200)
 
     expect(res.body.data.memberCount).toBe(0)
     expect(res.body.data.taskCount).toBe(0)
   })
 
   it('GET /api/v1/stats/project/:projectId returns project stats', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/stats/project/p1').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/stats/project/p1').expect(200)
 
     expect(res.body.data.taskCount).toBe(10)
     expect(res.body.data.completionPercent).toBe(30)
@@ -136,9 +136,9 @@ describe('StatController (integration)', () => {
   })
 
   it('GET /api/v1/stats/project/:projectId returns defaults for unknown project', async () => {
-    const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
+    const { app } = await createTestApp({ modules: [buildTestModule()] })
 
-    const res = await request(expressApp).get('/api/v1/stats/project/unknown').expect(200)
+    const res = await request(app.handle.bind(app)).get('/api/v1/stats/project/unknown').expect(200)
 
     expect(res.body.data.taskCount).toBe(0)
     expect(res.body.data.completionPercent).toBe(0)

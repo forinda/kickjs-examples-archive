@@ -1,6 +1,6 @@
 import { eq, sql } from 'drizzle-orm'
 import { Repository, Inject } from '@forinda/kickjs'
-import { DRIZZLE_DB } from '@forinda/kickjs-drizzle'
+import { DRIZZLE_DB } from '@/db'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import type { IStatsRepository } from '../../domain/repositories/stat.repository'
 import { workspaceMembers, projects, tasks, channels, comments, attachments } from '@/db/schema'

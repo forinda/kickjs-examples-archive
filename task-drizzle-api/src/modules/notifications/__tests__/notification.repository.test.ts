@@ -1,3 +1,4 @@
+import { parseQuery } from '@forinda/kickjs'
 import { describe, it, expect, beforeEach } from 'vitest'
 import type {
   INotificationRepository,
@@ -126,7 +127,7 @@ describe('InMemoryNotificationRepository', () => {
       body: 'B2',
     })
 
-    const result = await repo.findPaginated({}, 'u1')
+    const result = await repo.findPaginated(parseQuery({}), 'u1')
     expect(result.data).toHaveLength(1)
     expect(result.total).toBe(1)
   })
@@ -189,7 +190,7 @@ describe('InMemoryNotificationRepository', () => {
 
     expect(await repo.unreadCount('u1')).toBe(2)
 
-    const all = await repo.findPaginated({}, 'u1')
+    const all = await repo.findPaginated(parseQuery({}), 'u1')
     await repo.markRead(all.data[0].id)
 
     expect(await repo.unreadCount('u1')).toBe(1)
