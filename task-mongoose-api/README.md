@@ -1,12 +1,12 @@
 # task-mongoose-api
 
-A full task-management API (workspaces, projects, tasks, comments, labels, attachments, channels, chat, notifications, activity, stats) on **MongoDB + Mongoose**, in a DDD layout (`domain/` · `application/` · `infrastructure/` · `presentation/` per module).
+A full task-management API (workspaces, projects, tasks, comments, labels, attachments, channels, chat, notifications, activity, stats) on **MongoDB + Mongoose**, in the CLI's flat module layout (`<name>.module.ts` · `.controller.ts` · `.service.ts` · `.repository.ts` · `.schema.ts` · `.dto.ts` per module).
 
 What it shows:
 
-- `src/auth/` — the [BYO Auth recipe](https://kickjs.app/guide/byo-recipes#auth): `AuthAdapter` with `defaultPolicy: 'protected'`, a JWT strategy, `@Public` route flag, `@RequireRole({ roles: ['superadmin'] })`. Replaces the removed `@forinda/kickjs-auth`. `LoadAuthUser` runs `beforeValidation`, so anonymous requests get 401 and the membership guards (`src/shared/guards`) can read `ctx.get('user')`.
-- Repositories — one file each (`modules/*/infrastructure/repositories/*.repository.ts`): `createXRepository(connection)` factory, `XRepository = ReturnType<…>`, `X_REPOSITORY` token, bound in the module's `register()` with the connection the Mongoose adapter registers (`MONGO_CONNECTION`).
-- `src/shared/infrastructure/` — Mongoose and Redis clients as `defineAdapter()`s: connect in `beforeStart`, `onHealthCheck` feeding `GET /health/ready`, close in `shutdown`.
+- The [BYO Auth recipe](https://kickjs.app/guide/byo-recipes#auth): `AuthAdapter` (`src/adapters/auth.adapter.ts`) with `defaultPolicy: 'protected'`, a JWT strategy and `@Public` route flag (`src/auth.ts`), `@RequireRole({ roles: ['superadmin'] })` (`src/guards/require-role.guard.ts`). Replaces the removed `@forinda/kickjs-auth`. `LoadAuthUser` (`src/contributors/load-auth-user.contributor.ts`) runs `beforeValidation`, so anonymous requests get 401 and the membership guards (`src/guards`) can read `ctx.get('user')`.
+- Repositories — one file each (`modules/*/*.repository.ts`, next to the Mongoose model in `*.schema.ts`): `createXRepository(connection)` factory, `XRepository = ReturnType<…>`, `X_REPOSITORY` token, bound in the module's `register()` with the connection the Mongoose adapter registers (`MONGO_CONNECTION`).
+- `src/adapters/` — Mongoose and Redis clients as `defineAdapter()`s: connect in `beforeStart`, `onHealthCheck` feeding `GET /health/ready`, close in `shutdown`.
 - Background jobs — `@Job` / `@Process` classes in `modules/queue`, run by `QueueAdapter` (`@forinda/kickjs-queue`, BullMQ) and enqueued through `JOB_DISPATCHER`.
 - Scheduled jobs — `@Cron` methods in `modules/cron`, run by `KickCronAdapter()`.
 - WebSockets — `@WsController` chat with presence (`@forinda/kickjs-ws`, at `/ws/chat`).

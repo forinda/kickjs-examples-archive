@@ -1,5 +1,5 @@
 import { defineModule } from '@forinda/kickjs'
-import { StatsController } from './presentation/stats.controller'
+import { StatsController } from './stats.controller'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()

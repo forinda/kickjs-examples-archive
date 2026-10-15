@@ -1,10 +1,10 @@
 import { defineModule } from '@forinda/kickjs'
-import { UsersController } from './presentation/users.controller'
+import { UsersController } from './users.controller'
 import {
   USER_REPOSITORY,
   createUserRepository,
-} from '@/modules/users/infrastructure/repositories/user.repository'
-import { MONGO_CONNECTION } from '@/shared/infrastructure/database/mongoose.adapter'
+} from './user.repository'
+import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
 // decorators register in the DI container.

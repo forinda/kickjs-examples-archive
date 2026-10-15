@@ -1,14 +1,14 @@
 import { defineModule } from '@forinda/kickjs'
-import { WorkspacesController } from './presentation/workspaces.controller'
+import { WorkspacesController } from './workspaces.controller'
 import {
   WORKSPACE_REPOSITORY,
   createWorkspaceRepository,
-} from '@/modules/workspaces/infrastructure/repositories/workspace.repository'
-import { MONGO_CONNECTION } from '@/shared/infrastructure/database/mongoose.adapter'
+} from './workspace.repository'
+import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 import {
   WORKSPACE_MEMBER_REPOSITORY,
   createWorkspaceMemberRepository,
-} from '@/modules/workspaces/infrastructure/repositories/workspace-member.repository'
+} from './workspace-member.repository'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
 // decorators register in the DI container.

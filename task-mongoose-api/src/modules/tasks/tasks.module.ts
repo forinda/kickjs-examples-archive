@@ -1,10 +1,10 @@
 import { defineModule } from '@forinda/kickjs'
-import { TasksController } from './presentation/tasks.controller'
+import { TasksController } from './tasks.controller'
 import {
   TASK_REPOSITORY,
   createTaskRepository,
-} from '@/modules/tasks/infrastructure/repositories/task.repository'
-import { MONGO_CONNECTION } from '@/shared/infrastructure/database/mongoose.adapter'
+} from './task.repository'
+import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
 // decorators register in the DI container.

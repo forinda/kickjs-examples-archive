@@ -1,10 +1,10 @@
 import { defineModule } from '@forinda/kickjs'
-import { LabelsController } from './presentation/labels.controller'
+import { LabelsController } from './labels.controller'
 import {
   LABEL_REPOSITORY,
   createLabelRepository,
-} from '@/modules/labels/infrastructure/repositories/label.repository'
-import { MONGO_CONNECTION } from '@/shared/infrastructure/database/mongoose.adapter'
+} from './label.repository'
+import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
 // decorators register in the DI container.

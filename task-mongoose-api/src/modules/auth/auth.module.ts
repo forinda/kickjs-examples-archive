@@ -1,10 +1,10 @@
 import { defineModule } from '@forinda/kickjs'
-import { AuthController } from './presentation/auth.controller'
+import { AuthController } from './auth.controller'
 import {
   REFRESH_TOKEN_REPOSITORY,
   createRefreshTokenRepository,
-} from '@/modules/auth/infrastructure/repositories/refresh-token.repository'
-import { MONGO_CONNECTION } from '@/shared/infrastructure/database/mongoose.adapter'
+} from './refresh-token.repository'
+import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
 // decorators register in the DI container.

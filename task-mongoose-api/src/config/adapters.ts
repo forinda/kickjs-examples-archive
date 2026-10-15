@@ -3,10 +3,11 @@ import { DevToolsAdapter } from '@forinda/kickjs-devtools'
 import { SwaggerAdapter } from '@forinda/kickjs-swagger'
 import { WsAdapter } from '@forinda/kickjs-ws'
 import { QueueAdapter } from '@forinda/kickjs-queue'
-import { AuthAdapter, jwtStrategy } from '@/auth'
-import { MongooseAdapter } from '@/shared/infrastructure/database/mongoose.adapter'
-import { RedisAdapter } from '@/shared/infrastructure/redis/redis.config'
-import { env } from '.'
+import { jwtStrategy } from '@/auth'
+import { AuthAdapter } from '@/adapters/auth.adapter'
+import { MongooseAdapter } from '@/adapters/mongoose.adapter'
+import { RedisAdapter } from '@/adapters/redis.adapter'
+import { env } from '@/config'
 
 const redisUrl = new URL(env.REDIS_URL)
 
@@ -16,7 +17,7 @@ const wsAdapter = WsAdapter({
   maxPayload: 1048576,
 })
 
-// Runs every `@Job` class (src/modules/queue/infrastructure/processors) on BullMQ.
+// Runs every `@Job` class (src/modules/queue) on BullMQ.
 const queueAdapter = QueueAdapter({
   redis: {
     host: redisUrl.hostname,
@@ -45,7 +46,7 @@ export const adapters = [
   }),
   wsAdapter,
   queueAdapter,
-  // Schedules every `@Cron` method (src/modules/cron/infrastructure/jobs) with croner.
+  // Schedules every `@Cron` method (src/modules/cron) with croner.
   KickCronAdapter(),
   DevToolsAdapter({
     secret: env.NODE_ENV === 'production' ? undefined : false,

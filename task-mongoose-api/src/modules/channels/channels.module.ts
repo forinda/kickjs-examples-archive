@@ -1,10 +1,10 @@
 import { defineModule } from '@forinda/kickjs'
-import { ChannelsController } from './presentation/channels.controller'
+import { ChannelsController } from './channels.controller'
 import {
   CHANNEL_REPOSITORY,
   createChannelRepository,
-} from '@/modules/channels/infrastructure/repositories/channel.repository'
-import { MONGO_CONNECTION } from '@/shared/infrastructure/database/mongoose.adapter'
+} from './channel.repository'
+import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
 // decorators register in the DI container.

@@ -1,7 +1,7 @@
 import { defineConfig } from '@forinda/kickjs-cli'
 
 export default defineConfig({
-  pattern: 'ddd',
+  pattern: 'rest',
   runtime: 'express',
   modules: {
     dir: 'src/modules',

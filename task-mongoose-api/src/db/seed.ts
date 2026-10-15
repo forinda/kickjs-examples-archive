@@ -1,13 +1,13 @@
 import 'reflect-metadata'
 import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
-import { UserModel } from '@/modules/users/infrastructure/schemas/user.schema'
-import { WorkspaceModel } from '@/modules/workspaces/infrastructure/schemas/workspace.schema'
-import { WorkspaceMemberModel } from '@/modules/workspaces/infrastructure/schemas/workspace-member.schema'
-import { ProjectModel } from '@/modules/projects/infrastructure/schemas/project.schema'
-import { LabelModel } from '@/modules/labels/infrastructure/schemas/label.schema'
-import { TaskModel } from '@/modules/tasks/infrastructure/schemas/task.schema'
-import { ChannelModel } from '@/modules/channels/infrastructure/schemas/channel.schema'
+import { UserModel } from '@/modules/users/user.schema'
+import { WorkspaceModel } from '@/modules/workspaces/workspace.schema'
+import { WorkspaceMemberModel } from '@/modules/workspaces/workspace-member.schema'
+import { ProjectModel } from '@/modules/projects/project.schema'
+import { LabelModel } from '@/modules/labels/label.schema'
+import { TaskModel } from '@/modules/tasks/task.schema'
+import { ChannelModel } from '@/modules/channels/channel.schema'
 
 const MONGODB_URI = process.env.MONGODB_URI!
 if (!MONGODB_URI) {
