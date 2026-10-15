@@ -2,7 +2,7 @@ import type { MiddlewareHandler } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { HttpException } from '@forinda/kickjs'
 import jwt from 'jsonwebtoken'
-import { env } from '@/config/env'
+import { env } from '@/config'
 import type { AuthUser } from '@/shared/utils/auth'
 
 export const authBridgeMiddleware: MiddlewareHandler = (ctx: RequestContext, next) => {

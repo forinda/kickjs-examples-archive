@@ -10,8 +10,7 @@
  *   domain/          — Entities, value objects, repository interfaces, domain services
  *   infrastructure/  — Repository implementations (in-memory, Drizzle, Prisma, etc.)
  */
-import { Container, type AppModule, type ModuleRoutes } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import { defineModule } from '@forinda/kickjs'
 import { ACTIVITY_REPOSITORY } from './domain/repositories/activity.repository'
 import { PrismaActivityRepository } from './infrastructure/repositories/prisma-activity.repository'
 import { ActivityController } from './presentation/activity.controller'
@@ -22,28 +21,30 @@ import.meta.glob(
   { eager: true },
 )
 
-export class ActivityModule implements AppModule {
-  /**
-   * Register module dependencies in the DI container.
-   * Bind repository interface tokens to their implementations here.
-   * To swap implementations (e.g. in-memory -> Prisma), change the factory target.
-   */
-  register(container: Container): void {
-    container.registerFactory(ACTIVITY_REPOSITORY, () =>
-      container.resolve(PrismaActivityRepository),
-    )
-  }
+export const ActivityModule = defineModule({
+  name: 'ActivityModule',
+  build: () => ({
+    /**
+     * Register module dependencies in the DI container.
+     * Bind repository interface tokens to their implementations here.
+     * To swap implementations (e.g. in-memory -> Prisma), change the factory target.
+     */
+    register(container) {
+      container.registerFactory(ACTIVITY_REPOSITORY, () =>
+        container.resolve(PrismaActivityRepository),
+      )
+    },
 
-  /**
-   * Declare HTTP routes for this module.
-   * The path is prefixed with the global apiPrefix and version (e.g. /api/v1/activities).
-   * Passing 'controller' enables automatic OpenAPI spec generation via SwaggerAdapter.
-   */
-  routes(): ModuleRoutes {
-    return {
-      path: '/activities',
-      router: buildRoutes(ActivityController),
-      controller: ActivityController,
-    }
-  }
-}
+    /**
+     * Declare HTTP routes for this module.
+     * The path is prefixed with the global apiPrefix and version (e.g. /api/v1/activities).
+     * Passing 'controller' enables automatic OpenAPI spec generation via SwaggerAdapter.
+     */
+    routes() {
+      return {
+        path: '/activities',
+        controller: ActivityController,
+      }
+    },
+  }),
+})

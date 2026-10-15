@@ -1,5 +1,5 @@
 import { Repository, Inject } from '@forinda/kickjs'
-import { PRISMA_CLIENT } from '@forinda/kickjs-prisma'
+import { PRISMA_CLIENT } from '@/db/prisma'
 import type { PrismaClient } from '@/generated/prisma/client'
 import type { ParsedQuery } from '@forinda/kickjs'
 import type {
@@ -19,9 +19,7 @@ export class PrismaNotificationRepository implements INotificationRepository {
 
   async findPaginated(parsed: ParsedQuery, recipientId: string) {
     const query = queryAdapter.build(parsed, { searchColumns: ['title', 'body'] })
-    const where = query.where
-      ? { AND: [query.where, { recipientId }] }
-      : { recipientId }
+    const where = query.where ? { AND: [query.where, { recipientId }] } : { recipientId }
 
     const [data, total] = await Promise.all([
       this.prisma.notification.findMany({

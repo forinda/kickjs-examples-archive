@@ -1,22 +1,21 @@
 import { defineConfig } from 'vite'
-import { resolve } from 'path'
+import { fileURLToPath } from 'node:url'
 import swc from 'unplugin-swc'
 import { kickjsVitePlugin, envWatchPlugin } from '@forinda/kickjs-vite'
 
 export default defineConfig({
   oxc: false,
-  plugins: [swc.vite(), kickjsVitePlugin({ entry: 'src/index.ts' }), envWatchPlugin()],
+  plugins: [
+    swc.vite(),
+    kickjsVitePlugin({ entry: 'src/index.ts' }),
+    // Watches .env files and triggers a full reload on change so the
+    // dev server picks up env tweaks without a manual restart.
+    envWatchPlugin(),
+  ],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
-  },
-  server: {
-    watch: { usePolling: false },
-    hmr: true,
-  },
-  ssr: {
-    external: ['pino', 'pino-pretty'],
   },
   build: {
     target: 'node20',
@@ -24,9 +23,8 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
     rollupOptions: {
-      input: resolve(__dirname, 'src/index.ts'),
+      input: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
       output: { format: 'esm' },
-      external: [/^@prisma\/client/],
     },
   },
 })

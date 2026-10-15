@@ -1,5 +1,5 @@
 import { Repository, HttpException, Inject } from '@forinda/kickjs'
-import { PRISMA_CLIENT } from '@forinda/kickjs-prisma'
+import { PRISMA_CLIENT } from '@/db/prisma'
 import type { PrismaClient } from '@/generated/prisma/client'
 import type { ParsedQuery } from '@forinda/kickjs'
 import type { IChannelRepository, NewChannel } from '../../domain/repositories/channel.repository'
@@ -16,9 +16,7 @@ export class PrismaChannelRepository implements IChannelRepository {
 
   async findPaginated(parsed: ParsedQuery, workspaceId: string) {
     const query = queryAdapter.build(parsed, { searchColumns: ['name'] })
-    const where = query.where
-      ? { AND: [query.where, { workspaceId }] }
-      : { workspaceId }
+    const where = query.where ? { AND: [query.where, { workspaceId }] } : { workspaceId }
 
     const [data, total] = await Promise.all([
       this.prisma.channel.findMany({

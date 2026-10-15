@@ -1,5 +1,4 @@
-import { Container, type AppModule, type ModuleRoutes } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import { defineModule } from '@forinda/kickjs'
 import { LABEL_REPOSITORY } from './domain/repositories/label.repository'
 import { TASK_LABEL_REPOSITORY } from './domain/repositories/task-label.repository'
 import { PrismaLabelRepository } from './infrastructure/repositories/prisma-label.repository'
@@ -11,19 +10,21 @@ import.meta.glob(
   { eager: true },
 )
 
-export class LabelModule implements AppModule {
-  register(container: Container): void {
-    container.registerFactory(LABEL_REPOSITORY, () => container.resolve(PrismaLabelRepository))
-    container.registerFactory(TASK_LABEL_REPOSITORY, () =>
-      container.resolve(PrismaTaskLabelRepository),
-    )
-  }
+export const LabelModule = defineModule({
+  name: 'LabelModule',
+  build: () => ({
+    register(container) {
+      container.registerFactory(LABEL_REPOSITORY, () => container.resolve(PrismaLabelRepository))
+      container.registerFactory(TASK_LABEL_REPOSITORY, () =>
+        container.resolve(PrismaTaskLabelRepository),
+      )
+    },
 
-  routes(): ModuleRoutes {
-    return {
-      path: '/labels',
-      router: buildRoutes(LabelController),
-      controller: LabelController,
-    }
-  }
-}
+    routes() {
+      return {
+        path: '/labels',
+        controller: LabelController,
+      }
+    },
+  }),
+})

@@ -1,42 +1,39 @@
-# Task Management App — Prisma 7 Edition
+# task-prisma-api
 
-A full-featured project management API built with [KickJS](https://forinda.github.io/kick-js/), **Prisma 7**, and PostgreSQL. Demonstrates the Prisma 7 driver adapter pattern with `@prisma/adapter-pg`.
+A full task-management API (users, auth, workspaces, projects, tasks, labels, comments, attachments, channels + chat, notifications, activity, stats) on **Prisma 7** and PostgreSQL, in a DDD layout (`domain/`, `application/`, `infrastructure/`, `presentation/` per module).
 
-## What's Different from task-prisma-api (v6)?
+What it shows:
 
-| Aspect               | Prisma 6 (task-prisma-api) | Prisma 7 (this example)                             |
-| -------------------- | -------------------------- | --------------------------------------------------- |
-| Generator            | `prisma-client-js`         | `prisma-client` with `output`                       |
-| Client import        | `from '@prisma/client'`    | `from '@/generated/prisma'`                         |
-| Connection           | `new PrismaClient()`       | `new PrismaClient({ adapter: new PrismaPg(pool) })` |
-| Logging              | `$on('query', ...)`        | Auto — adapter uses `$extends`                      |
-| `@prisma/client` dep | Required                   | Not needed (client generated locally)               |
+- **Prisma wired directly** (`src/db/prisma.ts`) — `PrismaAdapter` creates `new PrismaClient({ adapter: new PrismaPg(...) })`, registers it under `PRISMA_CLIENT`, reports it on `GET /health/ready`, disconnects on shutdown. Replaces the removed `@forinda/kickjs-prisma`. The client omits `User.passwordHash` globally.
+- `src/shared/infrastructure/query-adapter.ts` — turns `ctx.qs()` / `ctx.paginate()` filters, sort, search and pagination into Prisma `findMany` args.
+- JWT auth as a guard middleware (`authBridgeMiddleware`) plus workspace / project / channel access guards.
+- `@forinda/kickjs-queue` (BullMQ workers for email, notifications, activity), `@forinda/kickjs-ws` (`/ws/chat`), `@forinda/kickjs-swagger` (`/docs`, `/openapi.json`), `@forinda/kickjs-devtools` (`/_debug`).
+- Scheduled jobs with the framework's `@Cron` + `KickCronAdapter` (needs `croner`).
+- A BYO mailer plugin (`src/plugins/mailer.plugin.ts`) — logs to the console unless `SMTP_URL` is set.
+- Return-value handlers: `return successResponse(x)`, `reply.created(...)`, `reply.noContent()`.
 
-## Getting Started
+## Run
+
+Needs Postgres and Redis:
 
 ```bash
-pnpm install
+docker run -d --name vibed-pg -p 127.0.0.1:5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=vibed postgres:18-alpine
+docker run -d --name vibed-redis -p 127.0.0.1:6379:6379 redis:7-alpine
 
-# Generate Prisma client (also runs on postinstall)
-npx prisma generate
-
-# Push schema to database
-npx prisma db push
-
-# Start dev server
-kick dev
+pnpm install           # or: npm install — runs `prisma generate`
+cp .env.example .env   # set JWT_SECRET and JWT_REFRESH_SECRET (32+ chars: openssl rand -hex 32)
+pnpm db:push           # or: npm run db:push — sync the schema
+pnpm dev               # or: npm run dev
 ```
 
-## Packages
+`pnpm test` (in-memory repositories, no database), `pnpm typecheck`, `pnpm build && pnpm start`.
 
-- `@forinda/kickjs` — unified core, HTTP layer, env validation
-- `@forinda/kickjs-prisma` — adapter with Prisma 5/6/7 support
-- `@forinda/kickjs-swagger`, `@forinda/kickjs-devtools`
-- `@forinda/kickjs-ws`, `@forinda/kickjs-queue`
-- `croner`, `nodemailer` — BYO cron + mailer adapters (see [guide/cron](https://forinda.github.io/kick-js/guide/cron) + [guide/mailer](https://forinda.github.io/kick-js/guide/mailer))
-- `@prisma/adapter-pg` + `pg` — Prisma 7 driver adapter for PostgreSQL
+## Environment
 
-## Learn More
-
-- [KickJS Documentation](https://forinda.github.io/kick-js/)
-- [Prisma 7 Upgrade Guide](https://www.prisma.io/docs/orm/more/upgrade-guides/upgrading-versions/upgrading-to-prisma-7)
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `DATABASE_URL` | yes | Postgres connection string |
+| `JWT_SECRET`, `JWT_REFRESH_SECRET` | yes | 32+ chars, no defaults |
+| `REDIS_URL` | no | default `redis://localhost:6379` |
+| `SMTP_URL` | no | unset → mail is logged |
+| `JWT_ACCESS_EXPIRES_IN`, `JWT_REFRESH_EXPIRES_IN`, `APP_URL`, `APP_NAME`, `MAIL_FROM_*` | no | see `.env.example` |

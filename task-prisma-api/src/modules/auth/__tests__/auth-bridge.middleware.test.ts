@@ -64,7 +64,7 @@ describe('authBridgeMiddleware', () => {
   it('rejects requests without Authorization header', async () => {
     const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
     const res = await request(expressApp).get('/api/v1/protected/me').expect(401)
-    expect(res.body.message).toMatch(/Missing or invalid/)
+    expect(res.body.detail).toMatch(/Missing or invalid/)
   })
 
   it('rejects requests with invalid token', async () => {
@@ -73,7 +73,7 @@ describe('authBridgeMiddleware', () => {
       .get('/api/v1/protected/me')
       .set('Authorization', 'Bearer bad.token.here')
       .expect(401)
-    expect(res.body.message).toMatch(/Invalid or expired/)
+    expect(res.body.detail).toMatch(/Invalid or expired/)
   })
 
   it('passes authentication and sets user on context with a valid token', async () => {

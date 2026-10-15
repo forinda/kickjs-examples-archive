@@ -1,5 +1,4 @@
-import { Container, type AppModule, type ModuleRoutes } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import { defineModule } from '@forinda/kickjs'
 import { TOKENS } from '@/shared/constants/tokens'
 import { TASK_REPOSITORY } from './domain/repositories/task.repository'
 import { PrismaTaskRepository } from './infrastructure/repositories/prisma-task.repository'
@@ -11,22 +10,24 @@ import.meta.glob(
   { eager: true },
 )
 
-export class TaskModule implements AppModule {
-  register(container: Container): void {
-    const taskFactory = () => container.resolve(PrismaTaskRepository)
-    container.registerFactory(TASK_REPOSITORY, taskFactory)
-    container.registerFactory(TOKENS.TASK_REPOSITORY, taskFactory)
+export const TaskModule = defineModule({
+  name: 'TaskModule',
+  build: () => ({
+    register(container) {
+      const taskFactory = () => container.resolve(PrismaTaskRepository)
+      container.registerFactory(TASK_REPOSITORY, taskFactory)
+      container.registerFactory(TOKENS.TASK_REPOSITORY, taskFactory)
 
-    container.registerFactory(TOKENS.TASK_ASSIGNEE_REPOSITORY, () =>
-      container.resolve(PrismaTaskAssigneeRepository),
-    )
-  }
+      container.registerFactory(TOKENS.TASK_ASSIGNEE_REPOSITORY, () =>
+        container.resolve(PrismaTaskAssigneeRepository),
+      )
+    },
 
-  routes(): ModuleRoutes {
-    return {
-      path: '/tasks',
-      router: buildRoutes(TaskController),
-      controller: TaskController,
-    }
-  }
-}
+    routes() {
+      return {
+        path: '/tasks',
+        controller: TaskController,
+      }
+    },
+  }),
+})

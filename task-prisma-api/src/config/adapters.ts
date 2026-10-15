@@ -1,37 +1,23 @@
-import { PrismaClient } from '@/generated/prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
-import pg from 'pg'
-import { PrismaAdapter } from '@forinda/kickjs-prisma'
+import { PrismaAdapter } from '@/db/prisma'
 import { DevToolsAdapter } from '@forinda/kickjs-devtools'
 import { SwaggerAdapter } from '@forinda/kickjs-swagger'
 import { WsAdapter } from '@forinda/kickjs-ws'
 import { QueueAdapter } from '@forinda/kickjs-queue'
-import { CronAdapter } from '@/modules/cron/cron.adapter'
-import { AppAdapter } from '@forinda/kickjs'
-import { env } from './env'
+import { KickCronAdapter } from '@forinda/kickjs'
+import { env } from '@/config'
 
 // Side-effect imports: register decorated classes
 import '@/modules/messages/presentation/chat.ws-controller'
 import '@/modules/queue/queue.module'
 
-// Cron job classes
-import { TaskCronJobs } from '@/modules/cron/infrastructure/jobs/overdue-reminders.cron'
-import { CleanupCronJobs } from '@/modules/cron/infrastructure/jobs/token-cleanup.cron'
-import { HealthCheckCronJobs } from '@/modules/cron/infrastructure/jobs/health-check.cron'
-import { DigestCronJobs } from '@/modules/cron/infrastructure/jobs/daily-digest.cron'
-import { PresenceCronJobs } from '@/modules/cron/infrastructure/jobs/presence-cleanup.cron'
+// @Cron job classes — imported so their decorators register; KickCronAdapter schedules them
+import '@/modules/cron/infrastructure/jobs/overdue-reminders.cron'
+import '@/modules/cron/infrastructure/jobs/token-cleanup.cron'
+import '@/modules/cron/infrastructure/jobs/health-check.cron'
+import '@/modules/cron/infrastructure/jobs/daily-digest.cron'
+import '@/modules/cron/infrastructure/jobs/presence-cleanup.cron'
 
 const redisUrl = new URL(env.REDIS_URL)
-
-const pool = new pg.Pool({ connectionString: env.DATABASE_URL })
-const prismaClient = new PrismaClient({
-  adapter: new PrismaPg(pool),
-})
-
-const prismaAdapter = PrismaAdapter({
-  client: prismaClient,
-  logging: true,
-})
 
 const wsAdapter = WsAdapter({
   path: '/ws',
@@ -49,20 +35,11 @@ const queueAdapter = QueueAdapter({
   concurrency: 5,
 })
 
-export const adapters: AppAdapter[] = [
-  prismaAdapter,
+export const adapters = [
+  PrismaAdapter({ connectionString: env.DATABASE_URL }),
   wsAdapter,
   queueAdapter,
-  CronAdapter({
-    services: [
-      TaskCronJobs,
-      CleanupCronJobs,
-      HealthCheckCronJobs,
-      DigestCronJobs,
-      PresenceCronJobs,
-    ],
-    enabled: true,
-  }),
+  KickCronAdapter(),
   DevToolsAdapter({ adapters: [wsAdapter, queueAdapter] }),
   SwaggerAdapter({
     info: { title: 'Vibed (Prisma Edition)', version: '1.0.0' },

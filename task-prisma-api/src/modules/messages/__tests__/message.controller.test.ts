@@ -63,9 +63,7 @@ class InMemoryMessageRepository implements IMessageRepository {
 
 @Controller()
 class TestMessageController {
-  constructor(
-    @Inject(MESSAGE_REPOSITORY) private readonly repo: IMessageRepository,
-  ) {}
+  constructor(@Inject(MESSAGE_REPOSITORY) private readonly repo: IMessageRepository) {}
 
   @Post('/')
   async create(ctx: RequestContext) {

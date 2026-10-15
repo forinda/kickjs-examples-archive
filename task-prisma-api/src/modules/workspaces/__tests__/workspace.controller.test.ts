@@ -67,9 +67,7 @@ class InMemoryWorkspaceRepository implements IWorkspaceRepository {
 
 @Controller()
 class TestWorkspaceController {
-  constructor(
-    @Inject(WORKSPACE_REPOSITORY) private readonly repo: IWorkspaceRepository,
-  ) {}
+  constructor(@Inject(WORKSPACE_REPOSITORY) private readonly repo: IWorkspaceRepository) {}
 
   @Post('/')
   async create(ctx: RequestContext) {

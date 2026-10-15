@@ -95,9 +95,30 @@ describe('InMemoryAttachmentRepository', () => {
   })
 
   it('findByTask returns only attachments for the given task', async () => {
-    await repo.create({ taskId: 't1', uploaderId: 'u1', fileName: 'a.txt', fileSize: 10, mimeType: 'text/plain', data: 'd' })
-    await repo.create({ taskId: 't2', uploaderId: 'u1', fileName: 'b.txt', fileSize: 20, mimeType: 'text/plain', data: 'd' })
-    await repo.create({ taskId: 't1', uploaderId: 'u2', fileName: 'c.txt', fileSize: 30, mimeType: 'text/plain', data: 'd' })
+    await repo.create({
+      taskId: 't1',
+      uploaderId: 'u1',
+      fileName: 'a.txt',
+      fileSize: 10,
+      mimeType: 'text/plain',
+      data: 'd',
+    })
+    await repo.create({
+      taskId: 't2',
+      uploaderId: 'u1',
+      fileName: 'b.txt',
+      fileSize: 20,
+      mimeType: 'text/plain',
+      data: 'd',
+    })
+    await repo.create({
+      taskId: 't1',
+      uploaderId: 'u2',
+      fileName: 'c.txt',
+      fileSize: 30,
+      mimeType: 'text/plain',
+      data: 'd',
+    })
 
     const results = await repo.findByTask('t1')
     expect(results).toHaveLength(2)
@@ -118,8 +139,22 @@ describe('InMemoryAttachmentRepository', () => {
   })
 
   it('findPaginated returns all attachments', async () => {
-    await repo.create({ taskId: 't1', uploaderId: 'u1', fileName: 'x.txt', fileSize: 1, mimeType: 'text/plain', data: 'd' })
-    await repo.create({ taskId: 't1', uploaderId: 'u1', fileName: 'y.txt', fileSize: 2, mimeType: 'text/plain', data: 'd' })
+    await repo.create({
+      taskId: 't1',
+      uploaderId: 'u1',
+      fileName: 'x.txt',
+      fileSize: 1,
+      mimeType: 'text/plain',
+      data: 'd',
+    })
+    await repo.create({
+      taskId: 't1',
+      uploaderId: 'u1',
+      fileName: 'y.txt',
+      fileSize: 2,
+      mimeType: 'text/plain',
+      data: 'd',
+    })
 
     const result = await repo.findPaginated({} as any)
     expect(result.data).toHaveLength(2)

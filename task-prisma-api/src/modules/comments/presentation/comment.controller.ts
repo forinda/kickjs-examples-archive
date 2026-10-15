@@ -7,6 +7,8 @@ import {
   Autowired,
   Middleware,
   ApiQueryParams,
+  reply,
+  HttpException,
 } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
@@ -37,7 +39,7 @@ export class CommentController {
   async create(ctx: RequestContext) {
     const user = getUser(ctx)
     const result = await this.createCommentUseCase.execute(ctx.body, user.id)
-    ctx.created(successResponse(result))
+    return reply.created(successResponse(result))
   }
 
   @Get('/')
@@ -54,21 +56,21 @@ export class CommentController {
   @ApiTags('Comment')
   async getById(ctx: RequestContext) {
     const result = await this.getCommentUseCase.execute(ctx.params.id)
-    if (!result) return ctx.notFound('Comment not found')
-    ctx.json(successResponse(result))
+    if (!result) throw HttpException.notFound('Comment not found')
+    return successResponse(result)
   }
 
   @Put('/:id', { body: updateCommentSchema, name: 'UpdateComment' })
   @ApiTags('Comment')
   async update(ctx: RequestContext) {
     const result = await this.updateCommentUseCase.execute(ctx.params.id, ctx.body)
-    ctx.json(successResponse(result))
+    return successResponse(result)
   }
 
   @Delete('/:id')
   @ApiTags('Comment')
   async remove(ctx: RequestContext) {
     await this.deleteCommentUseCase.execute(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }

@@ -1,5 +1,4 @@
-import { Container, type AppModule, type ModuleRoutes } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import { defineModule } from '@forinda/kickjs'
 import { TOKENS } from '@/shared/constants/tokens'
 import { PROJECT_REPOSITORY } from './domain/repositories/project.repository'
 import { PrismaProjectRepository } from './infrastructure/repositories/prisma-project.repository'
@@ -10,18 +9,20 @@ import.meta.glob(
   { eager: true },
 )
 
-export class ProjectModule implements AppModule {
-  register(container: Container): void {
-    const factory = () => container.resolve(PrismaProjectRepository)
-    container.registerFactory(PROJECT_REPOSITORY, factory)
-    container.registerFactory(TOKENS.PROJECT_REPOSITORY, factory)
-  }
+export const ProjectModule = defineModule({
+  name: 'ProjectModule',
+  build: () => ({
+    register(container) {
+      const factory = () => container.resolve(PrismaProjectRepository)
+      container.registerFactory(PROJECT_REPOSITORY, factory)
+      container.registerFactory(TOKENS.PROJECT_REPOSITORY, factory)
+    },
 
-  routes(): ModuleRoutes {
-    return {
-      path: '/projects',
-      router: buildRoutes(ProjectController),
-      controller: ProjectController,
-    }
-  }
-}
+    routes() {
+      return {
+        path: '/projects',
+        controller: ProjectController,
+      }
+    },
+  }),
+})

@@ -3,25 +3,7 @@ import type { ITaskRepository, NewTask } from '../domain/repositories/task.repos
 
 // ── In-memory implementation ─────────────────────────────────────────
 
-type Task = {
-  id: string
-  projectId: string
-  workspaceId: string
-  key: string
-  title: string
-  description: string | null
-  status: string
-  priority: string
-  reporterId: string
-  parentTaskId: string | null
-  dueDate: Date | null
-  estimatePoints: number | null
-  orderIndex: number
-  attachmentCount: number
-  commentCount: number
-  createdAt: Date
-  updatedAt: Date
-}
+import type { Task } from '@/generated/prisma/client'
 
 class InMemoryTaskRepository implements ITaskRepository {
   private tasks: Task[] = []
@@ -119,9 +101,27 @@ describe('InMemoryTaskRepository', () => {
   })
 
   it('findByProject returns only tasks for the given project', async () => {
-    await repo.create({ projectId: 'p1', workspaceId: 'w1', key: 'A-1', title: 'T1', reporterId: 'u1' })
-    await repo.create({ projectId: 'p2', workspaceId: 'w1', key: 'B-1', title: 'T2', reporterId: 'u1' })
-    await repo.create({ projectId: 'p1', workspaceId: 'w1', key: 'A-2', title: 'T3', reporterId: 'u1' })
+    await repo.create({
+      projectId: 'p1',
+      workspaceId: 'w1',
+      key: 'A-1',
+      title: 'T1',
+      reporterId: 'u1',
+    })
+    await repo.create({
+      projectId: 'p2',
+      workspaceId: 'w1',
+      key: 'B-1',
+      title: 'T2',
+      reporterId: 'u1',
+    })
+    await repo.create({
+      projectId: 'p1',
+      workspaceId: 'w1',
+      key: 'A-2',
+      title: 'T3',
+      reporterId: 'u1',
+    })
 
     const results = await repo.findByProject('p1')
     expect(results).toHaveLength(2)

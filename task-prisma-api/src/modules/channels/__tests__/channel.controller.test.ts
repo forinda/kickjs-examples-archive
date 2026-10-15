@@ -62,9 +62,7 @@ class InMemoryChannelRepository implements IChannelRepository {
 
 @Controller()
 class TestChannelController {
-  constructor(
-    @Inject(CHANNEL_REPOSITORY) private readonly repo: IChannelRepository,
-  ) {}
+  constructor(@Inject(CHANNEL_REPOSITORY) private readonly repo: IChannelRepository) {}
 
   @Post('/')
   async create(ctx: RequestContext) {

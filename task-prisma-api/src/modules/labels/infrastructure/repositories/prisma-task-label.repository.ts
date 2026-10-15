@@ -1,5 +1,5 @@
 import { Repository, Inject } from '@forinda/kickjs'
-import { PRISMA_CLIENT } from '@forinda/kickjs-prisma'
+import { PRISMA_CLIENT } from '@/db/prisma'
 import type { PrismaClient, Label } from '@/generated/prisma/client'
 import type { ITaskLabelRepository } from '../../domain/repositories/task-label.repository'
 

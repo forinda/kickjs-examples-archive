@@ -75,9 +75,7 @@ class InMemoryNotificationRepository implements INotificationRepository {
 
 @Controller()
 class TestNotificationController {
-  constructor(
-    @Inject(NOTIFICATION_REPOSITORY) private readonly repo: INotificationRepository,
-  ) {}
+  constructor(@Inject(NOTIFICATION_REPOSITORY) private readonly repo: INotificationRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

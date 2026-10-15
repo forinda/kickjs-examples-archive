@@ -1,5 +1,5 @@
 import { Repository, Inject } from '@forinda/kickjs'
-import { PRISMA_CLIENT } from '@forinda/kickjs-prisma'
+import { PRISMA_CLIENT } from '@/db/prisma'
 import type { PrismaClient } from '@/generated/prisma/client'
 import type { ParsedQuery } from '@forinda/kickjs'
 import type {
@@ -22,9 +22,7 @@ export class PrismaActivityRepository implements IActivityRepository {
     if (scope.projectId) scopeCondition.projectId = scope.projectId
     if (scope.taskId) scopeCondition.taskId = scope.taskId
 
-    const where = query.where
-      ? { AND: [query.where, scopeCondition] }
-      : scopeCondition
+    const where = query.where ? { AND: [query.where, scopeCondition] } : scopeCondition
 
     const [data, total] = await Promise.all([
       this.prisma.activity.findMany({

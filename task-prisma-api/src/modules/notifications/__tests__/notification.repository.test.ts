@@ -6,16 +6,7 @@ import type {
 
 // ── In-memory implementation ─────────────────────────────────────────
 
-type Notification = {
-  id: string
-  recipientId: string
-  type: string
-  title: string
-  body: string
-  metadata: any
-  isRead: boolean
-  createdAt: Date
-}
+import type { Notification } from '@/generated/prisma/client'
 
 class InMemoryNotificationRepository implements INotificationRepository {
   private notifications: Notification[] = []

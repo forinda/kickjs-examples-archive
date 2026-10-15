@@ -64,9 +64,7 @@ class InMemoryActivityRepository implements IActivityRepository {
 
 @Controller()
 class TestActivityController {
-  constructor(
-    @Inject(ACTIVITY_REPOSITORY) private readonly repo: IActivityRepository,
-  ) {}
+  constructor(@Inject(ACTIVITY_REPOSITORY) private readonly repo: IActivityRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {
@@ -105,9 +103,7 @@ describe('ActivityController (integration)', () => {
 
   it('GET /api/v1/activities?workspaceId=w1 returns activities', async () => {
     const { expressApp } = await createTestApp({ modules: [buildTestModule()] })
-    const res = await request(expressApp)
-      .get('/api/v1/activities?workspaceId=w1')
-      .expect(200)
+    const res = await request(expressApp).get('/api/v1/activities?workspaceId=w1').expect(200)
 
     expect(res.body.data).toHaveLength(2)
     expect(res.body.total).toBe(2)

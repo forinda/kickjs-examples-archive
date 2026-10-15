@@ -1,4 +1,4 @@
-import { Controller, Post, Autowired } from '@forinda/kickjs'
+import { Controller, Post, Autowired, reply } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import type { RequestContext } from '@forinda/kickjs'
 import { Middleware } from '@forinda/kickjs'
@@ -24,21 +24,21 @@ export class AuthController {
   @ApiTags('Auth')
   async register(ctx: RequestContext) {
     const result = await this.registerUseCase.execute(ctx.body)
-    ctx.created(successResponse(result))
+    return reply.created(successResponse(result))
   }
 
   @Post('/login', { body: loginSchema, name: 'Login' })
   @ApiTags('Auth')
   async login(ctx: RequestContext) {
     const result = await this.loginUseCase.execute(ctx.body)
-    ctx.json(successResponse(result))
+    return successResponse(result)
   }
 
   @Post('/refresh', { body: refreshTokenSchema, name: 'RefreshToken' })
   @ApiTags('Auth')
   async refresh(ctx: RequestContext) {
     const result = await this.refreshTokenUseCase.execute(ctx.body.refreshToken)
-    ctx.json(successResponse(result))
+    return successResponse(result)
   }
 
   @Post('/logout')
@@ -49,6 +49,6 @@ export class AuthController {
     getUser(ctx) // Ensure authenticated
     const { refreshToken } = ctx.body
     await this.logoutUseCase.execute(refreshToken)
-    ctx.json(successResponse(null, 'Logged out successfully'))
+    return successResponse(null, 'Logged out successfully')
   }
 }

@@ -7,6 +7,8 @@ import {
   Middleware,
   ApiQueryParams,
   FileUpload,
+  reply,
+  HttpException,
 } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
@@ -50,7 +52,7 @@ export class AttachmentController {
       },
       user.id,
     )
-    ctx.created(successResponse(result))
+    return reply.created(successResponse(result))
   }
 
   @Get('/')
@@ -68,15 +70,15 @@ export class AttachmentController {
   @ApiTags('Attachment')
   async getById(ctx: RequestContext) {
     const result = await this.getAttachmentUseCase.execute(ctx.params.id)
-    if (!result) return ctx.notFound('Attachment not found')
-    ctx.json(successResponse(result))
+    if (!result) throw HttpException.notFound('Attachment not found')
+    return successResponse(result)
   }
 
   @Get('/:id/download')
   @ApiTags('Attachment')
   async download(ctx: RequestContext) {
     const result = await this.getAttachmentUseCase.execute(ctx.params.id)
-    if (!result) return ctx.notFound('Attachment not found')
+    if (!result) throw HttpException.notFound('Attachment not found')
 
     const buffer = Buffer.from(result.data, 'base64')
     ctx.res.setHeader('Content-Type', result.mimeType)
@@ -89,6 +91,6 @@ export class AttachmentController {
   @ApiTags('Attachment')
   async remove(ctx: RequestContext) {
     await this.deleteAttachmentUseCase.execute(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }

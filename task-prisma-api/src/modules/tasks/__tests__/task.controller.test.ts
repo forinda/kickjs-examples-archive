@@ -5,10 +5,7 @@ import { Container, Controller, Get, Post, Delete, Inject } from '@forinda/kickj
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
-import {
-  TASK_REPOSITORY,
-  type ITaskRepository,
-} from '../domain/repositories/task.repository'
+import { TASK_REPOSITORY, type ITaskRepository } from '../domain/repositories/task.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
@@ -81,9 +78,7 @@ class InMemoryTaskRepository implements ITaskRepository {
 
 @Controller()
 class TestTaskController {
-  constructor(
-    @Inject(TASK_REPOSITORY) private readonly repo: ITaskRepository,
-  ) {}
+  constructor(@Inject(TASK_REPOSITORY) private readonly repo: ITaskRepository) {}
 
   @Post('/')
   async create(ctx: RequestContext) {

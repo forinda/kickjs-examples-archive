@@ -1,5 +1,5 @@
 import { Repository, Inject } from '@forinda/kickjs'
-import { PRISMA_CLIENT } from '@forinda/kickjs-prisma'
+import { PRISMA_CLIENT } from '@/db/prisma'
 import type { PrismaClient } from '@/generated/prisma/client'
 import type { IRefreshTokenRepository } from '../../domain/repositories/refresh-token.repository'
 

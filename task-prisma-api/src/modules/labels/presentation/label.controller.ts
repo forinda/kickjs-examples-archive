@@ -7,6 +7,8 @@ import {
   Autowired,
   Middleware,
   ApiQueryParams,
+  reply,
+  HttpException,
 } from '@forinda/kickjs'
 
 import type { RequestContext } from '@forinda/kickjs'
@@ -38,7 +40,7 @@ export class LabelController {
   @ApiTags('Label')
   async create(ctx: RequestContext) {
     const result = await this.createLabelUseCase.execute(ctx.body)
-    ctx.created(successResponse(result))
+    return reply.created(successResponse(result))
   }
 
   @Get('/')
@@ -56,22 +58,22 @@ export class LabelController {
   @ApiTags('Label')
   async getById(ctx: RequestContext) {
     const result = await this.getLabelUseCase.execute(ctx.params.id)
-    if (!result) return ctx.notFound('Label not found')
-    ctx.json(successResponse(result))
+    if (!result) throw HttpException.notFound('Label not found')
+    return successResponse(result)
   }
 
   @Put('/:id', { body: updateLabelSchema, name: 'UpdateLabel' })
   @ApiTags('Label')
   async update(ctx: RequestContext) {
     const result = await this.updateLabelUseCase.execute(ctx.params.id, ctx.body)
-    ctx.json(successResponse(result))
+    return successResponse(result)
   }
 
   @Delete('/:id')
   @ApiTags('Label')
   async remove(ctx: RequestContext) {
     await this.deleteLabelUseCase.execute(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 
   // --- Task Labels ---
@@ -80,7 +82,7 @@ export class LabelController {
   @ApiTags('Label')
   async getTaskLabels(ctx: RequestContext) {
     const labels = await this.manageTaskLabelsUseCase.getLabels(ctx.params.taskId)
-    ctx.json(successResponse(labels))
+    return successResponse(labels)
   }
 
   @Post('/tasks/:taskId/:labelId')
@@ -90,13 +92,13 @@ export class LabelController {
       ctx.params.taskId,
       ctx.params.labelId,
     )
-    ctx.created(successResponse(result))
+    return reply.created(successResponse(result))
   }
 
   @Delete('/tasks/:taskId/:labelId')
   @ApiTags('Label')
   async removeFromTask(ctx: RequestContext) {
     await this.manageTaskLabelsUseCase.removeLabel(ctx.params.taskId, ctx.params.labelId)
-    ctx.noContent()
+    return reply.noContent()
   }
 }

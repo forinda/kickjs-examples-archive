@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import { TOKENS } from '@/shared/constants/tokens'
 import { ErrorCode } from '@/shared/constants/error-codes'
-import { env } from '@/config/env'
+import { env } from '@/config'
 import type { IUserRepository } from '@/modules/users/domain/repositories/user.repository'
 import type { IRefreshTokenRepository } from '../../domain/repositories/refresh-token.repository'
 import type { LoginDTO } from '../dtos/login.dto'
@@ -42,7 +42,7 @@ export class LoginUseCase {
         globalRole: user.globalRole,
       },
       env.JWT_SECRET,
-      { expiresIn: env.JWT_ACCESS_EXPIRES_IN as string & jwt.SignOptions["expiresIn"] },
+      { expiresIn: env.JWT_ACCESS_EXPIRES_IN as string & jwt.SignOptions['expiresIn'] },
     )
 
     const refreshToken = crypto.randomUUID()
@@ -53,6 +53,7 @@ export class LoginUseCase {
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     })
 
-    return { user, accessToken, refreshToken }
+    const { passwordHash: _passwordHash, ...safeUser } = user
+    return { user: safeUser, accessToken, refreshToken }
   }
 }

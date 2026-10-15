@@ -1,5 +1,5 @@
 import { Repository, Inject, HttpException } from '@forinda/kickjs'
-import { PRISMA_CLIENT } from '@forinda/kickjs-prisma'
+import { PRISMA_CLIENT } from '@/db/prisma'
 import type { PrismaClient } from '@/generated/prisma/client'
 import type { ParsedQuery } from '@forinda/kickjs'
 import type { IUserRepository } from '../../domain/repositories/user.repository'
@@ -17,7 +17,8 @@ export class PrismaUserRepository implements IUserRepository {
   }
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email } })
+    // The client omits passwordHash globally; login needs it to verify credentials.
+    return this.prisma.user.findUnique({ where: { email }, omit: { passwordHash: false } })
   }
 
   async findAll() {

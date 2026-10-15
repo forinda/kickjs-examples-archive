@@ -1,5 +1,5 @@
 import { Repository, HttpException, Inject } from '@forinda/kickjs'
-import { PRISMA_CLIENT } from '@forinda/kickjs-prisma'
+import { PRISMA_CLIENT } from '@/db/prisma'
 import type { PrismaClient } from '@/generated/prisma/client'
 import type { ParsedQuery } from '@forinda/kickjs'
 import type { IMessageRepository, NewMessage } from '../../domain/repositories/message.repository'
@@ -27,9 +27,7 @@ export class PrismaMessageRepository implements IMessageRepository {
 
   async findPaginated(parsed: ParsedQuery, channelId: string) {
     const query = queryAdapter.build(parsed, { searchColumns: ['content'] })
-    const where = query.where
-      ? { AND: [query.where, { channelId }] }
-      : { channelId }
+    const where = query.where ? { AND: [query.where, { channelId }] } : { channelId }
 
     const [data, total] = await Promise.all([
       this.prisma.message.findMany({

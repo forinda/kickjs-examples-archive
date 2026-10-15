@@ -8,6 +8,7 @@ import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import {
   STATS_REPOSITORY,
   type IStatsRepository,
+  type ProjectStats,
 } from '../domain/repositories/stat.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
@@ -34,7 +35,7 @@ class InMemoryStatsRepository implements IStatsRepository {
     }
   }
 
-  async getProjectStats(projectId: string) {
+  async getProjectStats(projectId: string): Promise<ProjectStats> {
     if (projectId === 'p1') {
       return {
         taskCount: 20,
@@ -58,9 +59,7 @@ class InMemoryStatsRepository implements IStatsRepository {
 
 @Controller()
 class TestStatController {
-  constructor(
-    @Inject(STATS_REPOSITORY) private readonly repo: IStatsRepository,
-  ) {}
+  constructor(@Inject(STATS_REPOSITORY) private readonly repo: IStatsRepository) {}
 
   @Get('/workspace/:workspaceId')
   async workspaceStats(ctx: RequestContext) {

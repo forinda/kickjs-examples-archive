@@ -53,9 +53,7 @@ class InMemoryAttachmentRepository implements IAttachmentRepository {
 
 @Controller()
 class TestAttachmentController {
-  constructor(
-    @Inject(ATTACHMENT_REPOSITORY) private readonly repo: IAttachmentRepository,
-  ) {}
+  constructor(@Inject(ATTACHMENT_REPOSITORY) private readonly repo: IAttachmentRepository) {}
 
   @Get('/')
   async list(ctx: RequestContext) {

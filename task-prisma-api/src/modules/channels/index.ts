@@ -1,5 +1,4 @@
-import { Container, type AppModule, type ModuleRoutes } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import { defineModule } from '@forinda/kickjs'
 import { TOKENS } from '@/shared/constants/tokens'
 import { PrismaChannelRepository } from './infrastructure/repositories/prisma-channel.repository'
 import { PrismaChannelMemberRepository } from './infrastructure/repositories/prisma-channel-member.repository'
@@ -10,21 +9,23 @@ import.meta.glob(
   { eager: true },
 )
 
-export class ChannelModule implements AppModule {
-  register(container: Container): void {
-    container.registerFactory(TOKENS.CHANNEL_REPOSITORY, () =>
-      container.resolve(PrismaChannelRepository),
-    )
-    container.registerFactory(TOKENS.CHANNEL_MEMBER_REPOSITORY, () =>
-      container.resolve(PrismaChannelMemberRepository),
-    )
-  }
+export const ChannelModule = defineModule({
+  name: 'ChannelModule',
+  build: () => ({
+    register(container) {
+      container.registerFactory(TOKENS.CHANNEL_REPOSITORY, () =>
+        container.resolve(PrismaChannelRepository),
+      )
+      container.registerFactory(TOKENS.CHANNEL_MEMBER_REPOSITORY, () =>
+        container.resolve(PrismaChannelMemberRepository),
+      )
+    },
 
-  routes(): ModuleRoutes {
-    return {
-      path: '/channels',
-      router: buildRoutes(ChannelController),
-      controller: ChannelController,
-    }
-  }
-}
+    routes() {
+      return {
+        path: '/channels',
+        controller: ChannelController,
+      }
+    },
+  }),
+})

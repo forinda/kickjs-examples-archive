@@ -10,8 +10,7 @@
  *   domain/          — Entities, value objects, repository interfaces, domain services
  *   infrastructure/  — Repository implementations (in-memory, Drizzle, Prisma, etc.)
  */
-import { Container, type AppModule, type ModuleRoutes } from '@forinda/kickjs'
-import { buildRoutes } from '@forinda/kickjs'
+import { defineModule } from '@forinda/kickjs'
 import { COMMENT_REPOSITORY } from './domain/repositories/comment.repository'
 import { PrismaCommentRepository } from './infrastructure/repositories/prisma-comment.repository'
 import { CommentController } from './presentation/comment.controller'
@@ -22,26 +21,30 @@ import.meta.glob(
   { eager: true },
 )
 
-export class CommentModule implements AppModule {
-  /**
-   * Register module dependencies in the DI container.
-   * Bind repository interface tokens to their implementations here.
-   * To swap implementations (e.g. in-memory -> Prisma), change the factory target.
-   */
-  register(container: Container): void {
-    container.registerFactory(COMMENT_REPOSITORY, () => container.resolve(PrismaCommentRepository))
-  }
+export const CommentModule = defineModule({
+  name: 'CommentModule',
+  build: () => ({
+    /**
+     * Register module dependencies in the DI container.
+     * Bind repository interface tokens to their implementations here.
+     * To swap implementations (e.g. in-memory -> Prisma), change the factory target.
+     */
+    register(container) {
+      container.registerFactory(COMMENT_REPOSITORY, () =>
+        container.resolve(PrismaCommentRepository),
+      )
+    },
 
-  /**
-   * Declare HTTP routes for this module.
-   * The path is prefixed with the global apiPrefix and version (e.g. /api/v1/comments).
-   * Passing 'controller' enables automatic OpenAPI spec generation via SwaggerAdapter.
-   */
-  routes(): ModuleRoutes {
-    return {
-      path: '/comments',
-      router: buildRoutes(CommentController),
-      controller: CommentController,
-    }
-  }
-}
+    /**
+     * Declare HTTP routes for this module.
+     * The path is prefixed with the global apiPrefix and version (e.g. /api/v1/comments).
+     * Passing 'controller' enables automatic OpenAPI spec generation via SwaggerAdapter.
+     */
+    routes() {
+      return {
+        path: '/comments',
+        controller: CommentController,
+      }
+    },
+  }),
+})

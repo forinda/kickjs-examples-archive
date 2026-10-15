@@ -2,7 +2,7 @@ import { WsController, OnConnect, OnDisconnect, OnMessage } from '@forinda/kickj
 import type { WsContext } from '@forinda/kickjs-ws'
 import { Autowired, Logger } from '@forinda/kickjs'
 import jwt from 'jsonwebtoken'
-import { env } from '@/config/env'
+import { env } from '@/config'
 import { PrismaMessageRepository } from '../infrastructure/repositories/prisma-message.repository'
 
 const logger = Logger.for('ChatWsController')

@@ -3,19 +3,7 @@ import type { IUserRepository } from '../domain/repositories/user.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 
-type User = {
-  id: string
-  email: string
-  passwordHash: string
-  firstName: string
-  lastName: string
-  avatarUrl: string | null
-  globalRole: string
-  isActive: boolean
-  lastLoginAt: Date | null
-  createdAt: Date
-  updatedAt: Date
-}
+import type { User } from '@/generated/prisma/client'
 
 class InMemoryUserRepository implements IUserRepository {
   private users: User[] = []

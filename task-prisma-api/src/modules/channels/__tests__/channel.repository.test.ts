@@ -3,17 +3,7 @@ import type { IChannelRepository, NewChannel } from '../domain/repositories/chan
 
 // ── In-memory implementation ─────────────────────────────────────────
 
-type Channel = {
-  id: string
-  workspaceId: string
-  projectId: string | null
-  name: string
-  description: string | null
-  type: string
-  createdById: string
-  createdAt: Date
-  updatedAt: Date
-}
+import type { Channel } from '@/generated/prisma/client'
 
 class InMemoryChannelRepository implements IChannelRepository {
   private channels: Channel[] = []

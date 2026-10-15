@@ -63,9 +63,7 @@ class InMemoryCommentRepository implements ICommentRepository {
 
 @Controller()
 class TestCommentController {
-  constructor(
-    @Inject(COMMENT_REPOSITORY) private readonly repo: ICommentRepository,
-  ) {}
+  constructor(@Inject(COMMENT_REPOSITORY) private readonly repo: ICommentRepository) {}
 
   @Post('/')
   async create(ctx: RequestContext) {

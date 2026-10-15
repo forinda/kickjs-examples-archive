@@ -5,10 +5,7 @@ import { Container, Controller, Get, Post, Delete, Inject } from '@forinda/kickj
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
-import {
-  LABEL_REPOSITORY,
-  type ILabelRepository,
-} from '../domain/repositories/label.repository'
+import { LABEL_REPOSITORY, type ILabelRepository } from '../domain/repositories/label.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
@@ -58,9 +55,7 @@ class InMemoryLabelRepository implements ILabelRepository {
 
 @Controller()
 class TestLabelController {
-  constructor(
-    @Inject(LABEL_REPOSITORY) private readonly repo: ILabelRepository,
-  ) {}
+  constructor(@Inject(LABEL_REPOSITORY) private readonly repo: ILabelRepository) {}
 
   @Post('/')
   async create(ctx: RequestContext) {

@@ -74,9 +74,7 @@ class InMemoryProjectRepository implements IProjectRepository {
 
 @Controller()
 class TestProjectController {
-  constructor(
-    @Inject(PROJECT_REPOSITORY) private readonly repo: IProjectRepository,
-  ) {}
+  constructor(@Inject(PROJECT_REPOSITORY) private readonly repo: IProjectRepository) {}
 
   @Post('/')
   async create(ctx: RequestContext) {

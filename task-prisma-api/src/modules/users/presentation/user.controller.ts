@@ -6,6 +6,8 @@ import {
   Autowired,
   Middleware,
   ApiQueryParams,
+  reply,
+  HttpException,
 } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
@@ -33,7 +35,7 @@ export class UserController {
   async me(ctx: RequestContext) {
     const authUser = getUser(ctx)
     const user = await this.getUserUseCase.execute(authUser.id)
-    ctx.json(successResponse(user))
+    return successResponse(user)
   }
 
   @Put('/me', { body: updateUserSchema, name: 'UpdateProfile' })
@@ -41,7 +43,7 @@ export class UserController {
   async updateProfile(ctx: RequestContext) {
     const authUser = getUser(ctx)
     const result = await this.updateUserUseCase.execute(authUser.id, ctx.body)
-    ctx.json(successResponse(result))
+    return successResponse(result)
   }
 
   @Get('/')
@@ -55,14 +57,14 @@ export class UserController {
   @ApiTags('User')
   async getById(ctx: RequestContext) {
     const result = await this.getUserUseCase.execute(ctx.params.id)
-    if (!result) return ctx.notFound('User not found')
-    ctx.json(successResponse(result))
+    if (!result) throw HttpException.notFound('User not found')
+    return successResponse(result)
   }
 
   @Delete('/:id')
   @ApiTags('User')
   async remove(ctx: RequestContext) {
     await this.deleteUserUseCase.execute(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }

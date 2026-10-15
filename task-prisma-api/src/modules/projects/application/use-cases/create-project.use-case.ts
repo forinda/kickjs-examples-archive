@@ -1,6 +1,5 @@
-import { Service, Inject, HttpException } from '@forinda/kickjs'
+import { Service, Inject } from '@forinda/kickjs'
 import { TOKENS } from '@/shared/constants/tokens'
-import { ErrorCode } from '@/shared/constants/error-codes'
 import type { IProjectRepository } from '../../domain/repositories/project.repository'
 import type { CreateProjectDTO } from '../dtos/create-project.dto'
 
