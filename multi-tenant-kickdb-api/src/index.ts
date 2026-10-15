@@ -15,7 +15,7 @@ import { modules } from "./modules";
  *      tenant from `x-tenant` or the subdomain into `ctx.get('tenant')`.
  *   2. kick/db's 'column' tenancy (src/db/tenancy.ts) reads that value and scopes
  *      every query on a tenanted table — repositories carry no tenant code.
- *   3. AuthAdapter (BYO, src/auth) authenticates with a JWT whose `tenants`
+ *   3. AuthAdapter (BYO, src/auth.ts) authenticates with a JWT whose `tenants`
  *      claim lists the tenants the user belongs to; `LoadTenant` refuses any other.
  *
  * Guides: https://kickjs.app/guide/multi-tenancy · https://kickjs.app/guide/database/tenancy

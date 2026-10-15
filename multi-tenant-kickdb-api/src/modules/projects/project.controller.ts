@@ -2,7 +2,7 @@ import { Controller, Get, Inject, Post, reply, type Ctx } from "@forinda/kickjs"
 import { z } from "zod";
 import { fromZod } from "@forinda/kickjs-schema/zod";
 import { LoadAuthUser } from "../../auth";
-import { LoadTenant } from "../../contributors/tenant.context";
+import { LoadTenant } from "../../tenant.context";
 import { PROJECT_REPOSITORY, type ProjectRepository } from "./project.repository";
 
 export const createProjectSchema = fromZod(

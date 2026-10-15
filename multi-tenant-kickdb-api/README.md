@@ -3,12 +3,12 @@
 Multi-tenancy on **kick/db + SQLite**, with no tenant code in handlers or repositories.
 
 - `src/db/tenancy.ts` — `defineTenancy({ strategy: 'column' })`: kick/db adds `tenantId = <current tenant>` to every query on a tenanted table and stamps it on insert. (`'rls'` and `'schema'` are Postgres-only; `'column'` works on SQLite.)
-- `src/db/schema/` — `tenants` (registry, not tenanted) and `projects` (`tenantId: tenantKey(tenancy)`).
+- `src/db/schema.ts` — `tenants` (registry, not tenanted) and `projects` (`tenantId: tenantKey(tenancy)`).
 - `db/migrations/` — `init` from `kick db generate`, plus a hand-written `seed_tenants` data migration (Acme → `acme`, Globex → `globex`). Both reviewed.
 - `src/db/db.adapter.ts` — `DbAdapter` registers the client under `APP_DB`, reports `sqlite` on `GET /health/ready`, closes the handle on shutdown. `kickDbAdapter()` applies pending migrations on boot outside production.
-- `src/contributors/tenant.context.ts` — `@LoadTenant` resolves the tenant from the `x-tenant` header or the subdomain; unknown tenants get 404, and a tenant the signed-in user doesn't belong to (the token's `tenants` claim) gets 403. kick/db reads it as the current tenant.
+- `src/tenant.context.ts` — `@LoadTenant` resolves the tenant from the `x-tenant` header or the subdomain; unknown tenants get 404, and a tenant the signed-in user doesn't belong to (the token's `tenants` claim) gets 403. kick/db reads it as the current tenant.
 - `src/modules/projects/project.repository.ts` — factory repository (`createProjectRepository(db)`, contract = its `ReturnType`, `PROJECT_REPOSITORY` token).
-- `src/auth/` — the BYO Auth recipe (`AuthAdapter`, `jwtStrategy`, `@LoadAuthUser`, `@Public`).
+- `src/auth.ts` — the BYO Auth recipe (`AuthAdapter`, `jwtStrategy`, `@LoadAuthUser`, `@Public`).
 
 Guides: [Tenancy](https://kickjs.app/guide/database/tenancy) · [Multi-tenancy](https://kickjs.app/guide/multi-tenancy) · [BYO Auth](https://kickjs.app/guide/byo-recipes#auth)
 

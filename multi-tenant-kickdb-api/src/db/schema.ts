@@ -1,5 +1,5 @@
 import { index, table, tenantKey, text, timestamp, uuid, varchar } from "@forinda/kickjs-db";
-import { tenancy } from "../tenancy";
+import { tenancy } from "./tenancy";
 
 /** Tenant registry — not tenanted itself. Seeded by the `seed_tenants` migration. */
 export const tenants = table("tenants", {

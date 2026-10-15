@@ -1,5 +1,5 @@
 import { defineHttpContextDecorator, HttpException } from "@forinda/kickjs";
-import { APP_DB } from "../db/db.adapter";
+import { APP_DB } from "./db/db.adapter";
 
 export interface Tenant {
   id: string;
