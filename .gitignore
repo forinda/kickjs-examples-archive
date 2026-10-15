@@ -36,3 +36,9 @@ coverage/
 .turbo/
 .wireit/
 *.tsbuildinfo
+
+# Lockfiles — each app installs fresh against the published @forinda/* ranges
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+bun.lock

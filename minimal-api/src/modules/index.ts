@@ -1,3 +1,6 @@
-import type { AppModuleClass } from '@forinda/kickjs'
+import { defineModules } from '@forinda/kickjs'
+import { HelloModule } from './hello/hello.module'
 
-export const modules: AppModuleClass[] = []
+// Every module the app mounts. `kick g module <name>` appends a `.mount(...)`
+// line here; `kick rm module <name>` takes one out.
+export const modules = defineModules().mount(HelloModule())
