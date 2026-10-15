@@ -1,4 +1,4 @@
-import { defineTenancy } from '@forinda/kickjs-db'
+import { defineTenancy } from "@forinda/kickjs-db";
 
 /**
  * 'column' strategy: kick/db adds `tenantId = <current tenant>` to every
@@ -6,4 +6,4 @@ import { defineTenancy } from '@forinda/kickjs-db'
  * tenant is the request's `tenant` context value (set by LoadTenant).
  * 'rls' and 'schema' are Postgres-only; 'column' works on SQLite.
  */
-export const tenancy = defineTenancy({ strategy: 'column' })
+export const tenancy = defineTenancy({ strategy: "column" });

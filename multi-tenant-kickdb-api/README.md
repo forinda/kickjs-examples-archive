@@ -6,7 +6,7 @@ Multi-tenancy on **kick/db + SQLite**, with no tenant code in handlers or reposi
 - `src/db/schema/` — `tenants` (registry, not tenanted) and `projects` (`tenantId: tenantKey(tenancy)`).
 - `db/migrations/` — `init` from `kick db generate`, plus a hand-written `seed_tenants` data migration (Acme → `acme`, Globex → `globex`). Both reviewed.
 - `src/db/db.adapter.ts` — `DbAdapter` registers the client under `APP_DB`, reports `sqlite` on `GET /health/ready`, closes the handle on shutdown. `kickDbAdapter()` applies pending migrations on boot outside production.
-- `src/contributors/tenant.context.ts` — `@LoadTenant` resolves the tenant from the `x-tenant` header or the subdomain; unknown tenants get 404. kick/db reads it as the current tenant.
+- `src/contributors/tenant.context.ts` — `@LoadTenant` resolves the tenant from the `x-tenant` header or the subdomain; unknown tenants get 404, and a tenant the signed-in user doesn't belong to (the token's `tenants` claim) gets 403. kick/db reads it as the current tenant.
 - `src/modules/projects/project.repository.ts` — factory repository (`createProjectRepository(db)`, contract = its `ReturnType`, `PROJECT_REPOSITORY` token).
 - `src/auth/` — the BYO Auth recipe (`AuthAdapter`, `jwtStrategy`, `@LoadAuthUser`, `@Public`).
 
@@ -21,7 +21,8 @@ pnpm dev            # or: npm run dev — applies migrations on boot
 ```
 
 ```bash
-TOKEN=$(node -e "console.log(require('jsonwebtoken').sign({sub:'u1',email:'me@acme.test'},process.argv[1]))" "${JWT_SECRET:-dev-secret-change-me}")
+# The token lists the tenants this user belongs to; any other tenant answers 403.
+TOKEN=$(node -e "console.log(require('jsonwebtoken').sign({sub:'u1',email:'me@acme.test',tenants:['acme','globex']},process.argv[1]))" "${JWT_SECRET:-dev-secret-change-me}")
 curl -X POST -H "x-tenant: acme" -H "Authorization: Bearer $TOKEN" -H 'content-type: application/json' \
   -d '{"title":"Anvil"}' http://localhost:3000/api/v1/projects
 curl -H "x-tenant: acme"   -H "Authorization: Bearer $TOKEN" http://localhost:3000/api/v1/projects  # Anvil
