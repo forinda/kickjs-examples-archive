@@ -12,6 +12,7 @@ Reference applications built on [KickJS](https://github.com/forinda/kick-js). Ea
 | [`task-prisma-api/`](./task-prisma-api) | The same API on Prisma 7 (`@prisma/adapter-pg`), wired directly through an adapter | kickjs, kickjs-swagger, kickjs-devtools, kickjs-ws, kickjs-queue | prisma, @prisma/client, pg, bullmq, ioredis, nodemailer | Postgres, Redis |
 | [`task-mongoose-api/`](./task-mongoose-api) | The same API on MongoDB + Mongoose, with the BYO auth recipe (`@Public`, `RequireRole`) | kickjs, kickjs-swagger, kickjs-devtools, kickjs-ws, kickjs-queue | mongoose, bullmq, ioredis, nodemailer, resend | MongoDB, Redis |
 | [`multi-tenant-kickdb-api/`](./multi-tenant-kickdb-api) | Multi-tenancy with kick/db's `'column'` tenancy on SQLite (tenant resolved per request, no tenant code in repositories), committed migrations incl. a seed, BYO JWT auth, readiness check | kickjs, kickjs-schema, kickjs-db (`/sqlite`) | better-sqlite3, jsonwebtoken | — (SQLite file) |
+| [`inertia-app/`](./inertia-app) | Inertia (React) notes app with SSR: controllers return pages, create/edit/delete with server-side validation errors back on the form, flash messages, shared props, a deferred prop; kick/db + SQLite with reviewed migrations and a readiness check | kickjs, kickjs-inertia, kickjs-schema, kickjs-db (`/sqlite`) | @inertiajs/react, react, better-sqlite3 | — (SQLite file) |
 | [`db-spike-api/`](./db-spike-api) | Superseded by `task-kickdb-api` — the original `kick db generate` spike, schema → migration only | kickjs-db | — | — |
 
 Every Express-based app also depends on `express`, `zod`, `dotenv` and `reflect-metadata`, and has `@forinda/kickjs-cli`, `@forinda/kickjs-vite` and `@forinda/kickjs-testing` as dev dependencies.
@@ -24,7 +25,7 @@ The three earlier `multi-tenant-{drizzle,prisma,mongoose}-api` apps were identic
 
 ```bash
 git clone https://github.com/forinda/kickjs-examples-archive
-cd kickjs-examples-archive/minimal-api
+cd kickjs-examples-archive/minimal-api   # inertia-app: pnpm build also builds the pages + SSR bundle
 
 pnpm install      # or: npm install
 pnpm dev          # or: npm run dev   — Vite HMR + typegen
@@ -42,7 +43,7 @@ Lockfiles are not committed — each app resolves the current published versions
 These are reference apps, not starters. To start a project, scaffold one:
 
 ```bash
-npx @forinda/kickjs-cli new my-api --template rest   # rest | minimal | fullstack
+npx @forinda/kickjs-cli new my-api --template rest   # rest | minimal | fullstack | inertia
 ```
 
 ## Contributing
