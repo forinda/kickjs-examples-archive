@@ -9,7 +9,7 @@ import { tenantManager, type SimulatedDb } from '../db/tenant-manager'
  * cache is populated up front and the factory returns
  * `NodePgDatabase<typeof schema>` synchronously.
  */
-export const TENANT_DB = createToken<Promise<SimulatedDb>>('app/db/tenant')
+export const TENANT_DB = createToken<Promise<SimulatedDb>>('app/Db/tenant')
 
 /**
  * Replaces the deprecated `@forinda/kickjs-multi-tenant` adapter's
