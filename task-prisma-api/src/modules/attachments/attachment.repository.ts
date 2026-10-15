@@ -1,7 +1,7 @@
 import { createToken } from '@forinda/kickjs'
 import type { PrismaClient } from '@/generated/prisma/client'
 import type { ParsedQuery } from '@forinda/kickjs'
-import { queryAdapter } from '@/shared/infrastructure/query-adapter'
+import { queryAdapter } from '@/shared/query-adapter'
 import type { Attachment } from '@/generated/prisma/client'
 
 export type { Attachment }

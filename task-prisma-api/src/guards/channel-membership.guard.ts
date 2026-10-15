@@ -1,0 +1,28 @@
+import { Container, HttpException, type MiddlewareHandler } from '@forinda/kickjs'
+import type { RequestContext } from '@forinda/kickjs'
+import { ErrorCode } from '@/shared/error-codes'
+import { getUser } from '@/shared/auth'
+import {
+  CHANNEL_MEMBER_REPOSITORY,
+  type ChannelMemberRepository,
+} from '@/modules/channels/channel-member.repository'
+
+export const channelMembershipGuard: MiddlewareHandler = async (ctx: RequestContext, next) => {
+  const user = getUser(ctx)
+  const channelId = ctx.params.channelId || ctx.params.id
+
+  if (!channelId) {
+    throw HttpException.badRequest('Channel ID is required')
+  }
+
+  const container = Container.getInstance()
+  const memberRepo = container.resolve<ChannelMemberRepository>(CHANNEL_MEMBER_REPOSITORY)
+
+  const member = await memberRepo.findByChannelAndUser(channelId, user.id)
+  if (!member) {
+    throw HttpException.forbidden(ErrorCode.FORBIDDEN)
+  }
+
+  ctx.set('channelMember', member)
+  next()
+}

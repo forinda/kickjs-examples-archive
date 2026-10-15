@@ -1,4 +1,4 @@
-import { PrismaAdapter } from '@/db/prisma'
+import { PrismaAdapter } from '@/adapters/prisma.adapter'
 import { DevToolsAdapter } from '@forinda/kickjs-devtools'
 import { SwaggerAdapter } from '@forinda/kickjs-swagger'
 import { WsAdapter } from '@forinda/kickjs-ws'
@@ -7,15 +7,15 @@ import { KickCronAdapter } from '@forinda/kickjs'
 import { env } from '@/config'
 
 // Side-effect imports: register decorated classes
-import '@/modules/messages/presentation/chat.ws-controller'
+import '@/modules/messages/chat.ws-controller'
 import '@/modules/queue/queue.module'
 
 // @Cron job classes — imported so their decorators register; KickCronAdapter schedules them
-import '@/modules/cron/infrastructure/jobs/overdue-reminders.cron'
-import '@/modules/cron/infrastructure/jobs/token-cleanup.cron'
-import '@/modules/cron/infrastructure/jobs/health-check.cron'
-import '@/modules/cron/infrastructure/jobs/daily-digest.cron'
-import '@/modules/cron/infrastructure/jobs/presence-cleanup.cron'
+import '@/modules/cron/overdue-reminders.cron'
+import '@/modules/cron/token-cleanup.cron'
+import '@/modules/cron/health-check.cron'
+import '@/modules/cron/daily-digest.cron'
+import '@/modules/cron/presence-cleanup.cron'
 
 const redisUrl = new URL(env.REDIS_URL)
 

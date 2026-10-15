@@ -2,8 +2,8 @@ import { createToken } from '@forinda/kickjs'
 import { HttpException } from '@forinda/kickjs'
 import type { PrismaClient } from '@/generated/prisma/client'
 import type { ParsedQuery } from '@forinda/kickjs'
-import type { UpdateUserDTO } from './application/dtos/update-user.dto'
-import { queryAdapter } from '@/shared/infrastructure/query-adapter'
+import type { UpdateUserDTO } from './user.dto'
+import { queryAdapter } from '@/shared/query-adapter'
 import type { User, Prisma } from '@/generated/prisma/client'
 
 export type { User }

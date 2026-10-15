@@ -1,13 +1,13 @@
 # task-prisma-api
 
-A full task-management API (users, auth, workspaces, projects, tasks, labels, comments, attachments, channels + chat, notifications, activity, stats) on **Prisma 7** and PostgreSQL, in a layered layout (`domain/`, `application/`, `presentation/` per module).
+A full task-management API (users, auth, workspaces, projects, tasks, labels, comments, attachments, channels + chat, notifications, activity, stats) on **Prisma 7** and PostgreSQL, in the flat module layout `kick g module` generates (`<name>.module.ts`, `.controller.ts`, `.service.ts` where there is real logic, `.repository.ts`, `.dto.ts`, tests beside the code).
 
 What it shows:
 
-- **Prisma wired directly** (`src/db/prisma.ts`) — `PrismaAdapter` creates `new PrismaClient({ adapter: new PrismaPg(...) })`, registers it under `PRISMA_CLIENT`, reports it on `GET /health/ready`, disconnects on shutdown. Replaces the removed `@forinda/kickjs-prisma`. The client omits `User.passwordHash` globally.
+- **Prisma wired directly** (`src/adapters/prisma.adapter.ts`, token in `src/db/prisma.ts`) — `PrismaAdapter` creates `new PrismaClient({ adapter: new PrismaPg(...) })`, registers it under `PRISMA_CLIENT`, reports it on `GET /health/ready`, disconnects on shutdown. Replaces the removed `@forinda/kickjs-prisma`. The client omits `User.passwordHash` globally.
 - One file per repository (`src/modules/<module>/<name>.repository.ts`): a `createXRepository(prisma)` factory, `type XRepository = ReturnType<…>`, and an `X_REPOSITORY` token bound in the module's `register()` — the shape `kick g module` generates.
-- `src/shared/infrastructure/query-adapter.ts` — turns `ctx.qs()` / `ctx.paginate()` filters, sort, search and pagination into Prisma `findMany` args.
-- JWT auth as a guard middleware (`authBridgeMiddleware`) plus workspace / project / channel access guards.
+- `src/shared/query-adapter.ts` — turns `ctx.qs()` / `ctx.paginate()` filters, sort, search and pagination into Prisma `findMany` args.
+- JWT auth as a guard middleware (`src/middleware/auth-bridge.middleware.ts`) plus workspace / project / channel access guards (`src/guards/`).
 - `@forinda/kickjs-queue` (BullMQ workers for email, notifications, activity), `@forinda/kickjs-ws` (`/ws/chat`), `@forinda/kickjs-swagger` (`/docs`, `/openapi.json`), `@forinda/kickjs-devtools` (`/_debug`).
 - Scheduled jobs with the framework's `@Cron` + `KickCronAdapter` (needs `croner`).
 - A BYO mailer plugin (`src/plugins/mailer.plugin.ts`) — logs to the console unless `SMTP_URL` is set.
