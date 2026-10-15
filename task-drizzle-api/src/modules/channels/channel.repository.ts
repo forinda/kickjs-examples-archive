@@ -2,8 +2,8 @@ import { createToken, HttpException, type ParsedQuery } from '@forinda/kickjs'
 import { eq, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
 import { channels, type channelMembers } from '@/db/schema'
-import { CHANNEL_QUERY_CONFIG } from '@/modules/channels/constants'
-import { queryAdapter } from '@/shared/infrastructure/query-adapter'
+import { CHANNEL_QUERY_CONFIG } from './channel.constants'
+import { queryAdapter } from '@/shared/query-adapter'
 
 export type Channel = typeof channels.$inferSelect
 export type NewChannel = typeof channels.$inferInsert

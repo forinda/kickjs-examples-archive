@@ -3,19 +3,19 @@ import { SwaggerAdapter } from '@forinda/kickjs-swagger'
 import { WsAdapter } from '@forinda/kickjs-ws'
 import { QueueAdapter } from '@forinda/kickjs-queue'
 import { KickCronAdapter, type AppAdapter } from '@forinda/kickjs'
-import { DrizzleAdapter } from '@/db'
+import { DrizzleAdapter } from '@/adapters/drizzle.adapter'
 import { env } from './env'
 
 // Side-effect imports: register decorated classes
-import '@/modules/messages/presentation/chat.ws-controller'
+import '@/modules/messages/chat.ws-controller'
 import '@/modules/queue/queue.module'
 
 // Cron job classes — imported so their @Cron methods register with KickCronAdapter
-import '@/modules/cron/infrastructure/jobs/overdue-reminders.cron'
-import '@/modules/cron/infrastructure/jobs/token-cleanup.cron'
-import '@/modules/cron/infrastructure/jobs/health-check.cron'
-import '@/modules/cron/infrastructure/jobs/daily-digest.cron'
-import '@/modules/cron/infrastructure/jobs/presence-cleanup.cron'
+import '@/modules/cron/overdue-reminders.cron'
+import '@/modules/cron/token-cleanup.cron'
+import '@/modules/cron/health-check.cron'
+import '@/modules/cron/daily-digest.cron'
+import '@/modules/cron/presence-cleanup.cron'
 
 const redisUrl = new URL(env.REDIS_URL)
 

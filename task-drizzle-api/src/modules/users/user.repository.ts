@@ -2,8 +2,8 @@ import { createToken, HttpException, type ParsedQuery } from '@forinda/kickjs'
 import { eq, getTableColumns, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
 import { users } from '@/db/schema'
-import { USER_QUERY_CONFIG } from '@/modules/users/constants'
-import { queryAdapter } from '@/shared/infrastructure/query-adapter'
+import { USER_QUERY_CONFIG } from './user.constants'
+import { queryAdapter } from '@/shared/query-adapter'
 
 /** A user as the API exposes it — never carries the password hash. */
 export type User = Omit<typeof users.$inferSelect, 'passwordHash'>

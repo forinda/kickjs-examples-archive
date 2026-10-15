@@ -1,14 +1,14 @@
 # task-drizzle-api
 
-A Jira-style task-management API (workspaces, projects, tasks, labels, comments, attachments, channels + chat, notifications, activity, stats) on **PostgreSQL + Drizzle**, in a layered layout: per module, `<name>.repository.ts`, `application/` use cases + DTOs, `domain/` services, `presentation/` controllers.
+A Jira-style task-management API (workspaces, projects, tasks, labels, comments, attachments, channels + chat, notifications, activity, stats) on **PostgreSQL + Drizzle**, in the CLI's flat module layout: per module, `<name>.module.ts`, `<name>.controller.ts`, `<name>.repository.ts`, `<name>.dto.ts`, and a `<name>.service.ts` where there is logic beyond the repository.
 
 What it shows:
 
-- **Drizzle wired directly** (the replacement for the removed `@forinda/kickjs-drizzle`): `src/db/index.ts` exports `DRIZZLE_DB` and a `DrizzleAdapter` that connects in `beforeStart`, answers `GET /health/ready` via `onHealthCheck`, and closes the pool on shutdown. `src/shared/infrastructure/query-adapter.ts` turns `ctx.paginate()` query strings (filters, sort, search, pagination) into Drizzle `where` / `orderBy`.
+- **Drizzle wired directly** (the replacement for the removed `@forinda/kickjs-drizzle`): `src/db/index.ts` exports `DRIZZLE_DB`; `src/adapters/drizzle.adapter.ts` is the `DrizzleAdapter` that connects in `beforeStart`, answers `GET /health/ready` via `onHealthCheck`, and closes the pool on shutdown. `src/shared/query-adapter.ts` turns `ctx.paginate()` query strings (filters, sort, search, pagination) into Drizzle `where` / `orderBy`.
 - Repositories as factories (the `kick g module` shape): `createTaskRepository(db)` returns an object, `TaskRepository = ReturnType<typeof createTaskRepository>`, `TASK_REPOSITORY = createToken<TaskRepository>(…)`, bound in the module's `register(container)` and injected with `@Inject(TASK_REPOSITORY)`. Tests swap in in-memory classes that `implements TaskRepository`.
 - Return-value handlers (`return value`, `reply.created()`, `reply.noContent()`), `HttpException` for errors.
-- JWT auth as a `@Middleware` guard (`src/shared/presentation/middlewares/auth-bridge.middleware.ts`).
-- `@forinda/kickjs-queue` (BullMQ) jobs with `@Job` / `@Process`, `@Cron` jobs run by `KickCronAdapter`, `@forinda/kickjs-ws` chat (`/ws/chat`), `@forinda/kickjs-swagger` (`/docs`), `@forinda/kickjs-devtools` (`/_debug`), and a BYO nodemailer `MailerPlugin`.
+- JWT auth as a `@Middleware` guard (`src/middleware/auth-bridge.middleware.ts`).
+- `@forinda/kickjs-queue` (BullMQ) jobs with `@Job` / `@Process`, `@Cron` jobs run by `KickCronAdapter`, `@forinda/kickjs-ws` chat (`/ws/chat`), `@forinda/kickjs-swagger` (`/docs`), `@forinda/kickjs-devtools` (`/_debug`), and a BYO nodemailer `MailerPlugin` (`src/plugins/mailer.plugin.ts`).
 
 Packages: `@forinda/kickjs`, `-schema`, `-swagger`, `-devtools`, `-ws`, `-queue`, `-cli`, `-vite`, `-testing`; `drizzle-orm`, `postgres`, `bullmq`, `ioredis`, `jsonwebtoken`, `bcryptjs`, `nodemailer`, `croner`.
 

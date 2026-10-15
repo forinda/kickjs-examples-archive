@@ -2,8 +2,8 @@ import { createToken, type ParsedQuery } from '@forinda/kickjs'
 import { and, eq, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
 import { notifications } from '@/db/schema'
-import { NOTIFICATION_QUERY_CONFIG } from '@/modules/notifications/constants'
-import { queryAdapter } from '@/shared/infrastructure/query-adapter'
+import { NOTIFICATION_QUERY_CONFIG } from './notification.constants'
+import { queryAdapter } from '@/shared/query-adapter'
 
 export type Notification = typeof notifications.$inferSelect
 export type NewNotification = typeof notifications.$inferInsert

@@ -2,8 +2,8 @@ import { createToken, HttpException, type ParsedQuery } from '@forinda/kickjs'
 import { eq, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
 import { projects } from '@/db/schema'
-import { PROJECT_QUERY_CONFIG } from '@/modules/projects/constants'
-import { queryAdapter } from '@/shared/infrastructure/query-adapter'
+import { PROJECT_QUERY_CONFIG } from './project.constants'
+import { queryAdapter } from '@/shared/query-adapter'
 
 export type Project = typeof projects.$inferSelect
 export type NewProject = typeof projects.$inferInsert

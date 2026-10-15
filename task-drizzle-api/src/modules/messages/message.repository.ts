@@ -2,8 +2,8 @@ import { createToken, HttpException, type ParsedQuery } from '@forinda/kickjs'
 import { and, desc, eq, lt, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
 import { messages } from '@/db/schema'
-import { MESSAGE_QUERY_CONFIG } from '@/modules/messages/constants'
-import { queryAdapter } from '@/shared/infrastructure/query-adapter'
+import { MESSAGE_QUERY_CONFIG } from './message.constants'
+import { queryAdapter } from '@/shared/query-adapter'
 
 export type Message = typeof messages.$inferSelect
 export type NewMessage = typeof messages.$inferInsert

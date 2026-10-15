@@ -2,8 +2,8 @@ import { createToken, HttpException, type ParsedQuery } from '@forinda/kickjs'
 import { asc, eq, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
 import { tasks } from '@/db/schema'
-import { TASK_QUERY_CONFIG } from '@/modules/tasks/constants'
-import { queryAdapter } from '@/shared/infrastructure/query-adapter'
+import { TASK_QUERY_CONFIG } from './task.constants'
+import { queryAdapter } from '@/shared/query-adapter'
 
 export type Task = typeof tasks.$inferSelect
 export type NewTask = typeof tasks.$inferInsert

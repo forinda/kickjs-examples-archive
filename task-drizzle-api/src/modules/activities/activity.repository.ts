@@ -2,8 +2,8 @@ import { createToken, type ParsedQuery } from '@forinda/kickjs'
 import { and, eq, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
 import { activities } from '@/db/schema'
-import { ACTIVITY_QUERY_CONFIG } from '@/modules/activities/constants'
-import { queryAdapter } from '@/shared/infrastructure/query-adapter'
+import { ACTIVITY_QUERY_CONFIG } from './activity.constants'
+import { queryAdapter } from '@/shared/query-adapter'
 
 export type Activity = typeof activities.$inferSelect
 export type NewActivity = typeof activities.$inferInsert

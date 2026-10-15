@@ -2,8 +2,8 @@ import { createToken, HttpException, type ParsedQuery } from '@forinda/kickjs'
 import { asc, eq, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
 import { comments } from '@/db/schema'
-import { COMMENT_QUERY_CONFIG } from '@/modules/comments/constants'
-import { queryAdapter } from '@/shared/infrastructure/query-adapter'
+import { COMMENT_QUERY_CONFIG } from './comment.constants'
+import { queryAdapter } from '@/shared/query-adapter'
 
 export type Comment = typeof comments.$inferSelect
 export type NewComment = typeof comments.$inferInsert

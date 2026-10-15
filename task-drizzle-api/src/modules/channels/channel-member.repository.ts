@@ -2,7 +2,7 @@ import { createToken } from '@forinda/kickjs'
 import { and, eq } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
 import { channelMembers } from '@/db/schema'
-import type { ChannelMember } from '@/modules/channels/channel.repository'
+import type { ChannelMember } from './channel.repository'
 
 export function createChannelMemberRepository(db: AppDatabase) {
   return {

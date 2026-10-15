@@ -2,8 +2,8 @@ import { createToken, type ParsedQuery } from '@forinda/kickjs'
 import { desc, eq, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
 import { attachments } from '@/db/schema'
-import { ATTACHMENT_QUERY_CONFIG } from '@/modules/attachments/constants'
-import { queryAdapter } from '@/shared/infrastructure/query-adapter'
+import { ATTACHMENT_QUERY_CONFIG } from './attachment.constants'
+import { queryAdapter } from '@/shared/query-adapter'
 
 export type Attachment = typeof attachments.$inferSelect
 export type NewAttachment = typeof attachments.$inferInsert

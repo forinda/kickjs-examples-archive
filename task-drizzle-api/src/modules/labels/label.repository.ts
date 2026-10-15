@@ -2,8 +2,8 @@ import { createToken, HttpException, type ParsedQuery } from '@forinda/kickjs'
 import { asc, eq, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
 import { labels } from '@/db/schema'
-import { LABEL_QUERY_CONFIG } from '@/modules/labels/constants'
-import { queryAdapter } from '@/shared/infrastructure/query-adapter'
+import { LABEL_QUERY_CONFIG } from './label.constants'
+import { queryAdapter } from '@/shared/query-adapter'
 
 export type Label = typeof labels.$inferSelect
 export type NewLabel = typeof labels.$inferInsert

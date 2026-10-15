@@ -2,8 +2,8 @@ import { createToken, HttpException, type ParsedQuery } from '@forinda/kickjs'
 import { eq, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
 import { workspaceMembers, workspaces } from '@/db/schema'
-import { WORKSPACE_QUERY_CONFIG } from '@/modules/workspaces/constants'
-import { queryAdapter } from '@/shared/infrastructure/query-adapter'
+import { WORKSPACE_QUERY_CONFIG } from './workspace.constants'
+import { queryAdapter } from '@/shared/query-adapter'
 
 export type Workspace = typeof workspaces.$inferSelect
 export type NewWorkspace = typeof workspaces.$inferInsert
