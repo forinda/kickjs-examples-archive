@@ -1,5 +1,5 @@
 // One pg.Pool serves both the query client (registered under DB_PRIMARY by
-// DbModule) and the migration adapter kickDbAdapter uses on boot.
+// DbAdapter) and the migration adapter kickDbAdapter uses on boot.
 import { Pool } from 'pg'
 import { createDbClient } from '@forinda/kickjs-db'
 import { pgAdapter, pgDialect } from '@forinda/kickjs-db/pg'
@@ -16,8 +16,8 @@ export const dbClient = createDbClient({
   events: true,
 })
 
-// `endPoolOnClose` — kickDbAdapter closes this on shutdown, draining the shared pool.
-export const migrationAdapter = pgAdapter({ pool, endPoolOnClose: true })
+// The pool is shared, so the migration adapter leaves it open — DbAdapter ends it.
+export const migrationAdapter = pgAdapter({ pool })
 
 export type Db = typeof dbClient
 

@@ -3,12 +3,15 @@ import request from 'supertest'
 import { Container } from '@forinda/kickjs'
 import { createTestApp } from '@forinda/kickjs-testing'
 import { env } from '@/config'
-import { DbModule } from '@/db/db.module'
+import { DbAdapter } from '@/db/db.adapter'
 import { TasksModule } from '../tasks/tasks.module'
 import { UsersModule } from './users.module'
 
 async function makeApp() {
-  const { app } = await createTestApp({ modules: [DbModule(), UsersModule(), TasksModule()] })
+  const { app } = await createTestApp({
+    modules: [UsersModule(), TasksModule()],
+    adapters: [DbAdapter()],
+  })
   return request(app.handle.bind(app))
 }
 
