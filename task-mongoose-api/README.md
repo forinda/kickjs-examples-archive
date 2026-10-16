@@ -5,13 +5,14 @@ A full task-management API (workspaces, projects, tasks, comments, labels, attac
 What it shows:
 
 - The [BYO Auth recipe](https://kickjs.app/guide/byo-recipes#auth): `AuthAdapter` (`src/adapters/auth.adapter.ts`) with `defaultPolicy: 'protected'`, a JWT strategy and `@Public` route flag (`src/auth.ts`), `@RequireRole({ roles: ['superadmin'] })` (`src/guards/require-role.guard.ts`). Replaces the removed `@forinda/kickjs-auth`. `LoadAuthUser` (`src/contributors/load-auth-user.contributor.ts`) runs `beforeValidation`, so anonymous requests get 401 and the membership guards (`src/guards`) can read `ctx.get('user')`.
+- No account enumeration through invites: `POST /workspaces/:id/invite` answers `202 Invitation sent` whether or not the email has an account (or is already a member). `POST /auth/register` with a taken email answers a generic `409 REGISTRATION_FAILED` — but a 409 still tells a caller the address is registered. Full protection needs an email-verification flow: always answer "check your inbox", and send the existing account a "someone tried to sign up" email instead of a conflict.
 - Repositories — one file each (`modules/*/*.repository.ts`, next to the Mongoose model in `*.schema.ts`): `createXRepository(connection)` factory, `XRepository = ReturnType<…>`, `X_REPOSITORY` token, bound in the module's `register()` with the connection the Mongoose adapter registers (`MONGO_CONNECTION`).
 - `src/adapters/` — Mongoose and Redis clients as `defineAdapter()`s: connect in `beforeStart`, `onHealthCheck` feeding `GET /health/ready`, close in `shutdown`.
 - Background jobs — `@Job` / `@Process` classes in `modules/queues`, run by `QueueAdapter` (`@forinda/kickjs-queue`, BullMQ) and enqueued through `JOB_DISPATCHER`.
 - Scheduled jobs — `@Cron` methods in `modules/crons`, run by `KickCronAdapter()`.
 - WebSockets — `@WsController` chat with presence (`@forinda/kickjs-ws`, at `/ws/chat`).
 - Mail — a small BYO mailer plugin (`src/plugins/mailer.plugin.ts`): console in dev, Resend in production.
-- OpenAPI at `/docs` (`@forinda/kickjs-swagger`), DevTools at `/_debug` (`@forinda/kickjs-devtools`).
+- OpenAPI at `/docs` (`@forinda/kickjs-swagger`) under development/test only; DevTools at `/_debug` (`@forinda/kickjs-devtools`) in `kick dev` only — the `__KICKJS_DEVTOOLS__` build flag drops it from `kick build`.
 - Return-value handlers (`return value`, `reply.created(...)`), `ctx.paginate` with query configs, file upload (`@FileUpload`).
 
 ## Run

@@ -27,7 +27,7 @@ export class AuthService {
   async register(dto: RegisterDto) {
     const existing = await this.userRepo.findByEmail(dto.email)
     if (existing) {
-      throw HttpException.conflict(ErrorCode.EMAIL_ALREADY_EXISTS)
+      throw HttpException.conflict(ErrorCode.REGISTRATION_FAILED)
     }
 
     const passwordHash = await bcrypt.hash(dto.password, 12)

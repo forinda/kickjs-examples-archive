@@ -104,13 +104,16 @@ export class WorkspacesController {
   })
   @Middleware(workspaceMembershipGuard, requireWorkspaceRole('admin'))
   @ApiOperation({ summary: 'Invite a member to the workspace' })
-  @ApiResponse({ status: 201, description: 'Member invited' })
+  @ApiResponse({
+    status: 202,
+    description: 'Same answer whether or not the email has an account (no account enumeration)',
+  })
   @ApiResponse({ status: 400, description: 'Validation error' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Requires admin role' })
   async invite(ctx: RequestContext) {
-    const result = await this.workspacesService.inviteMember(ctx.params.workspaceId, ctx.body)
-    return reply.created(successResponse(result, 'Member invited'))
+    await this.workspacesService.inviteMember(ctx.params.workspaceId, ctx.body)
+    return reply.accepted(successResponse(null, 'Invitation sent'))
   }
 
   @Get('/:workspaceId/members', { params: z.object({ workspaceId: z.string() }) })

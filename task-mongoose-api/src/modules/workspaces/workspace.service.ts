@@ -63,20 +63,23 @@ export class WorkspacesService {
     }
   }
 
-  async inviteMember(workspaceId: string, dto: InviteMemberDto) {
+  /**
+   * Adds the account with this email to the workspace and queues the invite
+   * email. Resolves the same way whether the email has an account, is already
+   * a member, or is unknown — the caller can't use invites to probe which
+   * emails are registered.
+   */
+  async inviteMember(workspaceId: string, dto: InviteMemberDto): Promise<void> {
     const user = await this.userRepo.findByEmail(dto.email)
-    if (!user) {
-      throw HttpException.notFound(ErrorCode.USER_NOT_FOUND)
-    }
+    // ponytail: no account → nothing happens; a sign-up invite (pending invite + email) belongs here.
+    if (!user) return
 
     const existing = await this.memberRepo.findByUserAndWorkspace(user._id.toString(), workspaceId)
-    if (existing) {
-      throw HttpException.conflict(ErrorCode.ALREADY_WORKSPACE_MEMBER)
-    }
+    if (existing) return
 
     const workspace = await this.workspaceRepo.findById(workspaceId)
 
-    const member = await this.memberRepo.create({
+    await this.memberRepo.create({
       workspaceId: workspaceId as any,
       userId: user._id,
       role: dto.role,
@@ -93,8 +96,6 @@ export class WorkspacesService {
     } catch {
       logger.warn('Failed to queue workspace invite email')
     }
-
-    return member
   }
 
   async updateMemberRole(workspaceId: string, userId: string, role: 'admin' | 'member') {

@@ -1,13 +1,12 @@
-import { getEnv, KickCronAdapter } from '@forinda/kickjs'
-import { DevToolsAdapter } from '@forinda/kickjs-devtools'
-import { SwaggerAdapter } from '@forinda/kickjs-swagger'
+/// <reference types="@forinda/kickjs-vite/globals" />
+import { getEnv, KickCronAdapter, type AppAdapter } from '@forinda/kickjs'
 import { WsAdapter } from '@forinda/kickjs-ws'
 import { QueueAdapter } from '@forinda/kickjs-queue'
 import { jwtStrategy } from '@/auth'
 import { AuthAdapter } from '@/adapters/auth.adapter'
 import { MongooseAdapter } from '@/adapters/mongoose.adapter'
 import { RedisAdapter } from '@/adapters/redis.adapter'
-import { isDevOrTest } from '@/config/dev-default'
+import { swaggerAdapters } from '@/config/swagger'
 
 const redisUrl = new URL(getEnv('REDIS_URL'))
 
@@ -28,7 +27,7 @@ const queueAdapter = QueueAdapter({
   concurrency: 5,
 })
 
-export const adapters = [
+export const adapters: AppAdapter[] = [
   MongooseAdapter({ uri: getEnv('MONGODB_URI') }),
   RedisAdapter({ url: getEnv('REDIS_URL') }),
   AuthAdapter({
@@ -48,16 +47,13 @@ export const adapters = [
   queueAdapter,
   // Schedules every `@Cron` method (src/modules/crons) with croner.
   KickCronAdapter(),
-  // /_debug only under development/test. Its own default (`NODE_ENV !== 'production'`)
-  // would turn it on with NODE_ENV unset — fail closed instead.
-  DevToolsAdapter({
-    enabled: isDevOrTest(),
-    secret: false,
-    adapters: [wsAdapter, queueAdapter],
-  }),
-  SwaggerAdapter({
-    info: { title: 'Vibed API', version: '1.0.0', description: 'Task management API' },
-    bearerAuth: true,
-    publicFlag: 'auth.public',
-  }),
+  // OpenAPI spec + UI under development/test only.
+  ...swaggerAdapters(),
 ]
+
+// DevTools (/_debug) in `kick dev` only: the vite plugin sets the flag false for
+// `kick build`, so the import and the package drop out of the production bundle.
+if (__KICKJS_DEVTOOLS__) {
+  const { DevToolsAdapter } = await import('@forinda/kickjs-devtools')
+  adapters.push(DevToolsAdapter({ secret: false, adapters: [wsAdapter, queueAdapter] }))
+}
