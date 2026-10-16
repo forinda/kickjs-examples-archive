@@ -31,3 +31,24 @@ curl http://localhost:3000/health/ready
 ```
 
 `pnpm test` runs against an in-memory SQLite (`DB_FILE=:memory:` in `vitest.config.ts`) with the real migrations and checks tenant isolation. `pnpm db:status`, `pnpm db:generate <name>`, `pnpm build && pnpm start` also work.
+
+## Deploy
+
+**Required env:** `JWT_SECRET` (32+ chars; fail closed — with `NODE_ENV=production`, the image's, or unset, the app refuses to boot without it).
+
+**Docker**
+
+```bash
+docker build -t multi-tenant-kickdb-api .
+docker run -p 3000:3000 -e JWT_SECRET=$(openssl rand -hex 32) -v multi-tenant-data:/app/data multi-tenant-kickdb-api
+```
+
+- **State:** the SQLite file is `/app/data/app.db` (`DB_FILE`) — keep `/app/data` on a volume, or every deploy starts empty.
+- **Migrations:** the image sets `MIGRATE_ON_BOOT=true`, so the committed migrations in `db/migrations` (seed included) are applied at startup. Without it, outside development/test, pending migrations stop the boot.
+- One instance: SQLite is a local file, so don't scale it out (move to Postgres for that).
+
+**Not serverless:** a function's filesystem is ephemeral and per instance, so the SQLite database would not survive.
+
+- **Health:** `GET /health/ready` runs every adapter's health check — the image's `HEALTHCHECK` and a load balancer's readiness probe use it; `GET /health/live` for liveness.
+- **DevTools** is dev-only and not in the production build: `/_debug` answers 404 in the image.
+- The image installs from the committed `pnpm-lock.yaml` (frozen) and runs `node dist/index.js` as the unprivileged `node` user with `NODE_ENV=production`; `.env` files are never copied in — pass env with `-e`, `--env-file` or the platform.

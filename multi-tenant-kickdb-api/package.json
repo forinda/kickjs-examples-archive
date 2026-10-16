@@ -18,6 +18,7 @@
   "dependencies": {
     "@forinda/kickjs": "^10.3.1",
     "@forinda/kickjs-db": "^8.7.0",
+    "@forinda/kickjs-devtools": "^7.11.0",
     "@forinda/kickjs-schema": "^0.2.4",
     "better-sqlite3": "^13.0.3",
     "dotenv": "^17.4.2",
@@ -48,5 +49,6 @@
     "@swc/core": true,
     "esbuild": true,
     "better-sqlite3": true
-  }
+  },
+  "packageManager": "pnpm@11.24.0"
 }
