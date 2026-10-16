@@ -1,6 +1,6 @@
-import { Controller, Get, Inject, Post, reply, type Ctx } from '@forinda/kickjs'
+import { Controller, Get, HttpException, Inject, Post, reply, type Ctx } from '@forinda/kickjs'
 import { z } from 'zod'
-import { issueToken } from '@/auth'
+import { issueToken, verifyToken } from '@/auth'
 import { PRESENCE_REPOSITORY, type PresenceRepository } from './presence.repository'
 import { roomName } from './chat.gateway'
 
@@ -22,8 +22,12 @@ export class ChatController {
     return reply.created({ token: issueToken(ctx.body.name) })
   }
 
+  /** Same token as the socket: an anonymous caller could otherwise watch any room unseen. */
   @Get('/rooms/:room/users', { params: roomParams })
   async users(ctx: Ctx<KickRoutes.ChatController['users']>) {
+    const token = ctx.headers.authorization?.replace(/^Bearer\s+/i, '')
+    if (!token || !verifyToken(token))
+      throw HttpException.unauthorized('Bearer chat token required')
     return { room: ctx.params.room, users: await this.presence.users(ctx.params.room) }
   }
 }

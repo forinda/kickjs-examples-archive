@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 // Side-effect import — registers the env schema before anything reads it.
-import { env } from './config'
-import { bootstrap, expressRuntime } from '@forinda/kickjs'
+import './config'
+import { bootstrap, expressRuntime, getEnv } from '@forinda/kickjs'
 import { WsAdapter } from '@forinda/kickjs-ws'
 import { redisBroker } from '@forinda/kickjs-ws/redis'
 import { modules } from './modules'
@@ -11,7 +11,8 @@ import { PublicPageAdapter } from './adapters/public-page.adapter'
 
 // With REDIS_URL, every instance relays room broadcasts through Redis pub/sub
 // and keeps presence in Redis; without it, one process holds everything.
-const redis = env.REDIS_URL ? createRedisClients(env.REDIS_URL) : null
+const redisUrl = getEnv('REDIS_URL')
+const redis = redisUrl ? createRedisClients(redisUrl) : null
 
 export const app = await bootstrap({
   modules,
@@ -20,7 +21,7 @@ export const app = await bootstrap({
     ...(redis ? [RedisAdapter(redis)] : []),
     WsAdapter({
       path: '/ws',
-      heartbeatInterval: env.WS_HEARTBEAT_MS,
+      heartbeatInterval: getEnv('WS_HEARTBEAT_MS'),
       maxPayload: 16 * 1024,
       auth: { resolveUser: resolveSocketUser },
       // `close: undefined`: RedisAdapter quits both connections, which ends the subscription.

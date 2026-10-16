@@ -1,6 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import type { IncomingMessage } from 'node:http'
-import { env } from '@/config'
+// Side effect: registers the env schema (CHAT_SECRET) — tests import this file without src/index.ts.
+import '@/config'
+import { getEnv } from '@forinda/kickjs'
 
 export type ChatUser = {
   id: string
@@ -10,7 +12,7 @@ export type ChatUser = {
 const TOKEN_TTL_SECONDS = 60 * 60
 
 const sign = (payload: string) =>
-  createHmac('sha256', env.CHAT_SECRET).update(payload).digest('base64url')
+  createHmac('sha256', getEnv('CHAT_SECRET')).update(payload).digest('base64url')
 
 /** `<base64url(json {name, exp})>.<hmac>` — a tiny signed token, no JWT dependency. */
 export function issueToken(name: string, ttlSeconds = TOKEN_TTL_SECONDS): string {

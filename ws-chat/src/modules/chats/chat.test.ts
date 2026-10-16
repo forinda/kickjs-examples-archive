@@ -82,7 +82,12 @@ describe('ws-chat', () => {
     })
 
     // Same list over HTTP.
-    const res = await request(app.handle.bind(app)).get('/api/v1/chat/rooms/general/users')
+    const http = request(app.handle.bind(app))
+    await http.get('/api/v1/chat/rooms/general/users').expect(401)
+    const res = await http
+      .get('/api/v1/chat/rooms/general/users')
+      .set('authorization', `Bearer ${issueToken('carol')}`)
+      .expect(200)
     expect(res.body.users).toEqual(['alice', 'bob'])
 
     // Leaving (or disconnecting) updates everyone else's list.
