@@ -22,7 +22,7 @@ Guides: [Scheduled Tasks](https://kickjs.app/guide/cron) · [Serverless](https:/
 |---|---|---|
 | `CRON_ENABLED` | `true` | `false` = this process schedules nothing |
 | `CRON_DISABLED_JOBS` | — | comma-separated job names to skip |
-| `CRON_SECRET` | — | bearer for the trigger routes; required when `NODE_ENV=production` |
+| `CRON_SECRET` | — | bearer for the trigger routes; required unless `NODE_ENV` is `development` or `test` |
 | `INVENTORY_SYNC_MS` | `3000` | how long `sync-inventory`'s simulated supplier call takes |
 
 ## Run

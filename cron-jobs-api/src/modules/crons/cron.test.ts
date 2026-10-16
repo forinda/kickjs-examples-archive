@@ -9,6 +9,8 @@ import {
   type ErrorInfo,
 } from '@forinda/kickjs'
 import { createTestApp } from '@forinda/kickjs-testing'
+// Side effect: registers the env schema (CRON_DISABLED_JOBS parsed to a list, etc.).
+import '@/config'
 import { CronErrorsAdapter } from '@/adapters/cron-errors.adapter'
 import { CronModule } from './cron.module'
 import { MaintenanceJobs } from './cron.jobs'

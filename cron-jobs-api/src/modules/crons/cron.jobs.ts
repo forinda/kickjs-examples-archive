@@ -1,12 +1,11 @@
-import { Autowired, Cron, Logger, Service, type CronRun } from '@forinda/kickjs'
-import { env } from '@/config'
+import { Autowired, Cron, getEnv, Logger, Service, type CronRun } from '@forinda/kickjs'
 import { CronService } from './cron.service'
 
 const log = Logger.for('MaintenanceJobs')
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /** `enabled` is checked on every tick, so CRON_DISABLED_JOBS switches a job off without code. */
-const unlessDisabled = (name: string) => () => !env.CRON_DISABLED_JOBS.includes(name)
+const unlessDisabled = (name: string) => () => !getEnv('CRON_DISABLED_JOBS').includes(name)
 
 @Service()
 export class MaintenanceJobs {
@@ -60,7 +59,7 @@ export class MaintenanceJobs {
 
   /** Stand-in for the supplier's API. */
   protected async fetchSupplierStock() {
-    await sleep(env.INVENTORY_SYNC_MS)
+    await sleep(getEnv('INVENTORY_SYNC_MS'))
     return 42
   }
 }
