@@ -42,6 +42,9 @@ curl localhost:3000/health/ready
 | ---------------------------------------- | -------- | ----------------------------------------- |
 | `DATABASE_URL`                           | yes      | Postgres connection string                |
 | `JWT_SECRET`, `JWT_REFRESH_SECRET`       | yes      | 32+ characters each, no defaults          |
-| `REDIS_URL`                              | no       | default `redis://localhost:6379`          |
-| `SMTP_URL`                               | no       | empty → mail is logged to the console     |
-| `JWT_*_EXPIRES_IN`, `APP_*`, `MAIL_FROM_*` | no     | see `.env.example`                        |
+| `REDIS_URL`                              | prod     | dev/test default `redis://localhost:6379` |
+| `SMTP_URL`                               | prod     | dev/test default empty → mail logged to the console |
+| `APP_URL`                                | prod     | dev/test default `http://localhost:3000`  |
+| `JWT_*_EXPIRES_IN`, `APP_NAME`, `MAIL_FROM_*` | no | see `.env.example`                        |
+
+"prod" = required unless `NODE_ENV` is exactly `development` or `test` — an unset `NODE_ENV` gets no dev default (`src/config/dev-default.ts`). DevTools (`/_debug`) is likewise on only under development/test.

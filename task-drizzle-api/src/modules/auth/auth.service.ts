@@ -1,9 +1,8 @@
-import { Service, Inject, HttpException } from '@forinda/kickjs'
+import { getEnv, Service, Inject, HttpException } from '@forinda/kickjs'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import { ErrorCode } from '@/shared/error-codes'
-import { env } from '@/config/env'
 import type { LoginDTO, RegisterDTO } from './auth.dto'
 import { REFRESH_TOKEN_REPOSITORY, type RefreshTokenRepository } from './refresh-token.repository'
 import { USER_REPOSITORY, type UserRepository } from '@/modules/users/user.repository'
@@ -47,8 +46,8 @@ export class AuthService {
   private generateAccessToken(user: any): string {
     return jwt.sign(
       { sub: user.id, email: user.email, globalRole: user.globalRole },
-      env.JWT_SECRET,
-      { expiresIn: env.JWT_ACCESS_EXPIRES_IN as any },
+      getEnv('JWT_SECRET'),
+      { expiresIn: getEnv('JWT_ACCESS_EXPIRES_IN') as any },
     )
   }
 
@@ -75,8 +74,8 @@ export class AuthService {
         email: (user as any).email,
         globalRole: (user as any).globalRole,
       },
-      env.JWT_SECRET,
-      { expiresIn: env.JWT_ACCESS_EXPIRES_IN as any },
+      getEnv('JWT_SECRET'),
+      { expiresIn: getEnv('JWT_ACCESS_EXPIRES_IN') as any },
     )
 
     const refreshToken = crypto.randomUUID()
@@ -127,8 +126,8 @@ export class AuthService {
         email: (user as any).email,
         globalRole: (user as any).globalRole,
       },
-      env.JWT_SECRET,
-      { expiresIn: env.JWT_ACCESS_EXPIRES_IN as any },
+      getEnv('JWT_SECRET'),
+      { expiresIn: getEnv('JWT_ACCESS_EXPIRES_IN') as any },
     )
 
     return { accessToken, refreshToken: newRefreshToken }
