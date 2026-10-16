@@ -1,0 +1,55 @@
+# docker compose up --build — Postgres, Redis (BullMQ), Mailpit (SMTP, UI on :8025),
+# a one-off schema push from the build stage (`drizzle-kit push`), then the API.
+# JWT_SECRET and JWT_REFRESH_SECRET are required (32+ chars): export them or put them in .env.
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: task_drizzle
+    volumes: [pg-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d task_drizzle']
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: ['${MAILPIT_UI_PORT:-8025}:8025']
+
+  # The runtime image has no dev dependencies; the build stage has the schema tooling.
+  migrate:
+    build: { context: ., target: build }
+    command: ['pnpm', 'db:push']
+    environment:
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/task_drizzle
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/task_drizzle
+      REDIS_URL: redis://redis:6379
+      SMTP_URL: smtp://mailpit:1025
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?set JWT_REFRESH_SECRET}
+    ports: ['${APP_PORT:-3000}:3000']
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+      mailpit: { condition: service_started }
+
+volumes:
+  pg-data:
+  redis-data:

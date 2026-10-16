@@ -60,5 +60,6 @@
     "esbuild": true,
     "msgpackr-extract": true,
     "@scarf/scarf": false
-  }
+  },
+  "packageManager": "pnpm@11.24.0"
 }
