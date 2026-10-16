@@ -16,7 +16,7 @@ import { taskAccessGuard } from '@/guards/task-access.guard'
 import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { ErrorCode } from '@/shared/error-codes'
-import { TASK_QUERY_CONFIG } from '@/shared/query-configs'
+import { TASK_QUERY_CONFIG, paginate } from '@/shared/query-configs'
 import {
   createTaskSchema,
   updateTaskSchema,
@@ -92,10 +92,11 @@ export class TasksController {
   @ApiResponse({ status: 403, description: 'Forbidden - no access to project' })
   @ApiQueryParams(TASK_QUERY_CONFIG)
   async list(ctx: RequestContext) {
-    return ctx.paginate(async (parsed) => {
-      parsed.filters.push({ field: 'projectId', operator: 'eq', value: ctx.params.projectId })
-      return this.taskRepo.findPaginated(parsed)
-    }, TASK_QUERY_CONFIG)
+    return paginate(
+      ctx,
+      (parsed) => this.taskRepo.findPaginated(parsed, ctx.params.projectId),
+      TASK_QUERY_CONFIG,
+    )
   }
 
   @Get('/tasks/:taskId', { params: z.object({ taskId: z.string() }) })

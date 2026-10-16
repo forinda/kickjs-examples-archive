@@ -21,7 +21,7 @@ import {
   workspaceMembershipGuard,
 } from '@/guards/workspace-membership.guard'
 import { channelMembershipGuard } from '@/guards/channel-membership.guard'
-import { CHANNEL_QUERY_CONFIG } from '@/shared/query-configs'
+import { CHANNEL_QUERY_CONFIG, paginate } from '@/shared/query-configs'
 import { getUser } from '@/auth'
 import { CHANNEL_REPOSITORY, type ChannelRepository } from './channel.repository'
 import { PROJECT_REPOSITORY, type ProjectRepository } from '@/modules/projects/project.repository'
@@ -81,7 +81,8 @@ export class ChannelsController {
   @Middleware(workspaceMembershipGuard)
   @ApiQueryParams(CHANNEL_QUERY_CONFIG)
   async list(ctx: RequestContext) {
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) =>
         this.channelRepo.findPaginated(parsed, {
           workspaceId: ctx.params.workspaceId,

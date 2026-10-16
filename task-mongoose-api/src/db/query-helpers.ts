@@ -1,77 +1,75 @@
+import { HttpException, type ApiQueryParamsConfig } from '@forinda/kickjs'
+
+type Filter = { field: string; operator: string; value: string }
+type Sort = { field: string; direction: 'asc' | 'desc' }
+
 /**
- * Convert ParsedQuery filters to a Mongoose filter object.
- * Maps KickJS filter operators to MongoDB query operators.
+ * 400 unless `field` is on the allowlist. A field starting with `$` would be a
+ * query operator (`$where`, `$expr`) and one with a `.` reaches into nested
+ * paths, so neither passes even if someone lists it by mistake.
  */
-export function buildMongoFilter(
-  filters: Array<{ field: string; operator: string; value: string }>,
-): Record<string, any> {
-  const mongoFilter: Record<string, any> = {}
-
-  for (const { field, operator, value } of filters) {
-    switch (operator) {
-      case 'eq':
-        mongoFilter[field] = value
-        break
-      case 'neq':
-        mongoFilter[field] = { $ne: value }
-        break
-      case 'gt':
-        mongoFilter[field] = { $gt: value }
-        break
-      case 'gte':
-        mongoFilter[field] = { $gte: value }
-        break
-      case 'lt':
-        mongoFilter[field] = { $lt: value }
-        break
-      case 'lte':
-        mongoFilter[field] = { $lte: value }
-        break
-      case 'between': {
-        const [min, max] = value.split(',')
-        mongoFilter[field] = { $gte: min, $lte: max }
-        break
-      }
-      case 'in':
-        mongoFilter[field] = { $in: value.split(',') }
-        break
-      case 'contains':
-        mongoFilter[field] = { $regex: value, $options: 'i' }
-        break
-      case 'starts':
-        mongoFilter[field] = { $regex: `^${value}`, $options: 'i' }
-        break
-      case 'ends':
-        mongoFilter[field] = { $regex: `${value}$`, $options: 'i' }
-        break
-      default:
-        mongoFilter[field] = value
-    }
+export function assertQueryField(field: string, allowed: readonly string[] = [], kind: string) {
+  if (field.startsWith('$') || field.includes('.') || !allowed.includes(field)) {
+    throw HttpException.badRequest(`Cannot ${kind} on '${field}'`)
   }
+}
 
-  return mongoFilter
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/** One filter item → a Mongo condition. Values match literally, never as a regex. */
+function condition({ operator, value }: Filter): unknown {
+  switch (operator) {
+    case 'neq':
+      return { $ne: value }
+    case 'gt':
+      return { $gt: value }
+    case 'gte':
+      return { $gte: value }
+    case 'lt':
+      return { $lt: value }
+    case 'lte':
+      return { $lte: value }
+    case 'between': {
+      const [min, max] = value.split(',')
+      return { $gte: min, $lte: max }
+    }
+    case 'in':
+      return { $in: value.split(',') }
+    case 'contains':
+      return { $regex: escapeRegex(value), $options: 'i' }
+    case 'starts':
+      return { $regex: `^${escapeRegex(value)}`, $options: 'i' }
+    case 'ends':
+      return { $regex: `${escapeRegex(value)}$`, $options: 'i' }
+    default:
+      return value
+  }
 }
 
 /**
- * Convert ParsedQuery sort to a Mongoose sort object.
+ * A parsed list query → Mongo filter + sort. Every filter/sort field must be in
+ * `config` (400 otherwise), and `scope` (tenant, visibility, parent id) is
+ * AND-ed with the caller's filters, so no filter can widen or replace it.
  */
-export function buildMongoSort(
-  sort: Array<{ field: string; direction: 'asc' | 'desc' }>,
-): Record<string, 1 | -1> {
+export function buildMongoQuery(
+  parsed: { filters?: Filter[]; sort?: Sort[]; search?: string },
+  config: ApiQueryParamsConfig,
+  scope: Record<string, unknown> = {},
+) {
+  const { filters = [], sort = [], search = '' } = parsed
+  const clauses: Record<string, unknown>[] = [scope]
+  for (const filter of filters) {
+    assertQueryField(filter.field, config.filterable, 'filter')
+    clauses.push({ [filter.field]: condition(filter) })
+  }
+  if (search && config.searchable?.length) clauses.push({ $text: { $search: search } })
+
   const mongoSort: Record<string, 1 | -1> = {}
   for (const { field, direction } of sort) {
+    assertQueryField(field, config.sortable, 'sort')
     mongoSort[field] = direction === 'asc' ? 1 : -1
   }
-  if (Object.keys(mongoSort).length === 0) {
-    mongoSort.createdAt = -1 // default sort
-  }
-  return mongoSort
-}
+  if (Object.keys(mongoSort).length === 0) mongoSort.createdAt = -1
 
-/**
- * Build a text search filter from the search string.
- */
-export function buildMongoSearch(search: string): Record<string, any> {
-  if (!search) return {}
-  return { $text: { $search: search } }
+  return { filter: { $and: clauses }, sort: mongoSort }
 }

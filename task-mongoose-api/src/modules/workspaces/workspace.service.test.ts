@@ -9,7 +9,8 @@ function makeService() {
     'known@test.com': { _id: 'u2', email: 'known@test.com' },
   }
   const memberRepo = {
-    findByUserAndWorkspace: async (userId: string) => (userId === 'u1' ? { role: 'member' } : null),
+    findAnyByUserAndWorkspace: async (userId: string) =>
+      userId === 'u1' ? { role: 'member' } : null,
     create: vi.fn(async (data: unknown) => data),
   }
   const jobs = { dispatch: vi.fn(async () => undefined) }
@@ -31,13 +32,14 @@ describe('WorkspacesService.inviteMember', () => {
     },
   )
 
-  it('adds and emails only an existing non-member', async () => {
+  it('records a pending invite for, and emails, only an existing non-member', async () => {
     const { service, memberRepo, jobs } = makeService()
     await service.inviteMember('ws1', { email: 'nobody@test.com', role: 'member' })
     await service.inviteMember('ws1', { email: 'member@test.com', role: 'member' })
     expect(memberRepo.create).not.toHaveBeenCalled()
     await service.inviteMember('ws1', { email: 'known@test.com', role: 'member' })
     expect(memberRepo.create).toHaveBeenCalledOnce()
+    expect(memberRepo.create).toHaveBeenCalledWith(expect.objectContaining({ status: 'pending' }))
     expect(jobs.dispatch).toHaveBeenCalledOnce()
   })
 })

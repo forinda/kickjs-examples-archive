@@ -65,13 +65,18 @@ export class EmailProcessor {
 
   @Process('send-workspace-invite')
   async sendWorkspaceInvite(
-    job: BullMQJob<{ email: string; workspaceName: string; inviterName: string }>,
+    job: BullMQJob<{
+      email: string
+      workspaceId: string
+      workspaceName: string
+      inviterName: string
+    }>,
   ) {
     logger.info(`Sending workspace invite to ${job.data.email}`)
     await this.mailer.send({
       to: job.data.email,
       subject: `You've been invited to ${job.data.workspaceName}`,
-      html: `<p>${job.data.inviterName} invited you to join <strong>${job.data.workspaceName}</strong> on Vibed.</p>`,
+      html: `<p>${job.data.inviterName} invited you to join <strong>${job.data.workspaceName}</strong> on Vibed.</p><p>Accept with <code>POST /api/v1/workspaces/${job.data.workspaceId}/invite/accept</code> (or decline with <code>.../invite/decline</code>).</p>`,
     })
   }
 

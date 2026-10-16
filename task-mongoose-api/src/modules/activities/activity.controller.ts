@@ -9,7 +9,7 @@ import {
 import { taskAccessGuard } from '@/guards/task-access.guard'
 import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
-import { ACTIVITY_QUERY_CONFIG } from '@/shared/query-configs'
+import { ACTIVITY_QUERY_CONFIG, paginate } from '@/shared/query-configs'
 import { successResponse } from '@/shared/api-response'
 import { workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
 import { projectAccessGuard } from '@/guards/project-access.guard'
@@ -30,7 +30,8 @@ export class ActivityController {
   @Middleware(workspaceMembershipGuard)
   @ApiQueryParams(ACTIVITY_QUERY_CONFIG)
   async byWorkspace(ctx: RequestContext) {
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) => this.activityRepo.findByWorkspace(ctx.params.workspaceId, parsed),
       ACTIVITY_QUERY_CONFIG,
     )
@@ -45,7 +46,8 @@ export class ActivityController {
   @Middleware(projectAccessGuard)
   @ApiQueryParams(ACTIVITY_QUERY_CONFIG)
   async byProject(ctx: RequestContext) {
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) => this.activityRepo.findByProject(ctx.params.projectId, parsed),
       ACTIVITY_QUERY_CONFIG,
     )

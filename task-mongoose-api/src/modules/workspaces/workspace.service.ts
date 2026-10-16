@@ -64,17 +64,21 @@ export class WorkspacesService {
   }
 
   /**
-   * Adds the account with this email to the workspace and queues the invite
-   * email. Resolves the same way whether the email has an account, is already
-   * a member, or is unknown — the caller can't use invites to probe which
-   * emails are registered.
+   * Records a pending invite for the account with this email and queues the
+   * invite email. The invitee is not a member — and sees nothing, and is seen
+   * by no one — until they accept. Resolves the same way whether the email has
+   * an account, is already a member or invited, or is unknown, so invites
+   * can't be used to probe which emails are registered.
    */
   async inviteMember(workspaceId: string, dto: InviteMemberDto): Promise<void> {
     const user = await this.userRepo.findByEmail(dto.email)
-    // ponytail: no account → nothing happens; a sign-up invite (pending invite + email) belongs here.
+    // ponytail: no account → nothing happens; a sign-up invite (token + email) belongs here.
     if (!user) return
 
-    const existing = await this.memberRepo.findByUserAndWorkspace(user._id.toString(), workspaceId)
+    const existing = await this.memberRepo.findAnyByUserAndWorkspace(
+      user._id.toString(),
+      workspaceId,
+    )
     if (existing) return
 
     const workspace = await this.workspaceRepo.findById(workspaceId)
@@ -83,18 +87,33 @@ export class WorkspacesService {
       workspaceId: workspaceId as any,
       userId: user._id,
       role: dto.role,
-      joinedAt: new Date(),
+      status: 'pending',
     })
 
     // Queue invite email
     try {
       await this.jobs.dispatch('email', 'send-workspace-invite', {
         email: user.email,
+        workspaceId,
         workspaceName: workspace?.name ?? 'Workspace',
         inviterName: dto.email,
       })
     } catch {
       logger.warn('Failed to queue workspace invite email')
+    }
+  }
+
+  /** `userId` accepts their pending invite. 404 when there is none (or no such workspace). */
+  async acceptInvite(workspaceId: string, userId: string): Promise<void> {
+    if (!(await this.memberRepo.acceptInvite(userId, workspaceId))) {
+      throw HttpException.notFound(ErrorCode.INVITE_NOT_FOUND)
+    }
+  }
+
+  /** `userId` declines their pending invite. 404 when there is none. */
+  async declineInvite(workspaceId: string, userId: string): Promise<void> {
+    if (!(await this.memberRepo.declineInvite(userId, workspaceId))) {
+      throw HttpException.notFound(ErrorCode.INVITE_NOT_FOUND)
     }
   }
 

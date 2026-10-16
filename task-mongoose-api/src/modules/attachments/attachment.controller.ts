@@ -16,7 +16,7 @@ import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { ErrorCode } from '@/shared/error-codes'
 import { successResponse } from '@/shared/api-response'
-import { ATTACHMENT_QUERY_CONFIG } from '@/shared/query-configs'
+import { ATTACHMENT_QUERY_CONFIG, paginate } from '@/shared/query-configs'
 import { getUser } from '@/auth'
 import { ATTACHMENT_REPOSITORY, type AttachmentRepository } from './attachment.repository'
 import { TASK_REPOSITORY, type TaskRepository } from '@/modules/tasks/task.repository'
@@ -90,7 +90,8 @@ export class AttachmentsController {
   @ApiQueryParams(ATTACHMENT_QUERY_CONFIG)
   @Middleware(taskAccessGuard)
   async list(ctx: RequestContext) {
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) => this.attachmentRepo.findPaginated(parsed, { taskId: ctx.params.taskId }),
       ATTACHMENT_QUERY_CONFIG,
     )

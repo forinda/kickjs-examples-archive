@@ -18,7 +18,7 @@ import { createLabelSchema, updateLabelSchema } from './label.dto'
 import { successResponse } from '@/shared/api-response'
 import { isWorkspaceMember, workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
 import { getUser } from '@/auth'
-import { LABEL_QUERY_CONFIG } from '@/shared/query-configs'
+import { LABEL_QUERY_CONFIG, paginate } from '@/shared/query-configs'
 import { LABEL_REPOSITORY, type LabelRepository } from './label.repository'
 
 @ApiTags('Labels')
@@ -66,7 +66,8 @@ export class LabelsController {
   @ApiResponse({ status: 403, description: 'Forbidden - not a workspace member' })
   @ApiQueryParams(LABEL_QUERY_CONFIG)
   async list(ctx: RequestContext) {
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) => this.labelRepo.findPaginated(parsed, { workspaceId: ctx.params.workspaceId }),
       LABEL_QUERY_CONFIG,
     )

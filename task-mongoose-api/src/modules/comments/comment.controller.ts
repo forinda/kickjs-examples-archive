@@ -19,7 +19,7 @@ import { ErrorCode } from '@/shared/error-codes'
 import { createCommentSchema, updateCommentSchema } from './comment.dto'
 import { CommentsService } from './comment.service'
 import { successResponse } from '@/shared/api-response'
-import { COMMENT_QUERY_CONFIG } from '@/shared/query-configs'
+import { COMMENT_QUERY_CONFIG, paginate } from '@/shared/query-configs'
 import { requireOwnerOrAdmin } from '@/guards/workspace-membership.guard'
 import { getUser } from '@/auth'
 import { COMMENT_REPOSITORY, type CommentRepository } from './comment.repository'
@@ -71,7 +71,8 @@ export class CommentsController {
   @ApiQueryParams(COMMENT_QUERY_CONFIG)
   @Middleware(taskAccessGuard)
   async list(ctx: RequestContext) {
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) => this.commentRepo.findPaginated(parsed, { taskId: ctx.params.taskId }),
       COMMENT_QUERY_CONFIG,
     )

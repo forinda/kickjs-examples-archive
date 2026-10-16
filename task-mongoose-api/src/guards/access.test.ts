@@ -32,21 +32,35 @@ const SECRET = 'test-secret-that-is-at-least-32-chars-long!'
 // (created by uO), private channel cP (member: uA), messages mA (by uA) and mB
 // (by uM), comments kA (by uA) and kB (by uM), attachment aA and label lA.
 // uA is A's admin, uM and uO members; uB belongs to workspace B only; uL to none.
-const memberships: Record<string, [workspaceId: string, role: string]> = {
-  uA: ['wsA', 'admin'],
-  uM: ['wsA', 'member'],
-  uO: ['wsA', 'member'],
-  uB: ['wsB', 'member'],
-}
+type Row = { userId: string; workspaceId: string; role: string; status: 'pending' | 'accepted' }
+const seedRows = (): Row[] =>
+  [
+    ['uA', 'wsA', 'admin'],
+    ['uM', 'wsA', 'member'],
+    ['uO', 'wsA', 'member'],
+    ['uB', 'wsB', 'member'],
+  ].map(([userId, workspaceId, role]) => ({ userId, workspaceId, role, status: 'accepted' }))
+// Reset per test (see beforeEach) so an accepted invite in one test can't leak into another.
+let rows = seedRows()
+const accepted = () => rows.filter((r) => r.status === 'accepted')
+const row = (userId: string, workspaceId: string) =>
+  rows.find((r) => r.userId === userId && r.workspaceId === workspaceId)
 const allUsers = ['uA', 'uM', 'uO', 'uB', 'uL'].map((id) => ({ _id: id, email: `${id}@test.com` }))
-// Mirrors the repository's query scope: the viewer plus anyone sharing a workspace.
-const visibleTo = (viewerId: string) =>
-  allUsers.filter(
-    (u) =>
-      u._id === viewerId ||
-      (memberships[u._id] && memberships[u._id][0] === memberships[viewerId]?.[0]),
+// Mirrors the repository's query scope: the viewer plus anyone sharing an ACCEPTED membership.
+const visibleTo = (viewerId: string) => {
+  const mine = new Set(
+    accepted()
+      .filter((r) => r.userId === viewerId)
+      .map((r) => r.workspaceId),
   )
-const added: string[] = []
+  const seen = new Set([
+    viewerId,
+    ...accepted()
+      .filter((r) => mine.has(r.workspaceId))
+      .map((r) => r.userId),
+  ])
+  return allUsers.filter((u) => seen.has(u._id))
+}
 const update = async (id: string, data: object) => ({ _id: id, ...data })
 const done = async () => true
 const byId =
@@ -59,9 +73,25 @@ const TestModule = defineModule({
   build: () => ({
     register(container) {
       container.registerInstance(WORKSPACE_MEMBER_REPOSITORY, {
-        findByUserAndWorkspace: async (userId: string, workspaceId: string) =>
-          memberships[userId]?.[0] === workspaceId ? { role: memberships[userId][1] } : null,
-        create: async (row: { userId: string }) => (added.push(row.userId), row),
+        findByUserAndWorkspace: async (userId: string, workspaceId: string) => {
+          const r = row(userId, workspaceId)
+          return r?.status === 'accepted' ? r : null
+        },
+        findAnyByUserAndWorkspace: async (userId: string, workspaceId: string) =>
+          row(userId, workspaceId) ?? null,
+        create: async (r: Row) => (rows.push(r), r),
+        acceptInvite: async (userId: string, workspaceId: string) => {
+          const r = row(userId, workspaceId)
+          if (r?.status !== 'pending') return false
+          r.status = 'accepted'
+          return true
+        },
+        declineInvite: async (userId: string, workspaceId: string) => {
+          const r = row(userId, workspaceId)
+          if (r?.status !== 'pending') return false
+          rows = rows.filter((x) => x !== r)
+          return true
+        },
       } as never)
       container.registerInstance(PROJECT_REPOSITORY, {
         findById: byId({ pA: { _id: 'pA', workspaceId: 'wsA' } }),
@@ -139,7 +169,7 @@ const TestModule = defineModule({
       container.registerInstance(WORKSPACE_REPOSITORY, {
         findById: byId({ wsA: { _id: 'wsA', name: 'Acme' } }),
       } as never)
-      container.registerInstance(JOB_DISPATCHER, {} as never)
+      container.registerInstance(JOB_DISPATCHER, { dispatch: async () => undefined } as never)
     },
     routes: () =>
       [
@@ -180,7 +210,10 @@ async function makeApp() {
 }
 
 describe('workspace scoping', () => {
-  beforeEach(() => Container.reset())
+  beforeEach(() => {
+    Container.reset()
+    rows = seedRows()
+  })
 
   it('serves a member', async () => {
     const api = await makeApp()
@@ -244,7 +277,10 @@ describe('workspace scoping', () => {
 })
 
 describe('object-level authorization', () => {
-  beforeEach(() => Container.reset())
+  beforeEach(() => {
+    Container.reset()
+    rows = seedRows()
+  })
 
   it('refuses to add a user from another workspace, as if they did not exist', async () => {
     const api = await makeApp()
@@ -358,7 +394,10 @@ describe('object-level authorization', () => {
 })
 
 describe('user visibility', () => {
-  beforeEach(() => Container.reset())
+  beforeEach(() => {
+    Container.reset()
+    rows = seedRows()
+  })
 
   const ids = (res: { body: { data: { _id: string }[] } }) => res.body.data.map((u) => u._id).sort()
 
@@ -391,7 +430,27 @@ describe('user visibility', () => {
     await api.get('/api/v1/users/uL').set('Authorization', as('uL')).expect(200)
   })
 
-  it('still invites an outsider by email, answering the same as for an unknown email', async () => {
+  it('rejects filters and sorts on anything but public profile fields', async () => {
+    const api = await makeApp()
+    const auth = as('uA')
+    for (const qs of [
+      'filter=passwordHash:starts:$2',
+      'filter=$where:eq:1',
+      'filter=isActive:eq:true',
+      'filter=user.passwordHash:eq:x',
+      'sort=passwordHash:asc',
+    ]) {
+      const res = await api.get(`/api/v1/users?${qs}`).set('Authorization', auth)
+      expect(res.status, qs).toBe(400)
+      expect(res.body.data).toBeUndefined()
+    }
+    await api
+      .get('/api/v1/users?filter=firstName:eq:x&sort=email:asc')
+      .set('Authorization', auth)
+      .expect(200)
+  })
+
+  it('answers an invite the same for a registered and an unknown email', async () => {
     const api = await makeApp()
     const auth = as('uA')
     const known = await api
@@ -405,6 +464,62 @@ describe('user visibility', () => {
       .send({ email: 'nobody@test.com' })
       .expect(202)
     expect(known.body).toEqual(unknown.body)
-    expect(added).toContain('uL')
+  })
+
+  it('grants a pending invitee nothing until they accept', async () => {
+    const api = await makeApp()
+    const admin = as('uA')
+    const invitee = as('uL')
+    await api
+      .post('/api/v1/workspaces/wsA/invite')
+      .set('Authorization', admin)
+      .send({ email: 'uL@test.com' })
+      .expect(202)
+
+    // Pending: neither side sees the other, and the invitee can't reach the workspace.
+    await api.get('/api/v1/users/uL').set('Authorization', admin).expect(404)
+    await api.get('/api/v1/users/uA').set('Authorization', invitee).expect(404)
+    expect(ids(await api.get('/api/v1/users').set('Authorization', invitee))).toEqual(['uL'])
+    await api.get('/api/v1/workspaces/wsA/labels').set('Authorization', invitee).expect(404)
+    await api
+      .patch('/api/v1/tasks/tA/assignees')
+      .set('Authorization', admin)
+      .send({ assigneeIds: ['uL'] })
+      .expect(404)
+
+    // Someone else can't accept it for them.
+    await api
+      .post('/api/v1/workspaces/wsA/invite/accept')
+      .set('Authorization', as('uB'))
+      .expect(404)
+    await api.post('/api/v1/workspaces/wsA/invite/accept').set('Authorization', invitee).expect(200)
+
+    await api.get('/api/v1/users/uL').set('Authorization', admin).expect(200)
+    await api.get('/api/v1/users/uA').set('Authorization', invitee).expect(200)
+    await api
+      .patch('/api/v1/tasks/tA/assignees')
+      .set('Authorization', admin)
+      .send({ assigneeIds: ['uL'] })
+      .expect(200)
+    // Accepting twice is a 404, not a second membership.
+    await api.post('/api/v1/workspaces/wsA/invite/accept').set('Authorization', invitee).expect(404)
+  })
+
+  it('drops a declined invite', async () => {
+    const api = await makeApp()
+    await api
+      .post('/api/v1/workspaces/wsA/invite')
+      .set('Authorization', as('uA'))
+      .send({ email: 'uL@test.com' })
+      .expect(202)
+    await api
+      .post('/api/v1/workspaces/wsA/invite/decline')
+      .set('Authorization', as('uL'))
+      .expect(200)
+    await api
+      .post('/api/v1/workspaces/wsA/invite/accept')
+      .set('Authorization', as('uL'))
+      .expect(404)
+    await api.get('/api/v1/users/uL').set('Authorization', as('uA')).expect(404)
   })
 })

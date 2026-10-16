@@ -9,7 +9,7 @@ import {
 } from '@forinda/kickjs'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { updateProfileSchema } from './user.dto'
-import { USER_QUERY_CONFIG } from '@/shared/query-configs'
+import { USER_QUERY_CONFIG, paginate } from '@/shared/query-configs'
 import { UsersService } from './user.service'
 import { USER_REPOSITORY, type UserRepository } from './user.repository'
 import { successResponse } from '@/shared/api-response'
@@ -62,7 +62,8 @@ export class UsersController {
   @ApiQueryParams(USER_QUERY_CONFIG)
   async list(ctx: RequestContext) {
     const viewerId = getUser(ctx).id
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) => this.userRepo.findPaginated(parsed, viewerId),
       USER_QUERY_CONFIG,
     )

@@ -3,17 +3,28 @@ import type { Connection } from 'mongoose'
 import { bindModel } from '@/db/bind-model'
 import mongoose from 'mongoose'
 import {
+  ACCEPTED,
   type WorkspaceMemberEntity,
   WorkspaceMemberModel as WorkspaceMemberModelDef,
 } from './workspace-member.schema'
-import { buildMongoFilter, buildMongoSort } from '@/db/query-helpers'
+import { buildMongoQuery } from '@/db/query-helpers'
+import { MEMBER_QUERY_CONFIG, WORKSPACE_QUERY_CONFIG } from '@/shared/query-configs'
 
 /** Mongo-backed WorkspaceMember repository. `connection` is the one MongooseAdapter registers under MONGO_CONNECTION. */
 export function createWorkspaceMemberRepository(connection: Connection) {
   const WorkspaceMemberModel = bindModel(connection, WorkspaceMemberModelDef)
 
+  // Every read below counts accepted memberships only — a pending invite grants nothing.
   return {
     async findByUserAndWorkspace(
+      userId: string,
+      workspaceId: string,
+    ): Promise<WorkspaceMemberEntity | null> {
+      return WorkspaceMemberModel.findOne({ userId, workspaceId, ...ACCEPTED }).lean() as any
+    },
+
+    /** The membership or pending invite, whichever exists — for invite de-duplication only. */
+    async findAnyByUserAndWorkspace(
       userId: string,
       workspaceId: string,
     ): Promise<WorkspaceMemberEntity | null> {
@@ -21,11 +32,30 @@ export function createWorkspaceMemberRepository(connection: Connection) {
     },
 
     async findByWorkspace(workspaceId: string): Promise<WorkspaceMemberEntity[]> {
-      return WorkspaceMemberModel.find({ workspaceId }).lean() as any
+      return WorkspaceMemberModel.find({ workspaceId, ...ACCEPTED }).lean() as any
     },
 
     async findByUser(userId: string): Promise<WorkspaceMemberEntity[]> {
-      return WorkspaceMemberModel.find({ userId }).lean() as any
+      return WorkspaceMemberModel.find({ userId, ...ACCEPTED }).lean() as any
+    },
+
+    /** Turns `userId`'s pending invite into a membership. False when there is no such invite. */
+    async acceptInvite(userId: string, workspaceId: string): Promise<boolean> {
+      const result = await WorkspaceMemberModel.updateOne(
+        { userId, workspaceId, status: 'pending' },
+        { $set: { status: 'accepted', joinedAt: new Date() } },
+      )
+      return result.modifiedCount > 0
+    },
+
+    /** Drops `userId`'s pending invite. False when there is no such invite. */
+    async declineInvite(userId: string, workspaceId: string): Promise<boolean> {
+      const result = await WorkspaceMemberModel.deleteOne({
+        userId,
+        workspaceId,
+        status: 'pending',
+      })
+      return result.deletedCount > 0
     },
 
     async create(data: Partial<WorkspaceMemberEntity>): Promise<WorkspaceMemberEntity> {
@@ -55,12 +85,12 @@ export function createWorkspaceMemberRepository(connection: Connection) {
       parsed: any,
       userId: string,
     ): Promise<{ data: any[]; total: number }> {
-      const { filters = [], sort = [], pagination = { page: 1, limit: 20, offset: 0 } } = parsed
-      const matchStage = {
-        userId: new mongoose.Types.ObjectId(userId),
-        ...buildMongoFilter(filters),
-      }
-      const mongoSort = buildMongoSort(sort)
+      const { filters, sort: sortBy, pagination = { page: 1, limit: 20, offset: 0 } } = parsed
+      const { filter: matchStage, sort: mongoSort } = buildMongoQuery(
+        { filters, sort: sortBy },
+        WORKSPACE_QUERY_CONFIG,
+        { userId: new mongoose.Types.ObjectId(userId), ...ACCEPTED },
+      )
 
       const pipeline: any[] = [
         { $match: matchStage },
@@ -104,12 +134,12 @@ export function createWorkspaceMemberRepository(connection: Connection) {
       parsed: any,
       workspaceId: string,
     ): Promise<{ data: any[]; total: number }> {
-      const { filters = [], sort = [], pagination = { page: 1, limit: 20, offset: 0 } } = parsed
-      const matchStage = {
-        workspaceId: new mongoose.Types.ObjectId(workspaceId),
-        ...buildMongoFilter(filters),
-      }
-      const mongoSort = buildMongoSort(sort)
+      const { filters, sort: sortBy, pagination = { page: 1, limit: 20, offset: 0 } } = parsed
+      const { filter: matchStage, sort: mongoSort } = buildMongoQuery(
+        { filters, sort: sortBy },
+        MEMBER_QUERY_CONFIG,
+        { workspaceId: new mongoose.Types.ObjectId(workspaceId), ...ACCEPTED },
+      )
 
       const pipeline: any[] = [
         { $match: matchStage },
