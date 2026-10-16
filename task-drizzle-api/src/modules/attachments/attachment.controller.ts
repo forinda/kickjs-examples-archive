@@ -17,6 +17,7 @@ import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
 import { access, requireAccess, requiredQuery } from '@/guards/resource-access.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
+import { paginate } from '@/shared/query-adapter'
 import { ATTACHMENT_QUERY_CONFIG } from './attachment.constants'
 import { ATTACHMENT_REPOSITORY, type AttachmentRepository } from './attachment.repository'
 import { AttachmentService } from './attachment.service'
@@ -60,7 +61,8 @@ export class AttachmentController {
   async list(ctx: RequestContext) {
     const taskId = requiredQuery(ctx, 'taskId')
     await requireAccess(ctx, 'task', taskId)
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) => this.repo.findPaginated(parsed, taskId),
       ATTACHMENT_QUERY_CONFIG,
     )

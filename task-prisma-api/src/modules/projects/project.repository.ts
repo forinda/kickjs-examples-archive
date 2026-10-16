@@ -25,7 +25,7 @@ export function createProjectRepository(prisma: PrismaClient) {
     },
 
     async findPaginated(parsed: ParsedQuery, workspaceId?: string) {
-      const query = queryAdapter.build(parsed, { searchColumns: ['name', 'key'] })
+      const query = queryAdapter.build(parsed, { searchable: ['name', 'key'] })
       const where = workspaceId
         ? query.where
           ? { AND: [query.where, { workspaceId }] }

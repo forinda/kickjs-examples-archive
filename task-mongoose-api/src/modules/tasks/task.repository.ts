@@ -2,7 +2,8 @@ import { createToken } from '@forinda/kickjs'
 import type { Connection } from 'mongoose'
 import { bindModel } from '@/db/bind-model'
 import { type TaskEntity, TaskModel as TaskModelDef } from './task.schema'
-import { buildMongoFilter, buildMongoSort, buildMongoSearch } from '@/db/query-helpers'
+import { buildMongoQuery } from '@/db/query-helpers'
+import { TASK_QUERY_CONFIG } from '@/shared/query-configs'
 
 /** Mongo-backed Task repository. `connection` is the one MongooseAdapter registers under MONGO_CONNECTION. */
 export function createTaskRepository(connection: Connection) {
@@ -35,28 +36,17 @@ export function createTaskRepository(connection: Connection) {
       return !!result
     },
 
-    async findPaginated(parsed: any): Promise<{ data: TaskEntity[]; total: number }> {
-      const {
-        filters = [],
-        sort = [],
-        pagination = { page: 1, limit: 20, offset: 0 },
-        search = '',
-      } = parsed
+    async findPaginated(
+      parsed: any,
+      projectId: string,
+    ): Promise<{ data: TaskEntity[]; total: number }> {
+      const { pagination = { page: 1, limit: 20, offset: 0 } } = parsed
 
-      const mongoFilter = {
-        ...buildMongoFilter(filters),
-        ...buildMongoSearch(search),
-      }
-
-      const mongoSort = buildMongoSort(sort)
+      const { filter, sort } = buildMongoQuery(parsed, TASK_QUERY_CONFIG, { projectId })
 
       const [data, total] = await Promise.all([
-        TaskModel.find(mongoFilter)
-          .sort(mongoSort)
-          .skip(pagination.offset)
-          .limit(pagination.limit)
-          .lean(),
-        TaskModel.countDocuments(mongoFilter),
+        TaskModel.find(filter).sort(sort).skip(pagination.offset).limit(pagination.limit).lean(),
+        TaskModel.countDocuments(filter),
       ])
 
       return { data: data as any[], total }

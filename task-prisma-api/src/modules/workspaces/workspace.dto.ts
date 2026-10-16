@@ -22,7 +22,7 @@ export const updateWorkspaceSchema = z.object({
 export type UpdateWorkspaceDTO = z.infer<typeof updateWorkspaceSchema>
 
 export const inviteMemberSchema = z.object({
-  userId: z.string().uuid(),
+  email: z.string().email(),
   role: z.enum(['admin', 'member']).default('member'),
 })
 

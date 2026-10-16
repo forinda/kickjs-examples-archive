@@ -2,7 +2,8 @@ import { createToken } from '@forinda/kickjs'
 import type { Connection } from 'mongoose'
 import { bindModel } from '@/db/bind-model'
 import { type ChannelEntity, ChannelModel as ChannelModelDef } from './channel.schema'
-import { buildMongoFilter, buildMongoSort, buildMongoSearch } from '@/db/query-helpers'
+import { buildMongoQuery } from '@/db/query-helpers'
+import { CHANNEL_QUERY_CONFIG } from '@/shared/query-configs'
 
 /** Mongo-backed Channel repository. `connection` is the one MongooseAdapter registers under MONGO_CONNECTION. */
 export function createChannelRepository(connection: Connection) {
@@ -13,25 +14,11 @@ export function createChannelRepository(connection: Connection) {
       parsed: any,
       extraFilter: Record<string, any> = {},
     ): Promise<{ data: any[]; total: number }> {
-      const {
-        filters = [],
-        sort = [],
-        pagination = { page: 1, limit: 20, offset: 0 },
-        search = '',
-      } = parsed
-      const mongoFilter = {
-        ...extraFilter,
-        ...buildMongoFilter(filters),
-        ...buildMongoSearch(search),
-      }
-      const mongoSort = buildMongoSort(sort)
+      const { pagination = { page: 1, limit: 20, offset: 0 } } = parsed
+      const { filter, sort } = buildMongoQuery(parsed, CHANNEL_QUERY_CONFIG, extraFilter)
       const [data, total] = await Promise.all([
-        ChannelModel.find(mongoFilter)
-          .sort(mongoSort)
-          .skip(pagination.offset)
-          .limit(pagination.limit)
-          .lean(),
-        ChannelModel.countDocuments(mongoFilter),
+        ChannelModel.find(filter).sort(sort).skip(pagination.offset).limit(pagination.limit).lean(),
+        ChannelModel.countDocuments(filter),
       ])
       return { data: data as any[], total }
     },

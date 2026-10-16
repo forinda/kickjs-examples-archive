@@ -23,7 +23,7 @@ import {
 } from '@/guards/workspace-membership.guard'
 import { getUser } from '@/auth'
 import { projectAccessGuard } from '@/guards/project-access.guard'
-import { PROJECT_QUERY_CONFIG } from '@/shared/query-configs'
+import { PROJECT_QUERY_CONFIG, paginate } from '@/shared/query-configs'
 import { PROJECT_REPOSITORY, type ProjectRepository } from './project.repository'
 
 @ApiTags('Projects')
@@ -63,7 +63,8 @@ export class ProjectsController {
   @ApiResponse({ status: 403, description: 'Forbidden - not a workspace member' })
   @ApiQueryParams(PROJECT_QUERY_CONFIG)
   async list(ctx: RequestContext) {
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) =>
         this.projectRepo.findPaginated(parsed, {
           workspaceId: ctx.params.workspaceId,

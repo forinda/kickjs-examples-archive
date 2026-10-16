@@ -9,7 +9,7 @@ import {
 } from '@forinda/kickjs'
 import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
-import { NOTIFICATION_QUERY_CONFIG } from '@/shared/query-configs'
+import { NOTIFICATION_QUERY_CONFIG, paginate } from '@/shared/query-configs'
 import { getUser } from '@/auth'
 
 import { successResponse } from '@/shared/api-response'
@@ -28,7 +28,8 @@ export class NotificationsController {
   @ApiQueryParams(NOTIFICATION_QUERY_CONFIG)
   async list(ctx: RequestContext) {
     const user = getUser(ctx)
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) => this.notificationRepo.findByRecipient(user.id, parsed),
       NOTIFICATION_QUERY_CONFIG,
     )

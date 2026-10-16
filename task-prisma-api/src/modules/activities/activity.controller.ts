@@ -5,6 +5,7 @@ import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
 import { requireWorkspaceMember } from '@/guards/workspace-membership.guard'
 import { ACTIVITY_REPOSITORY, type ActivityRepository } from './activity.repository'
 import { ACTIVITY_QUERY_CONFIG } from './activity.constants'
+import { paginate } from '@/shared/query-adapter'
 
 @Controller()
 @Middleware(authBridgeMiddleware)
@@ -22,7 +23,8 @@ export class ActivityController {
     }
     await requireWorkspaceMember(ctx, workspaceId)
 
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) =>
         this.repo.findPaginated(parsed, {
           workspaceId,

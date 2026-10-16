@@ -3,6 +3,7 @@ import { HttpException } from '@forinda/kickjs'
 import type { PrismaClient } from '@/generated/prisma/client'
 import type { ParsedQuery } from '@forinda/kickjs'
 import { queryAdapter } from '@/shared/query-adapter'
+import { COMMENT_QUERY_CONFIG } from './comment.constants'
 import type { Comment } from '@/generated/prisma/client'
 
 export type { Comment }
@@ -27,7 +28,7 @@ export function createCommentRepository(prisma: PrismaClient) {
     },
 
     async findPaginated(parsed: ParsedQuery, taskId?: string) {
-      const query = queryAdapter.build(parsed, { searchColumns: ['content'] })
+      const query = queryAdapter.build(parsed, COMMENT_QUERY_CONFIG)
       const where = taskId
         ? query.where
           ? { AND: [query.where, { taskId }] }

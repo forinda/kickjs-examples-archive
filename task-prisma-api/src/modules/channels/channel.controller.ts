@@ -24,6 +24,7 @@ import {
 } from '@/guards/channel-membership.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
+import { paginate } from '@/shared/query-adapter'
 import { CHANNEL_QUERY_CONFIG } from './channel.constants'
 import { createChannelSchema, updateChannelSchema } from './channel.dto'
 import { CHANNEL_REPOSITORY, type ChannelRepository } from './channel.repository'
@@ -66,7 +67,8 @@ export class ChannelController {
     }
     await requireWorkspaceMember(ctx, workspaceId)
 
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) => this.repo.findPaginated(parsed, workspaceId, getUser(ctx).id),
       CHANNEL_QUERY_CONFIG,
     )

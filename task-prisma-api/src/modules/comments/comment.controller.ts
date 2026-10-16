@@ -19,6 +19,7 @@ import { access, requireAccess, requiredQuery } from '@/guards/resource-access.g
 import { requireOwnerOrAdmin } from '@/guards/workspace-membership.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
+import { paginate } from '@/shared/query-adapter'
 import { COMMENT_QUERY_CONFIG } from './comment.constants'
 import { createCommentSchema, updateCommentSchema } from './comment.dto'
 import { COMMENT_REPOSITORY, type CommentRepository } from './comment.repository'
@@ -46,7 +47,7 @@ export class CommentController {
   async list(ctx: RequestContext) {
     const taskId = requiredQuery(ctx, 'taskId')
     await requireAccess(ctx, 'task', taskId)
-    return ctx.paginate((parsed) => this.repo.findPaginated(parsed, taskId), COMMENT_QUERY_CONFIG)
+    return paginate(ctx, (parsed) => this.repo.findPaginated(parsed, taskId), COMMENT_QUERY_CONFIG)
   }
 
   @Middleware(access('comment'))

@@ -11,6 +11,7 @@ import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
 import { requireWorkspaceMember } from '@/guards/workspace-membership.guard'
 import { ACTIVITY_QUERY_CONFIG } from './activity.constants'
+import { paginate } from '@/shared/query-adapter'
 import { ACTIVITY_REPOSITORY, type ActivityRepository } from './activity.repository'
 
 @Controller()
@@ -29,7 +30,8 @@ export class ActivityController {
     }
     await requireWorkspaceMember(ctx, workspaceId)
 
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) =>
         this.repo.findPaginated(parsed, {
           workspaceId,

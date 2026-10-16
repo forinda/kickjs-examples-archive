@@ -2,7 +2,8 @@ import { createToken } from '@forinda/kickjs'
 import type { Connection } from 'mongoose'
 import { bindModel } from '@/db/bind-model'
 import { type ActivityEntity, ActivityModel as ActivityModelDef } from './activity.schema'
-import { buildMongoFilter, buildMongoSort } from '@/db/query-helpers'
+import { buildMongoQuery } from '@/db/query-helpers'
+import { ACTIVITY_QUERY_CONFIG } from '@/shared/query-configs'
 
 /** Mongo-backed Activity repository. `connection` is the one MongooseAdapter registers under MONGO_CONNECTION. */
 export function createActivityRepository(connection: Connection) {
@@ -18,21 +19,17 @@ export function createActivityRepository(connection: Connection) {
       workspaceId: string,
       parsed: any,
     ): Promise<{ data: ActivityEntity[]; total: number }> {
-      const { filters = [], sort = [], pagination = { page: 1, limit: 20, offset: 0 } } = parsed
+      const { pagination = { page: 1, limit: 20, offset: 0 } } = parsed
 
-      const mongoFilter = {
-        workspaceId,
-        ...buildMongoFilter(filters),
-      }
-      const mongoSort = buildMongoSort(sort)
+      const { filter, sort } = buildMongoQuery(parsed, ACTIVITY_QUERY_CONFIG, { workspaceId })
 
       const [data, total] = await Promise.all([
-        ActivityModel.find(mongoFilter)
-          .sort(mongoSort)
+        ActivityModel.find(filter)
+          .sort(sort)
           .skip(pagination.offset)
           .limit(pagination.limit)
           .lean(),
-        ActivityModel.countDocuments(mongoFilter),
+        ActivityModel.countDocuments(filter),
       ])
 
       return { data: data as any[], total }
@@ -42,21 +39,17 @@ export function createActivityRepository(connection: Connection) {
       projectId: string,
       parsed: any,
     ): Promise<{ data: ActivityEntity[]; total: number }> {
-      const { filters = [], sort = [], pagination = { page: 1, limit: 20, offset: 0 } } = parsed
+      const { pagination = { page: 1, limit: 20, offset: 0 } } = parsed
 
-      const mongoFilter = {
-        projectId,
-        ...buildMongoFilter(filters),
-      }
-      const mongoSort = buildMongoSort(sort)
+      const { filter, sort } = buildMongoQuery(parsed, ACTIVITY_QUERY_CONFIG, { projectId })
 
       const [data, total] = await Promise.all([
-        ActivityModel.find(mongoFilter)
-          .sort(mongoSort)
+        ActivityModel.find(filter)
+          .sort(sort)
           .skip(pagination.offset)
           .limit(pagination.limit)
           .lean(),
-        ActivityModel.countDocuments(mongoFilter),
+        ActivityModel.countDocuments(filter),
       ])
 
       return { data: data as any[], total }

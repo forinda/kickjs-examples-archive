@@ -2,7 +2,8 @@ import { createToken } from '@forinda/kickjs'
 import type { Connection } from 'mongoose'
 import { bindModel } from '@/db/bind-model'
 import { type LabelEntity, LabelModel as LabelModelDef } from './label.schema'
-import { buildMongoFilter, buildMongoSort, buildMongoSearch } from '@/db/query-helpers'
+import { buildMongoQuery } from '@/db/query-helpers'
+import { LABEL_QUERY_CONFIG } from '@/shared/query-configs'
 
 /** Mongo-backed Label repository. `connection` is the one MongooseAdapter registers under MONGO_CONNECTION. */
 export function createLabelRepository(connection: Connection) {
@@ -13,25 +14,11 @@ export function createLabelRepository(connection: Connection) {
       parsed: any,
       extraFilter: Record<string, any> = {},
     ): Promise<{ data: any[]; total: number }> {
-      const {
-        filters = [],
-        sort = [],
-        pagination = { page: 1, limit: 20, offset: 0 },
-        search = '',
-      } = parsed
-      const mongoFilter = {
-        ...extraFilter,
-        ...buildMongoFilter(filters),
-        ...buildMongoSearch(search),
-      }
-      const mongoSort = buildMongoSort(sort)
+      const { pagination = { page: 1, limit: 20, offset: 0 } } = parsed
+      const { filter, sort } = buildMongoQuery(parsed, LABEL_QUERY_CONFIG, extraFilter)
       const [data, total] = await Promise.all([
-        LabelModel.find(mongoFilter)
-          .sort(mongoSort)
-          .skip(pagination.offset)
-          .limit(pagination.limit)
-          .lean(),
-        LabelModel.countDocuments(mongoFilter),
+        LabelModel.find(filter).sort(sort).skip(pagination.offset).limit(pagination.limit).lean(),
+        LabelModel.countDocuments(filter),
       ])
       return { data: data as any[], total }
     },

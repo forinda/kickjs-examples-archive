@@ -5,7 +5,8 @@ import {
   type NotificationEntity,
   NotificationModel as NotificationModelDef,
 } from './notification.schema'
-import { buildMongoFilter, buildMongoSort } from '@/db/query-helpers'
+import { buildMongoQuery } from '@/db/query-helpers'
+import { NOTIFICATION_QUERY_CONFIG } from '@/shared/query-configs'
 
 /** Mongo-backed Notification repository. `connection` is the one MongooseAdapter registers under MONGO_CONNECTION. */
 export function createNotificationRepository(connection: Connection) {
@@ -20,21 +21,17 @@ export function createNotificationRepository(connection: Connection) {
       recipientId: string,
       parsed: any,
     ): Promise<{ data: NotificationEntity[]; total: number }> {
-      const { filters = [], sort = [], pagination = { page: 1, limit: 20, offset: 0 } } = parsed
+      const { pagination = { page: 1, limit: 20, offset: 0 } } = parsed
 
-      const mongoFilter = {
-        recipientId,
-        ...buildMongoFilter(filters),
-      }
-      const mongoSort = buildMongoSort(sort)
+      const { filter, sort } = buildMongoQuery(parsed, NOTIFICATION_QUERY_CONFIG, { recipientId })
 
       const [data, total] = await Promise.all([
-        NotificationModel.find(mongoFilter)
-          .sort(mongoSort)
+        NotificationModel.find(filter)
+          .sort(sort)
           .skip(pagination.offset)
           .limit(pagination.limit)
           .lean(),
-        NotificationModel.countDocuments(mongoFilter),
+        NotificationModel.countDocuments(filter),
       ])
 
       return { data: data as any[], total }

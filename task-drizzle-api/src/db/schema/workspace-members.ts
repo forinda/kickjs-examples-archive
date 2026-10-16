@@ -1,5 +1,5 @@
 import { pgTable, uuid, timestamp, unique } from 'drizzle-orm/pg-core'
-import { workspaceRoleEnum } from './enums'
+import { membershipStatusEnum, workspaceRoleEnum } from './enums'
 import { users } from './users'
 import { workspaces } from './workspaces'
 
@@ -14,6 +14,8 @@ export const workspaceMembers = pgTable(
       .references(() => users.id, { onDelete: 'cascade' })
       .notNull(),
     role: workspaceRoleEnum('role').default('member').notNull(),
+    // Only accepted rows grant access; existing rows become accepted via the default.
+    status: membershipStatusEnum('status').default('accepted').notNull(),
     joinedAt: timestamp('joined_at').defaultNow().notNull(),
   },
   (t) => [unique().on(t.workspaceId, t.userId)],

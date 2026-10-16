@@ -7,10 +7,9 @@ import {
   Inject,
   type RequestContext,
 } from '@forinda/kickjs'
-import { RequireRole } from '@/guards/require-role.guard'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { updateProfileSchema } from './user.dto'
-import { USER_QUERY_CONFIG } from '@/shared/query-configs'
+import { USER_QUERY_CONFIG, paginate } from '@/shared/query-configs'
 import { UsersService } from './user.service'
 import { USER_REPOSITORY, type UserRepository } from './user.repository'
 import { successResponse } from '@/shared/api-response'
@@ -51,18 +50,22 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async getById(ctx: RequestContext) {
-    const result = await this.usersService.getProfile(ctx.params.id)
+    // Someone outside every shared workspace gets the same 404 as a missing id.
+    const result = await this.usersService.getProfile(ctx.params.id, getUser(ctx).id)
     return successResponse(result)
   }
 
   @Get('/')
-  @RequireRole({ roles: ['superadmin'] })
-  @ApiOperation({ summary: 'List all users (superadmin only)' })
+  @ApiOperation({ summary: 'List the caller and the users who share a workspace with them' })
   @ApiResponse({ status: 200, description: 'Paginated list of users' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - requires superadmin role' })
   @ApiQueryParams(USER_QUERY_CONFIG)
   async list(ctx: RequestContext) {
-    return ctx.paginate((parsed) => this.userRepo.findPaginated(parsed), USER_QUERY_CONFIG)
+    const viewerId = getUser(ctx).id
+    return paginate(
+      ctx,
+      (parsed) => this.userRepo.findPaginated(parsed, viewerId),
+      USER_QUERY_CONFIG,
+    )
   }
 }

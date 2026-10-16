@@ -31,7 +31,7 @@ export function createMessageRepository(prisma: PrismaClient) {
     },
 
     async findPaginated(parsed: ParsedQuery, channelId: string) {
-      const query = queryAdapter.build(parsed, { searchColumns: ['content'] })
+      const query = queryAdapter.build(parsed, { searchable: ['content'] })
       const where = query.where ? { AND: [query.where, { channelId }] } : { channelId }
 
       const [data, total] = await Promise.all([

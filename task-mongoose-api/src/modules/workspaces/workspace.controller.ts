@@ -23,7 +23,7 @@ import { WorkspacesService } from './workspace.service'
 import { successResponse } from '@/shared/api-response'
 import { workspaceMembershipGuard, requireWorkspaceRole } from '@/guards/workspace-membership.guard'
 import { getUser } from '@/auth'
-import { WORKSPACE_QUERY_CONFIG, MEMBER_QUERY_CONFIG } from '@/shared/query-configs'
+import { WORKSPACE_QUERY_CONFIG, MEMBER_QUERY_CONFIG, paginate } from '@/shared/query-configs'
 import {
   WORKSPACE_MEMBER_REPOSITORY,
   type WorkspaceMemberRepository,
@@ -54,7 +54,8 @@ export class WorkspacesController {
   @ApiQueryParams(WORKSPACE_QUERY_CONFIG)
   async list(ctx: RequestContext) {
     const user = getUser(ctx)
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) => this.memberRepo.findPaginatedForUser(parsed, user.id),
       WORKSPACE_QUERY_CONFIG,
     )
@@ -106,7 +107,8 @@ export class WorkspacesController {
   @ApiOperation({ summary: 'Invite a member to the workspace' })
   @ApiResponse({
     status: 202,
-    description: 'Same answer whether or not the email has an account (no account enumeration)',
+    description:
+      'Invite recorded as pending until the invitee accepts. Same answer whether or not the email has an account (no account enumeration)',
   })
   @ApiResponse({ status: 400, description: 'Validation error' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -114,6 +116,26 @@ export class WorkspacesController {
   async invite(ctx: RequestContext) {
     await this.workspacesService.inviteMember(ctx.params.workspaceId, ctx.body)
     return reply.accepted(successResponse(null, 'Invitation sent'))
+  }
+
+  @Post('/:workspaceId/invite/accept', { params: z.object({ workspaceId: z.string() }) })
+  @ApiOperation({ summary: 'Accept your pending invite to this workspace' })
+  @ApiResponse({ status: 200, description: 'Invite accepted; you are now a member' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'No pending invite for you here' })
+  async acceptInvite(ctx: RequestContext) {
+    await this.workspacesService.acceptInvite(ctx.params.workspaceId, getUser(ctx).id)
+    return successResponse(null, 'Invite accepted')
+  }
+
+  @Post('/:workspaceId/invite/decline', { params: z.object({ workspaceId: z.string() }) })
+  @ApiOperation({ summary: 'Decline your pending invite to this workspace' })
+  @ApiResponse({ status: 200, description: 'Invite declined' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'No pending invite for you here' })
+  async declineInvite(ctx: RequestContext) {
+    await this.workspacesService.declineInvite(ctx.params.workspaceId, getUser(ctx).id)
+    return successResponse(null, 'Invite declined')
   }
 
   @Get('/:workspaceId/members', { params: z.object({ workspaceId: z.string() }) })
@@ -124,7 +146,8 @@ export class WorkspacesController {
   @ApiResponse({ status: 403, description: 'Not a member of this workspace' })
   @ApiQueryParams(MEMBER_QUERY_CONFIG)
   async listMembers(ctx: RequestContext) {
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) => this.memberRepo.findPaginatedMembers(parsed, ctx.params.workspaceId),
       MEMBER_QUERY_CONFIG,
     )

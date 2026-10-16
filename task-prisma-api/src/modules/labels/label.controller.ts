@@ -17,6 +17,7 @@ import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
 import { requireWorkspaceMember } from '@/guards/workspace-membership.guard'
 import { access, requiredQuery, workspaceIdOf } from '@/guards/resource-access.guard'
 import { successResponse } from '@/shared/api-response'
+import { paginate } from '@/shared/query-adapter'
 import { LABEL_QUERY_CONFIG } from './label.constants'
 import { createLabelSchema, updateLabelSchema } from './label.dto'
 import { LABEL_REPOSITORY, type LabelRepository } from './label.repository'
@@ -43,7 +44,8 @@ export class LabelController {
   async list(ctx: RequestContext) {
     const workspaceId = requiredQuery(ctx, 'workspaceId')
     await requireWorkspaceMember(ctx, workspaceId)
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) => this.repo.findPaginated(parsed, workspaceId),
       LABEL_QUERY_CONFIG,
     )

@@ -1,8 +1,9 @@
 import { createToken, HttpException, type ParsedQuery } from '@forinda/kickjs'
-import { eq, sql } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
 import { workspaceMembers, workspaces } from '@/db/schema'
 import { WORKSPACE_QUERY_CONFIG } from './workspace.constants'
+import { acceptedMembership } from './workspace-member.repository'
 import { queryAdapter } from '@/shared/query-adapter'
 
 export type Workspace = typeof workspaces.$inferSelect
@@ -25,7 +26,7 @@ export function createWorkspaceRepository(db: AppDatabase) {
         .select({ workspace: workspaces })
         .from(workspaceMembers)
         .innerJoin(workspaces, eq(workspaceMembers.workspaceId, workspaces.id))
-        .where(eq(workspaceMembers.userId, userId))
+        .where(and(eq(workspaceMembers.userId, userId), acceptedMembership))
         .then((rows) => rows.map((r) => r.workspace))
     },
 

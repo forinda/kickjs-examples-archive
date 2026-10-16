@@ -21,6 +21,8 @@ export const app = await bootstrap({
   runtime: expressRuntime(),
   apiPrefix: '/api',
   defaultVersion: 1,
+  // Orchestrators call /health/live and /health/ready without credentials.
+  health: { flags: ['auth.public'] },
   middlewares: [
     helmet(),
     cors(),
