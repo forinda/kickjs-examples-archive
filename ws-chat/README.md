@@ -69,3 +69,23 @@ pnpm test             # or: npm test
 ```
 
 `src/modules/chats/chat.test.ts` starts the app on a free port with real `ws` clients: a socket without a token (or with a forged or expired one) is closed with 4401; one client's room message reaches the other, with the room user list kept in step (also over HTTP) and updated on disconnect; a client in another room gets nothing, and sending to a room you haven't joined is refused; the heartbeat pings. The tests run without Redis (single process); the two-instance path is the run above.
+
+## Deploy
+
+**Required env:** `CHAT_SECRET` (32+ chars; fail closed — with `NODE_ENV=production`, the image's, or unset, the app refuses to boot without it). Optional `REDIS_URL` to run several instances.
+
+**Docker**
+
+```bash
+docker build -t ws-chat .
+docker run -p 3000:3000 -e CHAT_SECRET=$(openssl rand -hex 32) ws-chat
+# open http://localhost:3000 — the page and ws://…/ws/chat on the same port
+```
+
+One instance keeps rooms and presence in memory. For several, give every instance the same `REDIS_URL` (and `CHAT_SECRET`); the load balancer must pass WebSocket upgrades.
+
+**Not serverless:** Netlify and Vercel functions can't hold WebSocket connections open, so this app needs a long-running server (the image, or any Node host).
+
+- **Health:** `GET /health/ready` runs every adapter's health check — the image's `HEALTHCHECK` and a load balancer's readiness probe use it; `GET /health/live` for liveness.
+- **DevTools** is dev-only and not in the production build: `/_debug` answers 404 in the image.
+- The image installs from the committed `pnpm-lock.yaml` (frozen) and runs `node dist/index.js` as the unprivileged `node` user with `NODE_ENV=production`; `.env` files are never copied in — pass env with `-e`, `--env-file` or the platform.
