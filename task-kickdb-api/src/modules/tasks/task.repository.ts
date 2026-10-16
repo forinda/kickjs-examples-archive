@@ -18,7 +18,7 @@ export interface NewTask {
 }
 
 /** Repository over the kick/db client; deps come in as parameters. */
-export function createTasksRepository(db: KickDbClient) {
+export function createTaskRepository(db: KickDbClient) {
   return {
     listByWorkspace(workspaceId: string) {
       return db
@@ -103,5 +103,5 @@ export function createTasksRepository(db: KickDbClient) {
 }
 
 /** The contract, derived from the factory rather than declared beside it. */
-export type TasksRepository = ReturnType<typeof createTasksRepository>
-export const TASKS_REPOSITORY = createToken<TasksRepository>('app/Tasks/repository')
+export type TaskRepository = ReturnType<typeof createTaskRepository>
+export const TASK_REPOSITORY = createToken<TaskRepository>('app/Task/repository')

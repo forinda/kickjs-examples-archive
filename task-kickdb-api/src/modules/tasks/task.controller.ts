@@ -8,11 +8,11 @@ import {
   reply,
   type RequestContext,
 } from '@forinda/kickjs'
-import { TASKS_REPOSITORY, type TasksRepository } from './tasks.repository'
+import { TASK_REPOSITORY, type TaskRepository } from './task.repository'
 
 @Controller()
-export class TasksController {
-  @Inject(TASKS_REPOSITORY) private readonly tasks!: TasksRepository
+export class TaskController {
+  @Inject(TASK_REPOSITORY) private readonly tasks!: TaskRepository
 
   @Get('/')
   async list(ctx: RequestContext) {

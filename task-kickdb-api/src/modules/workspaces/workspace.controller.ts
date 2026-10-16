@@ -7,11 +7,11 @@ import {
   reply,
   type RequestContext,
 } from '@forinda/kickjs'
-import { WORKSPACES_REPOSITORY, type WorkspacesRepository } from './workspaces.repository'
+import { WORKSPACE_REPOSITORY, type WorkspaceRepository } from './workspace.repository'
 
 @Controller()
-export class WorkspacesController {
-  @Inject(WORKSPACES_REPOSITORY) private readonly workspaces!: WorkspacesRepository
+export class WorkspaceController {
+  @Inject(WORKSPACE_REPOSITORY) private readonly workspaces!: WorkspaceRepository
 
   @Get('/')
   async list(_ctx: RequestContext) {

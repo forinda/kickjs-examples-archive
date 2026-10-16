@@ -16,7 +16,7 @@ function toPublic<T extends { passwordHash: unknown }>(row: T): Omit<T, 'passwor
 }
 
 /** Repository over the kick/db client; deps come in as parameters. */
-export function createUsersRepository(db: KickDbClient) {
+export function createUserRepository(db: KickDbClient) {
   return {
     list() {
       return db
@@ -56,5 +56,5 @@ export function createUsersRepository(db: KickDbClient) {
 }
 
 /** The contract, derived from the factory rather than declared beside it. */
-export type UsersRepository = ReturnType<typeof createUsersRepository>
-export const USERS_REPOSITORY = createToken<UsersRepository>('app/Users/repository')
+export type UserRepository = ReturnType<typeof createUserRepository>
+export const USER_REPOSITORY = createToken<UserRepository>('app/User/repository')

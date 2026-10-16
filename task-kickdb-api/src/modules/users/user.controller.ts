@@ -7,11 +7,11 @@ import {
   reply,
   type RequestContext,
 } from '@forinda/kickjs'
-import { USERS_REPOSITORY, type UsersRepository } from './users.repository'
+import { USER_REPOSITORY, type UserRepository } from './user.repository'
 
 @Controller()
-export class UsersController {
-  @Inject(USERS_REPOSITORY) private readonly users!: UsersRepository
+export class UserController {
+  @Inject(USER_REPOSITORY) private readonly users!: UserRepository
 
   @Get('/')
   async list(_ctx: RequestContext) {

@@ -1,9 +1,9 @@
 import { defineModules } from '@forinda/kickjs'
-import { UsersModule } from './users/users.module'
-import { WorkspacesModule } from './workspaces/workspaces.module'
-import { TasksModule } from './tasks/tasks.module'
+import { UserModule } from './users/user.module'
+import { WorkspaceModule } from './workspaces/workspace.module'
+import { TaskModule } from './tasks/task.module'
 
 export const modules = defineModules()
-  .mount(UsersModule())
-  .mount(WorkspacesModule())
-  .mount(TasksModule())
+  .mount(UserModule())
+  .mount(WorkspaceModule())
+  .mount(TaskModule())

@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container } from '@forinda/kickjs'
+import { Container, getEnv } from '@forinda/kickjs'
 import { createTestApp } from '@forinda/kickjs-testing'
-import { env } from '@/config'
+import '@/config'
 import { DbAdapter } from '@/adapters/db.adapter'
-import { TasksModule } from '@/modules/tasks/tasks.module'
-import { UsersModule } from './users.module'
+import { TaskModule } from '@/modules/tasks/task.module'
+import { UserModule } from './user.module'
 
 async function makeApp() {
   const { app } = await createTestApp({
-    modules: [UsersModule(), TasksModule()],
+    modules: [UserModule(), TaskModule()],
     adapters: [DbAdapter()],
   })
   return request(app.handle.bind(app))
@@ -24,7 +24,7 @@ describe('task-kickdb-api', () => {
   })
 
   // Needs a migrated Postgres: set DATABASE_URL in .env.test, then `pnpm db:migrate`.
-  it.skipIf(!env.DATABASE_URL)('creates a user and reads it back', async () => {
+  it.skipIf(!getEnv('DATABASE_URL'))('creates a user and reads it back', async () => {
     const http = await makeApp()
     const email = `ada+${Date.now()}@example.com`
     const created = await http

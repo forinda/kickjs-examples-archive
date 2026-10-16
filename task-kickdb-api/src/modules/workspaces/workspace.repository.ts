@@ -9,7 +9,7 @@ export interface NewWorkspace {
 }
 
 /** Repository over the kick/db client; deps come in as parameters. */
-export function createWorkspacesRepository(db: KickDbClient) {
+export function createWorkspaceRepository(db: KickDbClient) {
   return {
     list() {
       return db.selectFrom('workspaces').selectAll().orderBy('createdAt', 'asc').execute()
@@ -74,5 +74,5 @@ export function createWorkspacesRepository(db: KickDbClient) {
 }
 
 /** The contract, derived from the factory rather than declared beside it. */
-export type WorkspacesRepository = ReturnType<typeof createWorkspacesRepository>
-export const WORKSPACES_REPOSITORY = createToken<WorkspacesRepository>('app/Workspaces/repository')
+export type WorkspaceRepository = ReturnType<typeof createWorkspaceRepository>
+export const WORKSPACE_REPOSITORY = createToken<WorkspaceRepository>('app/Workspace/repository')
