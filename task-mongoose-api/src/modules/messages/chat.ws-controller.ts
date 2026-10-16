@@ -1,4 +1,4 @@
-import { Inject, Logger } from '@forinda/kickjs'
+import { getEnv, Inject, Logger } from '@forinda/kickjs'
 import {
   WsController,
   OnConnect,
@@ -7,7 +7,6 @@ import {
   type WsContext,
 } from '@forinda/kickjs-ws'
 import jwt from 'jsonwebtoken'
-import { env } from '@/config'
 import {
   MESSAGE_REPOSITORY,
   type MessageRepository,
@@ -26,7 +25,7 @@ export class ChatWsController {
   handleConnect(ctx: WsContext) {
     try {
       const token = ctx.data?.token || ''
-      const payload = jwt.verify(token, env.JWT_SECRET) as any
+      const payload = jwt.verify(token, getEnv('JWT_SECRET')) as any
       const userId = payload.sub
       const email = payload.email
 

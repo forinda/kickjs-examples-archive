@@ -7,6 +7,8 @@ import {
   Get,
   Delete,
   Inject,
+  HttpException,
+  reply,
   type RequestContext,
   buildRoutes,
 } from '@forinda/kickjs'
@@ -86,23 +88,23 @@ class TestWorkspaceController {
   constructor(@Inject(WORKSPACE_REPOSITORY) private readonly repo: WorkspaceRepository) {}
 
   @Get('/')
-  async list(ctx: RequestContext) {
+  async list() {
     const workspaces = await this.repo.findByOwner('owner1')
-    ctx.json({ data: workspaces, total: workspaces.length })
+    return { data: workspaces, total: workspaces.length }
   }
 
   @Get('/:id')
   async getById(ctx: RequestContext) {
     const ws = await this.repo.findById(ctx.params.id)
-    if (!ws) return ctx.notFound('Workspace not found')
-    ctx.json({ data: ws })
+    if (!ws) throw HttpException.notFound('Workspace not found')
+    return { data: ws }
   }
 
   @Delete('/:id')
   async remove(ctx: RequestContext) {
     const deleted = await this.repo.delete(ctx.params.id)
-    if (!deleted) return ctx.notFound('Workspace not found')
-    ctx.noContent()
+    if (!deleted) throw HttpException.notFound('Workspace not found')
+    return reply.noContent()
   }
 }
 

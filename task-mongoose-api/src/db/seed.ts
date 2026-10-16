@@ -85,7 +85,7 @@ async function seed() {
   ])
   console.log(`Created ${labels.length} labels`)
 
-  const [bugLabel, featureLabel, improvementLabel, docsLabel, urgentLabel] = labels
+  const [bugLabel, featureLabel, , docsLabel, urgentLabel] = labels
 
   // ── Projects ───────────────────────────────────────────
   const backend = await ProjectModel.create({

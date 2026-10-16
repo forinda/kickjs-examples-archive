@@ -1,4 +1,3 @@
-import './context'
 import {
   type RequestContext,
   type MiddlewareHandler,
@@ -7,6 +6,14 @@ import {
 } from '@forinda/kickjs'
 import { ErrorCode } from '@/shared/error-codes'
 import { CHANNEL_REPOSITORY } from '@/modules/channels/channel.repository'
+import type { ChannelEntity } from '@/modules/channels/channel.schema'
+
+/** What this guard puts on the request context. */
+declare module '@forinda/kickjs' {
+  interface ContextMeta {
+    channel: ChannelEntity
+  }
+}
 
 export const channelMembershipGuard: MiddlewareHandler = async (ctx: RequestContext, next) => {
   const user = ctx.get('user')

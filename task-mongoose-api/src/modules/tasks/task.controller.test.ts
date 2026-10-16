@@ -8,6 +8,7 @@ import {
   Delete,
   Inject,
   HttpException,
+  reply,
   type RequestContext,
   buildRoutes,
 } from '@forinda/kickjs'
@@ -133,23 +134,23 @@ class TestTaskController {
   constructor(@Inject(TASK_REPOSITORY) private readonly repo: TaskRepository) {}
 
   @Get('/')
-  async list(ctx: RequestContext) {
+  async list() {
     const tasks = await this.repo.findByProject('p1')
-    ctx.json({ data: tasks, total: tasks.length })
+    return { data: tasks, total: tasks.length }
   }
 
   @Get('/:id')
   async getById(ctx: RequestContext) {
     const task = await this.repo.findById(ctx.params.id)
     if (!task) throw HttpException.notFound('Task not found')
-    ctx.json({ data: task })
+    return { data: task }
   }
 
   @Delete('/:id')
   async remove(ctx: RequestContext) {
     const deleted = await this.repo.delete(ctx.params.id)
     if (!deleted) throw HttpException.notFound('Task not found')
-    ctx.noContent()
+    return reply.noContent()
   }
 }
 

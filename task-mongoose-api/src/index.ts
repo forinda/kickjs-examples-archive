@@ -1,11 +1,20 @@
 import 'reflect-metadata'
 // Side-effect import — registers the env schema before anything resolves @Value / ConfigService.
-import { env } from '@/config'
+import '@/config'
 import express from 'express'
-import { bootstrap, cors, expressRuntime, helmet, requestId, requestLogger } from '@forinda/kickjs'
+import {
+  bootstrap,
+  cors,
+  expressRuntime,
+  getEnv,
+  helmet,
+  requestId,
+  requestLogger,
+} from '@forinda/kickjs'
 import { modules } from '@/modules'
 import { adapters } from '@/config/adapters'
-import { MailerPlugin } from './plugins/mailer.plugin'
+import { isDevOrTest } from '@/config/dev-default'
+import { MailerPlugin } from '@/plugins/mailer.plugin'
 
 export const app = await bootstrap({
   modules,
@@ -23,9 +32,10 @@ export const app = await bootstrap({
   adapters,
   plugins: [
     MailerPlugin({
-      provider: env.NODE_ENV === 'production' ? 'resend' : 'console',
-      resendApiKey: env.RESEND_API_KEY,
-      defaultFrom: { name: env.MAIL_FROM_NAME, address: env.MAIL_FROM_EMAIL },
+      // Console mail only under development/test; an unset NODE_ENV sends for real.
+      provider: isDevOrTest() ? 'console' : 'resend',
+      resendApiKey: getEnv('RESEND_API_KEY'),
+      defaultFrom: { name: getEnv('MAIL_FROM_NAME'), address: getEnv('MAIL_FROM_EMAIL') },
     }),
   ],
 })

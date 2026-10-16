@@ -1,4 +1,3 @@
-import './context'
 import {
   type RequestContext,
   type MiddlewareHandler,
@@ -10,6 +9,14 @@ import {
   WORKSPACE_MEMBER_REPOSITORY,
   type WorkspaceMemberRepository,
 } from '@/modules/workspaces/workspace-member.repository'
+import type { WorkspaceMemberEntity } from '@/modules/workspaces/workspace-member.schema'
+
+/** What this guard puts on the request context. */
+declare module '@forinda/kickjs' {
+  interface ContextMeta {
+    workspaceMember: WorkspaceMemberEntity
+  }
+}
 
 export const workspaceMembershipGuard: MiddlewareHandler = async (ctx: RequestContext, next) => {
   const user = ctx.get('user')

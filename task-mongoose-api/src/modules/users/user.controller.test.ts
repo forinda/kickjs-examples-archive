@@ -6,6 +6,7 @@ import {
   Controller,
   Get,
   Inject,
+  HttpException,
   type RequestContext,
   buildRoutes,
 } from '@forinda/kickjs'
@@ -88,16 +89,16 @@ class TestUserController {
   constructor(@Inject(USER_REPOSITORY) private readonly repo: UserRepository) {}
 
   @Get('/')
-  async list(ctx: RequestContext) {
+  async list() {
     const result = await this.repo.findPaginated({})
-    ctx.json({ data: result.data, total: result.total })
+    return { data: result.data, total: result.total }
   }
 
   @Get('/:id')
   async getById(ctx: RequestContext) {
     const user = await this.repo.findById(ctx.params.id)
-    if (!user) return ctx.notFound('User not found')
-    ctx.json({ data: user })
+    if (!user) throw HttpException.notFound('User not found')
+    return { data: user }
   }
 }
 

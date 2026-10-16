@@ -3,13 +3,13 @@ import {
   Inject,
   HttpException,
   Logger,
+  getEnv,
   JOB_DISPATCHER,
   type JobDispatcher,
 } from '@forinda/kickjs'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import { ErrorCode } from '@/shared/error-codes'
-import { env } from '@/config'
 import type { LoginDto, RefreshTokenDto, RegisterDto } from './auth.dto'
 import { REFRESH_TOKEN_REPOSITORY, type RefreshTokenRepository } from './refresh-token.repository'
 import { USER_REPOSITORY, type UserRepository } from '@/modules/users/user.repository'
@@ -147,8 +147,8 @@ export class AuthService {
   private generateAccessToken(user: any): string {
     return jwt.sign(
       { sub: user._id.toString(), email: user.email, globalRole: user.globalRole },
-      env.JWT_SECRET,
-      { expiresIn: env.JWT_ACCESS_EXPIRES_IN as any },
+      getEnv('JWT_SECRET'),
+      { expiresIn: getEnv('JWT_ACCESS_EXPIRES_IN') as any },
     )
   }
 }

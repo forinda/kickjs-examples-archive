@@ -115,10 +115,8 @@ export class AttachmentsController {
     if (!attachment) throw HttpException.notFound(ErrorCode.ATTACHMENT_NOT_FOUND)
 
     const buffer = Buffer.from(attachment.base64Data, 'base64')
-    ctx.res.setHeader('Content-Type', attachment.mimeType)
-    ctx.res.setHeader('Content-Disposition', `attachment; filename="${attachment.fileName}"`)
-    ctx.res.setHeader('Content-Length', buffer.length.toString())
-    ctx.res.end(buffer)
+    // RFC 6266 filename encoding — an uploaded name can't break the header.
+    return ctx.download(buffer, attachment.fileName, attachment.mimeType)
   }
 
   @ApiOperation({ summary: 'Delete an attachment' })

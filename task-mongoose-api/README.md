@@ -33,7 +33,7 @@ Log in as `alice@vibed.dev` / `Password123!` via `POST /api/v1/auth/login`, then
 | Variable | Notes |
 | --- | --- |
 | `MONGODB_URI`, `REDIS_URL` | required |
-| `JWT_SECRET`, `JWT_REFRESH_SECRET` | dev defaults outside production; **required** (32+ chars) when `NODE_ENV=production` |
-| `RESEND_API_KEY` | required in production (mail goes through Resend); dev logs mail to the console |
+| `JWT_SECRET` | dev defaults only when `NODE_ENV` is `development` or `test`; **required** (32+ chars) otherwise, including an unset `NODE_ENV` |
+| `RESEND_API_KEY` | required unless `NODE_ENV` is `development` or `test` (mail goes through Resend); development/test log mail to the console |
 
 `pnpm test` (no services needed), `pnpm typecheck`, `pnpm build && pnpm start`, `pnpm db:reset` (drop + reseed).

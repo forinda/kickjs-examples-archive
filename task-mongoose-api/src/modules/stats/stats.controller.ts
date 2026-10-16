@@ -22,7 +22,6 @@ export class StatsController {
   @Middleware(workspaceMembershipGuard)
   async workspaceLive(ctx: RequestContext) {
     const sse = ctx.sse()
-    const workspaceId = ctx.params.workspaceId
 
     const sendStats = async () => {
       const onlineUsers = getOnlineUsers()
