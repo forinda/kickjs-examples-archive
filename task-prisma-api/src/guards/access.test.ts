@@ -37,19 +37,32 @@ import { ATTACHMENT_REPOSITORY } from '@/modules/attachments/attachment.reposito
 import { ActivityController } from '@/modules/activities/activity.controller'
 import { ACTIVITY_REPOSITORY } from '@/modules/activities/activity.repository'
 import { StatController } from '@/modules/stats/stat.controller'
+import { UserController } from '@/modules/users/user.controller'
+import { USER_REPOSITORY } from '@/modules/users/user.repository'
 import { STATS_REPOSITORY } from '@/modules/stats/stat.repository'
 
 // Workspace wA holds project pA, task tA, label lA, public channel cA (created
 // by u-other), private channel cP (member: u-admin), messages mA (by u-admin)
 // and mB (by u-member), comments kA (by u-admin) and kB (by u-member), and
 // attachment aA. u-admin is its admin, u-member and u-other members; u-out
-// belongs to workspace wB only.
+// belongs to workspace wB only; uLone belongs to no workspace.
 const roles: Record<string, string> = {
   'u-admin': 'admin',
   'u-member': 'member',
   'u-other': 'member',
 }
 const cP = '00000000-0000-4000-8000-0000000000c9'
+const uLone = '00000000-0000-4000-8000-0000000000d1'
+const workspacesOf = (userId: string) => (roles[userId] ? ['wA'] : userId === 'u-out' ? ['wB'] : [])
+const allUsers = ['u-admin', 'u-member', 'u-other', 'u-out', uLone].map((id) => ({
+  id,
+  email: `${id}@test.com`,
+}))
+// Mirrors the repository's SQL scope: the viewer plus anyone sharing a workspace.
+const visibleTo = (viewerId: string) =>
+  allUsers.filter(
+    (u) => u.id === viewerId || workspacesOf(u.id).some((w) => workspacesOf(viewerId).includes(w)),
+  )
 const update = async (id: string, data: object) => ({ id, ...data })
 const byId =
   <T>(rows: Record<string, T>) =>
@@ -67,6 +80,20 @@ const TestModule = defineModule({
             : workspaceId === 'wB' && userId === 'u-out'
               ? { workspaceId, userId, role: 'admin' }
               : null,
+        add: async (row: object) => row,
+      } as never)
+      container.registerInstance(USER_REPOSITORY, {
+        findById: async (id: string) => allUsers.find((u) => u.id === id) ?? null,
+        findVisibleById: async (id: string, viewerId: string) =>
+          visibleTo(viewerId).find((u) => u.id === id) ?? null,
+        findPaginated: async (
+          parsed: { pagination: { offset: number; limit: number } },
+          viewerId: string,
+        ) => {
+          const rows = visibleTo(viewerId)
+          const { offset, limit } = parsed.pagination
+          return { data: rows.slice(offset, offset + limit), total: rows.length }
+        },
       } as never)
       container.registerInstance(WORKSPACE_REPOSITORY, {
         findById: byId({ wA: { id: 'wA', name: 'Acme' } }),
@@ -148,6 +175,7 @@ const TestModule = defineModule({
       { path: '/attachments', controller: AttachmentController },
       { path: '/activities', controller: ActivityController },
       { path: '/stats', controller: StatController },
+      { path: '/users', controller: UserController },
     ],
   }),
 })
@@ -370,5 +398,51 @@ describe('object-level authorization', () => {
       .set('Authorization', as('u-admin'))
       .send({ name: 'x' })
       .expect(200)
+  })
+})
+
+describe('user visibility', () => {
+  beforeEach(() => Container.reset())
+
+  const ids = (res: { body: { data: { id: string }[] } }) => res.body.data.map((u) => u.id).sort()
+
+  it('lists only the caller and people who share a workspace with them', async () => {
+    const api = await makeApp()
+    const res = await api.get('/api/v1/users').set('Authorization', as('u-admin')).expect(200)
+    expect(ids(res)).toEqual(['u-admin', 'u-member', 'u-other'])
+    for (const u of res.body.data) expect(u).not.toHaveProperty('passwordHash')
+
+    const lone = await api.get('/api/v1/users').set('Authorization', as(uLone)).expect(200)
+    expect(ids(lone)).toEqual([uLone])
+  })
+
+  it('counts the scoped set in the pagination total', async () => {
+    const api = await makeApp()
+    const res = await api
+      .get('/api/v1/users?page=1&limit=1')
+      .set('Authorization', as('u-admin'))
+      .expect(200)
+    expect(res.body.data).toHaveLength(1)
+    expect(res.body.meta.total).toBe(3)
+  })
+
+  it('answers a user outside every shared workspace with the same 404 as a missing one', async () => {
+    const api = await makeApp()
+    const auth = as('u-admin')
+    const missing = await api.get(`/api/v1/users/${cP}`).set('Authorization', auth).expect(404)
+    const outsider = await api.get('/api/v1/users/u-out').set('Authorization', auth).expect(404)
+    expect(outsider.body).toEqual(missing.body)
+    await api.get('/api/v1/users/u-member').set('Authorization', auth).expect(200)
+    await api.get('/api/v1/users/u-admin').set('Authorization', auth).expect(200)
+    await api.get(`/api/v1/users/${uLone}`).set('Authorization', as(uLone)).expect(200)
+  })
+
+  it('still lets an admin invite a user from outside the workspace', async () => {
+    const api = await makeApp()
+    await api
+      .post('/api/v1/workspaces/wA/members')
+      .set('Authorization', as('u-admin'))
+      .send({ userId: uLone, role: 'member' })
+      .expect(201)
   })
 })

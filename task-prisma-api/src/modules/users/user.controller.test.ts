@@ -42,6 +42,10 @@ class InMemoryUserRepository implements UserRepository {
   async findById(id: string) {
     return this.users.find((u) => u.id === id) ?? null
   }
+  async findVisibleById(id: string) {
+    return this.findById(id)
+  }
+
   async findByEmail(email: string) {
     return this.users.find((u) => u.email === email) ?? null
   }

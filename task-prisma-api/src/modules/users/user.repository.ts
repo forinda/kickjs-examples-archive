@@ -9,10 +9,24 @@ import type { User, Prisma } from '@/generated/prisma/client'
 export type { User }
 export type NewUser = Prisma.UserCreateInput
 
+/** The viewer plus everyone who shares at least one workspace with them. */
+const visibleTo = (viewerId: string): Prisma.UserWhereInput => ({
+  OR: [
+    { id: viewerId },
+    { workspaceMemberships: { some: { workspace: { members: { some: { userId: viewerId } } } } } },
+  ],
+})
+
 export function createUserRepository(prisma: PrismaClient) {
   return {
+    /** Unscoped — for the caller's own record and internal lookups (invites), never for reading others. */
     async findById(id: string) {
       return prisma.user.findUnique({ where: { id } })
+    },
+
+    /** `id` if the viewer may see it (themselves or a workspace teammate), else null. */
+    async findVisibleById(id: string, viewerId: string) {
+      return prisma.user.findFirst({ where: { AND: [{ id }, visibleTo(viewerId)] } })
     },
 
     async findByEmail(email: string) {
@@ -24,19 +38,23 @@ export function createUserRepository(prisma: PrismaClient) {
       return prisma.user.findMany()
     },
 
-    async findPaginated(parsed: ParsedQuery) {
+    /** Users visible to `viewerId`, scoped in the query so filters, pages and the total all agree. */
+    async findPaginated(parsed: ParsedQuery, viewerId: string) {
       const query = queryAdapter.build(parsed, {
         searchColumns: ['firstName', 'lastName', 'email'],
       })
+      const where: Prisma.UserWhereInput = {
+        AND: [(query.where ?? {}) as Prisma.UserWhereInput, visibleTo(viewerId)],
+      }
 
       const [data, total] = await Promise.all([
         prisma.user.findMany({
-          where: query.where,
+          where,
           orderBy: query.orderBy,
           skip: query.skip,
           take: query.take,
         }),
-        prisma.user.count({ where: query.where }),
+        prisma.user.count({ where }),
       ])
 
       return { data, total }
