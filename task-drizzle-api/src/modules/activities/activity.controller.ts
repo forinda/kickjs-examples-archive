@@ -9,6 +9,7 @@ import {
 } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
+import { requireWorkspaceMember } from '@/guards/workspace-membership.guard'
 import { ACTIVITY_QUERY_CONFIG } from './activity.constants'
 import { ACTIVITY_REPOSITORY, type ActivityRepository } from './activity.repository'
 
@@ -26,6 +27,7 @@ export class ActivityController {
     if (!workspaceId) {
       throw HttpException.badRequest('workspaceId query parameter is required')
     }
+    await requireWorkspaceMember(ctx, workspaceId)
 
     return ctx.paginate(
       (parsed) =>

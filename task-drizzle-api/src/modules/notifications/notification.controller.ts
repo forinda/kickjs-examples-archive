@@ -43,7 +43,7 @@ export class NotificationController {
   @Put('/:id/read')
   @ApiTags('Notification')
   async markRead(ctx: RequestContext) {
-    await this.repo.markRead(ctx.params.id)
+    await this.repo.markRead(ctx.params.id, getUser(ctx).id)
     return reply.noContent()
   }
 

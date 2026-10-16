@@ -85,8 +85,8 @@ class InMemoryNotificationRepository implements NotificationRepository {
     return notification
   }
 
-  async markRead(id: string) {
-    const n = this.notifications.find((n) => n.id === id)
+  async markRead(id: string, recipientId: string) {
+    const n = this.notifications.find((n) => n.id === id && n.recipientId === recipientId)
     if (n) n.isRead = true
   }
 
@@ -130,7 +130,7 @@ class TestNotificationController {
 
   @Put('/:id/read')
   async markRead(ctx: RequestContext) {
-    await this.repo.markRead(ctx.params.id)
+    await this.repo.markRead(ctx.params.id, 'u1')
     return reply.noContent()
   }
 

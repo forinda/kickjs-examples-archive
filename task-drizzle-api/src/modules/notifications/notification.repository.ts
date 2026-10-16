@@ -46,8 +46,12 @@ export function createNotificationRepository(db: AppDatabase) {
       return notification
     },
 
-    async markRead(id: string): Promise<void> {
-      await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, id))
+    /** Only the recipient's own notification — someone else's id is a no-op. */
+    async markRead(id: string, recipientId: string): Promise<void> {
+      await db
+        .update(notifications)
+        .set({ isRead: true })
+        .where(and(eq(notifications.id, id), eq(notifications.recipientId, recipientId)))
     },
 
     async markAllRead(recipientId: string): Promise<void> {

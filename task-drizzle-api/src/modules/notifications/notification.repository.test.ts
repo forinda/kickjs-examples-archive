@@ -41,8 +41,8 @@ class InMemoryNotificationRepository implements NotificationRepository {
     return notification
   }
 
-  async markRead(id: string) {
-    const n = this.notifications.find((n) => n.id === id)
+  async markRead(id: string, recipientId: string) {
+    const n = this.notifications.find((n) => n.id === id && n.recipientId === recipientId)
     if (n) n.isRead = true
   }
 
@@ -140,7 +140,7 @@ describe('InMemoryNotificationRepository', () => {
       body: 'Task is overdue',
     })
 
-    await repo.markRead(n.id)
+    await repo.markRead(n.id, 'u1')
     const found = await repo.findById(n.id)
     expect(found!.isRead).toBe(true)
   })
@@ -191,7 +191,7 @@ describe('InMemoryNotificationRepository', () => {
     expect(await repo.unreadCount('u1')).toBe(2)
 
     const all = await repo.findPaginated(parseQuery({}), 'u1')
-    await repo.markRead(all.data[0].id)
+    await repo.markRead(all.data[0].id, 'u1')
 
     expect(await repo.unreadCount('u1')).toBe(1)
   })
