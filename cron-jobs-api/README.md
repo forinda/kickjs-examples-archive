@@ -51,3 +51,28 @@ pnpm typecheck && pnpm lint
 ```
 
 The suite checks next-run times (incl. 02:00 Nairobi = 23:00 UTC), runs jobs directly with `runCronJobs`, a disabled job, overlap protection, a failure reaching the error observer and the last-run record, the guarded manual endpoint, and the serverless trigger through `createHandler().fetch()` with and without the bearer.
+
+## Deploy
+
+**Required env:** `CRON_SECRET` (16+ chars; fail closed — with `NODE_ENV=production`, the image's, or unset, the app refuses to boot without it).
+
+**Docker** — the long-running server schedules the jobs itself:
+
+```bash
+docker build -t cron-jobs-api .
+docker run -p 3000:3000 -e CRON_SECRET=$(openssl rand -hex 32) cron-jobs-api
+```
+
+Several replicas each run every job: set `CRON_ENABLED=false` on all but one.
+
+**Vercel** — `vercel.json` runs `pnpm build:vercel`, which writes one Vercel cron per schedule calling `GET /_kick/cron/:scheduleId`; set `CRON_SECRET` in the project (Vercel sends it as the bearer). Vercel crons are UTC and take five-field expressions only. **Not Netlify:** Netlify functions don't run `@Cron` jobs, so the schedules would never fire.
+
+```bash
+pnpm build:vercel   # → .vercel/output (config.json lists the crons)
+```
+
+State: last-run records are in memory, per process (lost on restart).
+
+- **Health:** `GET /health/ready` runs every adapter's health check — the image's `HEALTHCHECK` and a load balancer's readiness probe use it; `GET /health/live` for liveness.
+- **DevTools** is dev-only and not in the production build: `/_debug` answers 404 in the image.
+- The image installs from the committed `pnpm-lock.yaml` (frozen) and runs `node dist/index.js` as the unprivileged `node` user with `NODE_ENV=production`; `.env` files are never copied in — pass env with `-e`, `--env-file` or the platform.
