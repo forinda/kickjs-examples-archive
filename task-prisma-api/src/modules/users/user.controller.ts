@@ -15,6 +15,7 @@ import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
 import { ErrorCode } from '@/shared/error-codes'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
+import { paginate } from '@/shared/query-adapter'
 import { USER_REPOSITORY, type UserRepository } from './user.repository'
 import { updateUserSchema } from './user.dto'
 import { USER_QUERY_CONFIG } from './user.constants'
@@ -47,7 +48,7 @@ export class UserController {
   async list(ctx: RequestContext) {
     // Only the caller and people who share a workspace with them.
     const viewerId = getUser(ctx).id
-    return ctx.paginate((parsed) => this.repo.findPaginated(parsed, viewerId), USER_QUERY_CONFIG)
+    return paginate(ctx, (parsed) => this.repo.findPaginated(parsed, viewerId), USER_QUERY_CONFIG)
   }
 
   @Get('/:id')

@@ -23,6 +23,7 @@ import {
 import { access, requireAccess, requiredQuery, workspaceIdOf } from '@/guards/resource-access.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
+import { paginate } from '@/shared/query-adapter'
 import { TASK_QUERY_CONFIG } from './task.constants'
 import { createTaskSchema, updateTaskSchema } from './task.dto'
 import { TASK_REPOSITORY, type TaskRepository } from './task.repository'
@@ -63,7 +64,7 @@ export class TaskController {
   async list(ctx: RequestContext) {
     const projectId = requiredQuery(ctx, 'projectId')
     await requireAccess(ctx, 'project', projectId)
-    return ctx.paginate((parsed) => this.repo.findPaginated(parsed, projectId), TASK_QUERY_CONFIG)
+    return paginate(ctx, (parsed) => this.repo.findPaginated(parsed, projectId), TASK_QUERY_CONFIG)
   }
 
   @Middleware(access('task'))

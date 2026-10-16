@@ -18,14 +18,14 @@ export function createWorkspaceRepository(prisma: PrismaClient) {
 
     async findForUser(userId: string) {
       const memberships = await prisma.workspaceMember.findMany({
-        where: { userId },
+        where: { userId, status: 'accepted' },
         include: { workspace: true },
       })
       return memberships.map((m) => (m as { workspace: Workspace }).workspace)
     },
 
     async findPaginated(parsed: ParsedQuery) {
-      const query = queryAdapter.build(parsed, { searchColumns: ['name', 'slug'] })
+      const query = queryAdapter.build(parsed, { searchable: ['name', 'slug'] })
 
       const [data, total] = await Promise.all([
         prisma.workspace.findMany({

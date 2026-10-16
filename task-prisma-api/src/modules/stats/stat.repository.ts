@@ -23,7 +23,7 @@ export function createStatsRepository(prisma: PrismaClient) {
     async getWorkspaceStats(workspaceId: string) {
       const [memberCount, projectCount, taskCount, openTasks, completedTasks, channelCount] =
         await Promise.all([
-          prisma.workspaceMember.count({ where: { workspaceId } }),
+          prisma.workspaceMember.count({ where: { workspaceId, status: 'accepted' } }),
           prisma.project.count({ where: { workspaceId } }),
           prisma.task.count({ where: { workspaceId } }),
           prisma.task.count({ where: { workspaceId, status: { not: 'done' } } }),

@@ -4,16 +4,36 @@ import type { PrismaClient } from '@/generated/prisma/client'
 import type { ParsedQuery } from '@forinda/kickjs'
 import type { UpdateUserDTO } from './user.dto'
 import { queryAdapter } from '@/shared/query-adapter'
+import { USER_QUERY_CONFIG } from './user.constants'
 import type { User, Prisma } from '@/generated/prisma/client'
 
 export type { User }
 export type NewUser = Prisma.UserCreateInput
 
-/** The viewer plus everyone who shares at least one workspace with them. */
+/** What another user may see of a profile — an explicit list, so a new column never leaks by default. */
+const profileSelect = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  avatarUrl: true,
+  globalRole: true,
+  lastLoginAt: true,
+  createdAt: true,
+} satisfies Prisma.UserSelect
+
+/** The viewer plus everyone who shares an accepted membership with them (pending invites don't count). */
 const visibleTo = (viewerId: string): Prisma.UserWhereInput => ({
   OR: [
     { id: viewerId },
-    { workspaceMemberships: { some: { workspace: { members: { some: { userId: viewerId } } } } } },
+    {
+      workspaceMemberships: {
+        some: {
+          status: 'accepted',
+          workspace: { members: { some: { userId: viewerId, status: 'accepted' } } },
+        },
+      },
+    },
   ],
 })
 
@@ -26,7 +46,10 @@ export function createUserRepository(prisma: PrismaClient) {
 
     /** `id` if the viewer may see it (themselves or a workspace teammate), else null. */
     async findVisibleById(id: string, viewerId: string) {
-      return prisma.user.findFirst({ where: { AND: [{ id }, visibleTo(viewerId)] } })
+      return prisma.user.findFirst({
+        where: { AND: [{ id }, visibleTo(viewerId)] },
+        select: profileSelect,
+      })
     },
 
     async findByEmail(email: string) {
@@ -38,11 +61,9 @@ export function createUserRepository(prisma: PrismaClient) {
       return prisma.user.findMany()
     },
 
-    /** Users visible to `viewerId`, scoped in the query so filters, pages and the total all agree. */
+    /** Users visible to `viewerId`; the scope is AND-ed with the filters, so pages and the total agree. */
     async findPaginated(parsed: ParsedQuery, viewerId: string) {
-      const query = queryAdapter.build(parsed, {
-        searchColumns: ['firstName', 'lastName', 'email'],
-      })
+      const query = queryAdapter.build(parsed, USER_QUERY_CONFIG)
       const where: Prisma.UserWhereInput = {
         AND: [(query.where ?? {}) as Prisma.UserWhereInput, visibleTo(viewerId)],
       }
@@ -50,6 +71,7 @@ export function createUserRepository(prisma: PrismaClient) {
       const [data, total] = await Promise.all([
         prisma.user.findMany({
           where,
+          select: profileSelect,
           orderBy: query.orderBy,
           skip: query.skip,
           take: query.take,

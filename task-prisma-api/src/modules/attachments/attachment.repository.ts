@@ -2,6 +2,7 @@ import { createToken } from '@forinda/kickjs'
 import type { PrismaClient } from '@/generated/prisma/client'
 import type { ParsedQuery } from '@forinda/kickjs'
 import { queryAdapter } from '@/shared/query-adapter'
+import { ATTACHMENT_QUERY_CONFIG } from './attachment.constants'
 import type { Attachment } from '@/generated/prisma/client'
 
 export type { Attachment }
@@ -28,7 +29,7 @@ export function createAttachmentRepository(prisma: PrismaClient) {
     },
 
     async findPaginated(parsed: ParsedQuery, taskId?: string) {
-      const query = queryAdapter.build(parsed, { searchColumns: ['fileName'] })
+      const query = queryAdapter.build(parsed, ATTACHMENT_QUERY_CONFIG)
       const where = taskId
         ? query.where
           ? { AND: [query.where, { taskId }] }

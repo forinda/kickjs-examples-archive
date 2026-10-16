@@ -3,6 +3,7 @@ import { HttpException } from '@forinda/kickjs'
 import type { PrismaClient } from '@/generated/prisma/client'
 import type { ParsedQuery } from '@forinda/kickjs'
 import { queryAdapter } from '@/shared/query-adapter'
+import { CHANNEL_QUERY_CONFIG } from './channel.constants'
 import type { Channel, ChannelMember } from '@/generated/prisma/client'
 
 export type { Channel, ChannelMember }
@@ -22,7 +23,7 @@ export function createChannelRepository(prisma: PrismaClient) {
     },
 
     async findPaginated(parsed: ParsedQuery, workspaceId: string, userId: string) {
-      const query = queryAdapter.build(parsed, { searchColumns: ['name'] })
+      const query = queryAdapter.build(parsed, CHANNEL_QUERY_CONFIG)
       // Public channels, plus the private ones `userId` belongs to.
       const scope = {
         workspaceId,

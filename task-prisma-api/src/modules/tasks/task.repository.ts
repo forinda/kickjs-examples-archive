@@ -3,6 +3,7 @@ import { HttpException } from '@forinda/kickjs'
 import type { PrismaClient } from '@/generated/prisma/client'
 import type { ParsedQuery } from '@forinda/kickjs'
 import { queryAdapter } from '@/shared/query-adapter'
+import { TASK_QUERY_CONFIG } from './task.constants'
 import type { Task } from '@/generated/prisma/client'
 
 export type { Task }
@@ -35,7 +36,7 @@ export function createTaskRepository(prisma: PrismaClient) {
     },
 
     async findPaginated(parsed: ParsedQuery, projectId?: string) {
-      const query = queryAdapter.build(parsed, { searchColumns: ['title', 'key'] })
+      const query = queryAdapter.build(parsed, TASK_QUERY_CONFIG)
       const where = projectId
         ? query.where
           ? { AND: [query.where, { projectId }] }

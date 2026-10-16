@@ -2,6 +2,7 @@ import { createToken } from '@forinda/kickjs'
 import type { PrismaClient } from '@/generated/prisma/client'
 import type { ParsedQuery } from '@forinda/kickjs'
 import { queryAdapter } from '@/shared/query-adapter'
+import { ACTIVITY_QUERY_CONFIG } from './activity.constants'
 import type { Activity } from '@/generated/prisma/client'
 
 export type { Activity }
@@ -20,7 +21,7 @@ export function createActivityRepository(prisma: PrismaClient) {
       parsed: ParsedQuery,
       scope: { workspaceId: string; projectId?: string; taskId?: string },
     ) {
-      const query = queryAdapter.build(parsed, { searchColumns: ['action'] })
+      const query = queryAdapter.build(parsed, ACTIVITY_QUERY_CONFIG)
       const scopeCondition: any = { workspaceId: scope.workspaceId }
       if (scope.projectId) scopeCondition.projectId = scope.projectId
       if (scope.taskId) scopeCondition.taskId = scope.taskId

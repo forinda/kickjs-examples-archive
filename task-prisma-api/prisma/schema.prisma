@@ -19,6 +19,12 @@ enum WorkspaceRole {
   member
 }
 
+/// A workspace membership is `pending` (an invite) until the invitee accepts it.
+enum MembershipStatus {
+  pending
+  accepted
+}
+
 enum TaskPriority {
   critical
   high
@@ -114,6 +120,8 @@ model WorkspaceMember {
   workspaceId String        @map("workspace_id") @db.Uuid
   userId      String        @map("user_id") @db.Uuid
   role        WorkspaceRole @default(member)
+  /// Only accepted rows grant access; existing rows become accepted via the default.
+  status      MembershipStatus @default(accepted)
   joinedAt    DateTime      @default(now()) @map("joined_at")
 
   // Relations
