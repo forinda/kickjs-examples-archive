@@ -1,13 +1,13 @@
-import "reflect-metadata";
-import { env } from "./config";
-import express from "express";
-import { bootstrap, expressRuntime } from "@forinda/kickjs";
-import { kickDbAdapter } from "@forinda/kickjs-db";
-import { jwtStrategy } from "./auth";
-import { AuthAdapter } from "./adapters/auth.adapter";
-import { migrationAdapter } from "./db/client";
-import { DbAdapter } from "./adapters/db.adapter";
-import { modules } from "./modules";
+import 'reflect-metadata'
+import { env } from './config'
+import express from 'express'
+import { bootstrap, expressRuntime } from '@forinda/kickjs'
+import { kickDbAdapter } from '@forinda/kickjs-db'
+import { jwtStrategy } from './auth'
+import { AuthAdapter } from './adapters/auth.adapter'
+import { migrationAdapter } from './db/client'
+import { DbAdapter } from './adapters/db.adapter'
+import { modules } from './modules'
 
 /**
  * Multi-tenant API on kick/db + SQLite.
@@ -29,8 +29,8 @@ export const app = await bootstrap({
     DbAdapter(),
     kickDbAdapter({
       migrationAdapter,
-      migrationsDir: "db/migrations",
-      migrationsOnBoot: env.NODE_ENV === "production" ? "fail-if-pending" : "apply",
+      migrationsDir: 'db/migrations',
+      migrationsOnBoot: env.NODE_ENV === 'production' ? 'fail-if-pending' : 'apply',
     }),
     AuthAdapter({
       strategies: [
@@ -39,12 +39,12 @@ export const app = await bootstrap({
           mapPayload: (p) => ({
             id: p.sub!,
             email: p.email,
-            roles: p.roles ?? ["user"],
+            roles: p.roles ?? ['user'],
             tenants: Array.isArray(p.tenants) ? p.tenants : [],
           }),
         }),
       ],
-      defaultPolicy: "open", // routes opt in with @LoadAuthUser; use 'protected' for deny-by-default
+      defaultPolicy: 'open', // routes opt in with @LoadAuthUser; use 'protected' for deny-by-default
     }),
   ],
-});
+})

@@ -1,15 +1,15 @@
-import { defineHttpContextDecorator, HttpException } from "@forinda/kickjs";
-import { APP_DB } from "@/adapters/db.adapter";
+import { defineHttpContextDecorator, HttpException } from '@forinda/kickjs'
+import { APP_DB } from '@/adapters/db.adapter'
 
 export interface Tenant {
-  id: string;
-  name: string;
+  id: string
+  name: string
 }
 
-declare module "@forinda/kickjs" {
+declare module '@forinda/kickjs' {
   interface ContextMeta {
     /** Read by kick/db's tenancy as the current tenant for every query. */
-    tenant: Tenant;
+    tenant: Tenant
   }
 }
 
@@ -23,21 +23,21 @@ declare module "@forinda/kickjs" {
  * member → 403. Runs after `@LoadAuthUser`, which must be on the same route.
  */
 export const LoadTenant = defineHttpContextDecorator({
-  key: "tenant",
+  key: 'tenant',
   deps: { db: APP_DB },
-  dependsOn: ["user"],
+  dependsOn: ['user'],
   resolve: async (ctx, { db }): Promise<Tenant> => {
-    const header = ctx.headers["x-tenant"];
-    const slug = typeof header === "string" ? header : (ctx.req.hostname.split(".")[0] ?? "");
+    const header = ctx.headers['x-tenant']
+    const slug = typeof header === 'string' ? header : (ctx.req.hostname.split('.')[0] ?? '')
     const tenant = await db
-      .selectFrom("tenants")
-      .select(["id", "name"])
-      .where("subdomain", "=", slug)
-      .executeTakeFirst();
-    if (!tenant) throw HttpException.notFound(`Unknown tenant: ${slug}`);
-    const user = ctx.get("user");
-    if (!user) throw HttpException.unauthorized();
-    if (!user.tenants.includes(slug)) throw HttpException.forbidden(`Not a member of ${slug}`);
-    return tenant;
+      .selectFrom('tenants')
+      .select(['id', 'name'])
+      .where('subdomain', '=', slug)
+      .executeTakeFirst()
+    if (!tenant) throw HttpException.notFound(`Unknown tenant: ${slug}`)
+    const user = ctx.get('user')
+    if (!user) throw HttpException.unauthorized()
+    if (!user.tenants.includes(slug)) throw HttpException.forbidden(`Not a member of ${slug}`)
+    return tenant
   },
-});
+})

@@ -1,16 +1,16 @@
-import { defineModule } from "@forinda/kickjs";
-import { APP_DB } from "@/adapters/db.adapter";
-import { ProjectController } from "./project.controller";
-import { createProjectRepository, PROJECT_REPOSITORY } from "./project.repository";
+import { defineModule } from '@forinda/kickjs'
+import { APP_DB } from '@/adapters/db.adapter'
+import { ProjectController } from './project.controller'
+import { createProjectRepository, PROJECT_REPOSITORY } from './project.repository'
 
 export const ProjectModule = defineModule({
-  name: "ProjectModule",
+  name: 'ProjectModule',
   build: () => ({
     register(container) {
       container.registerFactory(PROJECT_REPOSITORY, () =>
         createProjectRepository(container.resolve(APP_DB)),
-      );
+      )
     },
-    routes: () => ({ path: "/projects", controller: ProjectController }),
+    routes: () => ({ path: '/projects', controller: ProjectController }),
   }),
-});
+})
