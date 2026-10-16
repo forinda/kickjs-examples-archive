@@ -12,7 +12,7 @@ import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { ErrorCode } from '@/shared/error-codes'
 import { successResponse } from '@/shared/api-response'
-import { channelMembershipGuard } from '@/guards/channel-membership.guard'
+import { channelMembershipGuard, findChannelForMember } from '@/guards/channel-membership.guard'
 import { getUser } from '@/auth'
 import { MESSAGE_REPOSITORY, type MessageRepository } from './message.repository'
 
@@ -50,7 +50,9 @@ export class MessagesController {
   async edit(ctx: RequestContext) {
     const user = getUser(ctx)
     const message = await this.messageRepo.findById(ctx.params.messageId)
-    if (!message) throw HttpException.notFound(ErrorCode.MESSAGE_NOT_FOUND)
+    if (!message || !(await findChannelForMember(user.id, message.channelId.toString()))) {
+      throw HttpException.notFound(ErrorCode.MESSAGE_NOT_FOUND)
+    }
     if (message.senderId.toString() !== user.id)
       throw HttpException.forbidden(ErrorCode.NOT_MESSAGE_AUTHOR)
     const updated = await this.messageRepo.update(ctx.params.messageId, {
@@ -67,7 +69,9 @@ export class MessagesController {
   async delete(ctx: RequestContext) {
     const user = getUser(ctx)
     const message = await this.messageRepo.findById(ctx.params.messageId)
-    if (!message) throw HttpException.notFound(ErrorCode.MESSAGE_NOT_FOUND)
+    if (!message || !(await findChannelForMember(user.id, message.channelId.toString()))) {
+      throw HttpException.notFound(ErrorCode.MESSAGE_NOT_FOUND)
+    }
     if (message.senderId.toString() !== user.id)
       throw HttpException.forbidden(ErrorCode.NOT_MESSAGE_AUTHOR)
     await this.messageRepo.softDelete(ctx.params.messageId)

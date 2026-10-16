@@ -18,6 +18,13 @@ declare module '@forinda/kickjs' {
   }
 }
 
+export async function isWorkspaceMember(userId: string, workspaceId: string): Promise<boolean> {
+  const memberRepo = Container.getInstance().resolve<WorkspaceMemberRepository>(
+    WORKSPACE_MEMBER_REPOSITORY,
+  )
+  return !!(await memberRepo.findByUserAndWorkspace(userId, workspaceId))
+}
+
 export const workspaceMembershipGuard: MiddlewareHandler = async (ctx: RequestContext, next) => {
   const user = ctx.get('user')
   if (!user) {
@@ -33,8 +40,9 @@ export const workspaceMembershipGuard: MiddlewareHandler = async (ctx: RequestCo
   const memberRepo = container.resolve<WorkspaceMemberRepository>(WORKSPACE_MEMBER_REPOSITORY)
   const member = await memberRepo.findByUserAndWorkspace(user.id, workspaceId)
 
+  // Non-members get the same 404 as a missing workspace — ids can't be probed.
   if (!member) {
-    throw HttpException.forbidden(ErrorCode.NOT_WORKSPACE_MEMBER)
+    throw HttpException.notFound(ErrorCode.WORKSPACE_NOT_FOUND)
   }
 
   ctx.set('workspaceMember', member)

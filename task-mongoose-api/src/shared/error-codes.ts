@@ -33,7 +33,6 @@ export enum ErrorCode {
 
   // Channel
   CHANNEL_NOT_FOUND = 'CHANNEL_NOT_FOUND',
-  NOT_CHANNEL_MEMBER = 'NOT_CHANNEL_MEMBER',
   CHANNEL_NAME_EXISTS = 'CHANNEL_NAME_EXISTS',
 
   // Message

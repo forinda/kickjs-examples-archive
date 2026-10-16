@@ -12,6 +12,7 @@ import {
   type RequestContext,
   HttpException,
 } from '@forinda/kickjs'
+import { taskAccessGuard } from '@/guards/task-access.guard'
 import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { ErrorCode } from '@/shared/error-codes'
@@ -73,6 +74,7 @@ export class TasksController {
   @ApiResponse({ status: 200, description: 'Task returned successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Task not found' })
+  @Middleware(taskAccessGuard)
   async getOne(ctx: RequestContext) {
     const task = await this.taskRepo.findById(ctx.params.taskId)
     if (!task) throw HttpException.notFound(ErrorCode.TASK_NOT_FOUND)
@@ -84,6 +86,7 @@ export class TasksController {
   @ApiResponse({ status: 200, description: 'Task updated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Task not found' })
+  @Middleware(taskAccessGuard)
   async update(ctx: RequestContext) {
     const result = await this.tasksService.update(ctx.params.taskId, ctx.body)
     return successResponse(result)
@@ -94,6 +97,7 @@ export class TasksController {
   @ApiResponse({ status: 200, description: 'Task deleted successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Task not found' })
+  @Middleware(taskAccessGuard)
   async delete(ctx: RequestContext) {
     const deleted = await this.taskRepo.delete(ctx.params.taskId)
     if (!deleted) throw HttpException.notFound(ErrorCode.TASK_NOT_FOUND)
@@ -108,6 +112,7 @@ export class TasksController {
   @ApiResponse({ status: 200, description: 'Task status updated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Task not found' })
+  @Middleware(taskAccessGuard)
   async changeStatus(ctx: RequestContext) {
     const result = await this.tasksService.changeStatus(ctx.params.taskId, ctx.body.status)
     return successResponse(result)
@@ -121,6 +126,7 @@ export class TasksController {
   @ApiResponse({ status: 200, description: 'Task assignees updated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Task not found' })
+  @Middleware(taskAccessGuard)
   async updateAssignees(ctx: RequestContext) {
     const result = await this.tasksService.updateAssignees(ctx.params.taskId, ctx.body.assigneeIds)
     return successResponse(result)
@@ -134,6 +140,7 @@ export class TasksController {
   @ApiResponse({ status: 200, description: 'Task reordered successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Task not found' })
+  @Middleware(taskAccessGuard)
   async reorder(ctx: RequestContext) {
     const result = await this.tasksService.reorder(ctx.params.taskId, ctx.body)
     return successResponse(result)
@@ -144,6 +151,7 @@ export class TasksController {
   @ApiResponse({ status: 200, description: 'Subtasks returned successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Task not found' })
+  @Middleware(taskAccessGuard)
   async subtasks(ctx: RequestContext) {
     const subtasks = await this.taskRepo.findSubtasks(ctx.params.taskId)
     return successResponse(subtasks)

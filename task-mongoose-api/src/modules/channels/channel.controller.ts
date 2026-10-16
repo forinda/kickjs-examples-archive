@@ -20,12 +20,14 @@ import { channelMembershipGuard } from '@/guards/channel-membership.guard'
 import { CHANNEL_QUERY_CONFIG } from '@/shared/query-configs'
 import { getUser } from '@/auth'
 import { CHANNEL_REPOSITORY, type ChannelRepository } from './channel.repository'
+import { PROJECT_REPOSITORY, type ProjectRepository } from '@/modules/projects/project.repository'
 
 @ApiTags('Channels')
 @ApiBearerAuth()
 @Controller()
 export class ChannelsController {
   @Inject(CHANNEL_REPOSITORY) private channelRepo!: ChannelRepository
+  @Inject(PROJECT_REPOSITORY) private projectRepo!: ProjectRepository
 
   @ApiOperation({ summary: 'Create a channel in a workspace' })
   @ApiResponse({ status: 201, description: 'Channel created successfully' })
@@ -43,6 +45,12 @@ export class ChannelsController {
       ctx.params.workspaceId,
     )
     if (existing) throw HttpException.conflict(ErrorCode.CHANNEL_NAME_EXISTS)
+    if (ctx.body.projectId) {
+      const project = await this.projectRepo.findById(ctx.body.projectId)
+      if (project?.workspaceId.toString() !== ctx.params.workspaceId) {
+        throw HttpException.notFound(ErrorCode.PROJECT_NOT_FOUND)
+      }
+    }
     const channel = await this.channelRepo.create({
       ...ctx.body,
       workspaceId: ctx.params.workspaceId as any,
@@ -61,7 +69,12 @@ export class ChannelsController {
   @ApiQueryParams(CHANNEL_QUERY_CONFIG)
   async list(ctx: RequestContext) {
     return ctx.paginate(
-      (parsed) => this.channelRepo.findPaginated(parsed, { workspaceId: ctx.params.workspaceId }),
+      (parsed) =>
+        this.channelRepo.findPaginated(parsed, {
+          workspaceId: ctx.params.workspaceId,
+          // Private and direct channels only for their members.
+          $and: [{ $or: [{ type: 'public' }, { memberIds: getUser(ctx).id }] }],
+        }),
       CHANNEL_QUERY_CONFIG,
     )
   }

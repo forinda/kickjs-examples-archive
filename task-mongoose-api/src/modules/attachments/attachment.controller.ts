@@ -1,4 +1,5 @@
 import {
+  Middleware,
   Inject,
   reply,
   Controller,
@@ -10,6 +11,7 @@ import {
   type RequestContext,
   HttpException,
 } from '@forinda/kickjs'
+import { findTaskForMember, taskAccessGuard } from '@/guards/task-access.guard'
 import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { ErrorCode } from '@/shared/error-codes'
@@ -26,6 +28,15 @@ export class AttachmentsController {
   @Inject(ATTACHMENT_REPOSITORY) private attachmentRepo!: AttachmentRepository
   @Inject(TASK_REPOSITORY) private taskRepo!: TaskRepository
 
+  /** The attachment, or the same 404 as a missing one for a non-member. */
+  private async requireAttachment(ctx: RequestContext) {
+    const attachment = await this.attachmentRepo.findById(ctx.params.attachmentId)
+    if (!attachment || !(await findTaskForMember(getUser(ctx).id, attachment.taskId.toString()))) {
+      throw HttpException.notFound(ErrorCode.ATTACHMENT_NOT_FOUND)
+    }
+    return attachment
+  }
+
   @ApiOperation({ summary: 'Upload an attachment for a task' })
   @ApiResponse({ status: 201, description: 'Attachment uploaded and stored' })
   @ApiResponse({ status: 400, description: 'No file uploaded' })
@@ -39,6 +50,7 @@ export class AttachmentsController {
     maxSize: 10 * 1024 * 1024, // 10MB
     allowedTypes: ['image/*', 'application/pdf', 'text/*', 'application/zip'],
   })
+  @Middleware(taskAccessGuard)
   async create(ctx: RequestContext) {
     const file = ctx.file
     if (!file) {
@@ -76,6 +88,7 @@ export class AttachmentsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @Get('/tasks/:taskId/attachments', { params: z.object({ taskId: z.string() }) })
   @ApiQueryParams(ATTACHMENT_QUERY_CONFIG)
+  @Middleware(taskAccessGuard)
   async list(ctx: RequestContext) {
     return ctx.paginate(
       (parsed) => this.attachmentRepo.findPaginated(parsed, { taskId: ctx.params.taskId }),
@@ -85,11 +98,10 @@ export class AttachmentsController {
 
   @ApiOperation({ summary: 'Get a single attachment by ID' })
   @ApiResponse({ status: 200, description: 'Attachment details returned' })
-  @ApiResponse({ status: 404, description: 'Attachment not found' })
+  @ApiResponse({ status: 404, description: 'Attachment not found (or not in your workspaces)' })
   @Get('/attachments/:attachmentId', { params: z.object({ attachmentId: z.string() }) })
   async getOne(ctx: RequestContext) {
-    const attachment = await this.attachmentRepo.findById(ctx.params.attachmentId)
-    if (!attachment) throw HttpException.notFound(ErrorCode.ATTACHMENT_NOT_FOUND)
+    const attachment = await this.requireAttachment(ctx)
     return successResponse({
       id: attachment._id.toString(),
       fileName: attachment.fileName,
@@ -102,11 +114,10 @@ export class AttachmentsController {
 
   @ApiOperation({ summary: 'Download an attachment file' })
   @ApiResponse({ status: 200, description: 'Attachment file binary returned' })
-  @ApiResponse({ status: 404, description: 'Attachment not found' })
+  @ApiResponse({ status: 404, description: 'Attachment not found (or not in your workspaces)' })
   @Get('/attachments/:attachmentId/download', { params: z.object({ attachmentId: z.string() }) })
   async download(ctx: RequestContext) {
-    const attachment = await this.attachmentRepo.findById(ctx.params.attachmentId)
-    if (!attachment) throw HttpException.notFound(ErrorCode.ATTACHMENT_NOT_FOUND)
+    const attachment = await this.requireAttachment(ctx)
 
     const buffer = Buffer.from(attachment.base64Data, 'base64')
     // RFC 6266 filename encoding — an uploaded name can't break the header.
@@ -115,11 +126,10 @@ export class AttachmentsController {
 
   @ApiOperation({ summary: 'Delete an attachment' })
   @ApiResponse({ status: 200, description: 'Attachment deleted successfully' })
-  @ApiResponse({ status: 404, description: 'Attachment not found' })
+  @ApiResponse({ status: 404, description: 'Attachment not found (or not in your workspaces)' })
   @Delete('/attachments/:attachmentId', { params: z.object({ attachmentId: z.string() }) })
   async delete(ctx: RequestContext) {
-    const attachment = await this.attachmentRepo.findById(ctx.params.attachmentId)
-    if (!attachment) throw HttpException.notFound(ErrorCode.ATTACHMENT_NOT_FOUND)
+    const attachment = await this.requireAttachment(ctx)
     await this.attachmentRepo.delete(ctx.params.attachmentId)
     await this.taskRepo.incrementAttachmentCount(attachment.taskId.toString(), -1)
     return successResponse(null, 'Attachment deleted')

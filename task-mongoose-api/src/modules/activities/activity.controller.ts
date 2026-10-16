@@ -6,6 +6,7 @@ import {
   ApiQueryParams,
   type RequestContext,
 } from '@forinda/kickjs'
+import { taskAccessGuard } from '@/guards/task-access.guard'
 import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { ACTIVITY_QUERY_CONFIG } from '@/shared/query-configs'
@@ -54,6 +55,7 @@ export class ActivityController {
   @ApiResponse({ status: 200, description: 'Task activity list returned' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @Get('/tasks/:taskId/activity', { params: z.object({ taskId: z.string() }) })
+  @Middleware(taskAccessGuard)
   async byTask(ctx: RequestContext) {
     const activities = await this.activityRepo.findByTask(ctx.params.taskId)
     return successResponse(activities)

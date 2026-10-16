@@ -8,6 +8,7 @@ import {
 } from '@forinda/kickjs-ws'
 import jwt from 'jsonwebtoken'
 import { MESSAGE_REPOSITORY, type MessageRepository } from './message.repository'
+import { findChannelForMember } from '@/guards/channel-membership.guard'
 
 const logger = Logger.for('ChatWsController')
 
@@ -17,6 +18,14 @@ const onlineUsers = new Map<string, { userId: string; userName: string }>()
 @WsController('/chat')
 export class ChatWsController {
   @Inject(MESSAGE_REPOSITORY) private messageRepo!: MessageRepository
+
+  /** Authenticated and allowed in the channel? Otherwise reply as if it didn't exist. */
+  private async inChannel(ctx: WsContext, channelId: string): Promise<boolean> {
+    const userId = ctx.get('userId')
+    const channel = userId ? await findChannelForMember(userId, channelId) : null
+    if (!channel) ctx.send('error', { message: 'Channel not found' })
+    return !!channel
+  }
 
   @OnConnect()
   handleConnect(ctx: WsContext) {
@@ -50,9 +59,9 @@ export class ChatWsController {
   }
 
   @OnMessage('channel:join')
-  handleJoin(ctx: WsContext) {
+  async handleJoin(ctx: WsContext) {
     const channelId = ctx.data?.channelId
-    if (!channelId) return
+    if (!channelId || !(await this.inChannel(ctx, channelId))) return
     ctx.join(`channel:${channelId}`)
     ctx.to(`channel:${channelId}`).send('channel:user_joined', {
       channelId,
@@ -77,7 +86,7 @@ export class ChatWsController {
     if (!userId) return ctx.send('error', { message: 'Not authenticated' })
 
     const { channelId, content } = ctx.data || {}
-    if (!channelId || !content) return
+    if (!channelId || !content || !(await this.inChannel(ctx, channelId))) return
 
     const message = await this.messageRepo.create({
       channelId: channelId as any,
@@ -141,9 +150,9 @@ export class ChatWsController {
   }
 
   @OnMessage('channel:typing')
-  handleTyping(ctx: WsContext) {
+  async handleTyping(ctx: WsContext) {
     const { channelId } = ctx.data || {}
-    if (!channelId) return
+    if (!channelId || !(await this.inChannel(ctx, channelId))) return
     const info = onlineUsers.get(ctx.id)
     ctx.to(`channel:${channelId}`).send('channel:typing', {
       channelId,
@@ -153,9 +162,9 @@ export class ChatWsController {
   }
 
   @OnMessage('channel:stop_typing')
-  handleStopTyping(ctx: WsContext) {
+  async handleStopTyping(ctx: WsContext) {
     const { channelId } = ctx.data || {}
-    if (!channelId) return
+    if (!channelId || !(await this.inChannel(ctx, channelId))) return
     ctx.to(`channel:${channelId}`).send('channel:stop_typing', {
       channelId,
       userId: ctx.get('userId'),

@@ -16,7 +16,8 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kick
 import { ErrorCode } from '@/shared/error-codes'
 import { createLabelSchema, updateLabelSchema } from './label.dto'
 import { successResponse } from '@/shared/api-response'
-import { workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
+import { isWorkspaceMember, workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
+import { getUser } from '@/auth'
 import { LABEL_QUERY_CONFIG } from '@/shared/query-configs'
 import { LABEL_REPOSITORY, type LabelRepository } from './label.repository'
 
@@ -25,6 +26,14 @@ import { LABEL_REPOSITORY, type LabelRepository } from './label.repository'
 @Controller()
 export class LabelsController {
   @Inject(LABEL_REPOSITORY) private labelRepo!: LabelRepository
+
+  /** The same 404 as a missing label when the caller isn't in the label's workspace. */
+  private async requireLabel(ctx: RequestContext): Promise<void> {
+    const label = await this.labelRepo.findById(ctx.params.labelId)
+    if (!label || !(await isWorkspaceMember(getUser(ctx).id, label.workspaceId.toString()))) {
+      throw HttpException.notFound(ErrorCode.LABEL_NOT_FOUND)
+    }
+  }
 
   @Post('/workspaces/:workspaceId/labels', {
     params: z.object({ workspaceId: z.string() }),
@@ -69,6 +78,7 @@ export class LabelsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Label not found' })
   async update(ctx: RequestContext) {
+    await this.requireLabel(ctx)
     const label = await this.labelRepo.update(ctx.params.labelId, ctx.body)
     if (!label) throw HttpException.notFound(ErrorCode.LABEL_NOT_FOUND)
     return successResponse(label)
@@ -80,6 +90,7 @@ export class LabelsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Label not found' })
   async delete(ctx: RequestContext) {
+    await this.requireLabel(ctx)
     const deleted = await this.labelRepo.delete(ctx.params.labelId)
     if (!deleted) throw HttpException.notFound(ErrorCode.LABEL_NOT_FOUND)
     return successResponse(null, 'Label deleted')

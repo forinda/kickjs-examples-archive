@@ -45,8 +45,9 @@ export function createNotificationRepository(connection: Connection) {
       return doc.toObject() as any
     },
 
-    async markAsRead(id: string) {
-      await NotificationModel.findByIdAndUpdate(id, { $set: { isRead: true } })
+    /** Only the recipient's own notification — someone else's id is a no-op. */
+    async markAsRead(id: string, recipientId: string) {
+      await NotificationModel.updateOne({ _id: id, recipientId }, { $set: { isRead: true } })
     },
 
     async markAllAsRead(recipientId: string) {

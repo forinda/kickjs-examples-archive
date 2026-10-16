@@ -1,4 +1,5 @@
 import {
+  Middleware,
   Inject,
   reply,
   Controller,
@@ -11,6 +12,7 @@ import {
   type RequestContext,
   HttpException,
 } from '@forinda/kickjs'
+import { findTaskForMember, taskAccessGuard } from '@/guards/task-access.guard'
 import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { ErrorCode } from '@/shared/error-codes'
@@ -37,6 +39,7 @@ export class CommentsController {
     params: z.object({ taskId: z.string() }),
     body: createCommentSchema,
   })
+  @Middleware(taskAccessGuard)
   async create(ctx: RequestContext) {
     const user = getUser(ctx)
     const result = await this.commentsService.create(ctx.params.taskId, user.id, ctx.body)
@@ -48,6 +51,7 @@ export class CommentsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @Get('/tasks/:taskId/comments', { params: z.object({ taskId: z.string() }) })
   @ApiQueryParams(COMMENT_QUERY_CONFIG)
+  @Middleware(taskAccessGuard)
   async list(ctx: RequestContext) {
     return ctx.paginate(
       (parsed) => this.commentRepo.findPaginated(parsed, { taskId: ctx.params.taskId }),
@@ -66,7 +70,9 @@ export class CommentsController {
   async update(ctx: RequestContext) {
     const user = getUser(ctx)
     const comment = await this.commentRepo.findById(ctx.params.commentId)
-    if (!comment) throw HttpException.notFound(ErrorCode.COMMENT_NOT_FOUND)
+    if (!comment || !(await findTaskForMember(user.id, comment.taskId.toString()))) {
+      throw HttpException.notFound(ErrorCode.COMMENT_NOT_FOUND)
+    }
     if (comment.authorId.toString() !== user.id)
       throw HttpException.forbidden(ErrorCode.NOT_COMMENT_AUTHOR)
     const updated = await this.commentRepo.update(ctx.params.commentId, { body: ctx.body.body })
@@ -81,7 +87,9 @@ export class CommentsController {
   async delete(ctx: RequestContext) {
     const user = getUser(ctx)
     const comment = await this.commentRepo.findById(ctx.params.commentId)
-    if (!comment) throw HttpException.notFound(ErrorCode.COMMENT_NOT_FOUND)
+    if (!comment || !(await findTaskForMember(user.id, comment.taskId.toString()))) {
+      throw HttpException.notFound(ErrorCode.COMMENT_NOT_FOUND)
+    }
     if (comment.authorId.toString() !== user.id)
       throw HttpException.forbidden(ErrorCode.NOT_COMMENT_AUTHOR)
     await this.commentRepo.delete(ctx.params.commentId)

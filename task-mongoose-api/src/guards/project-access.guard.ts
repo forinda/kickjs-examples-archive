@@ -41,8 +41,9 @@ export const projectAccessGuard: MiddlewareHandler = async (ctx: RequestContext,
   const memberRepo = container.resolve<WorkspaceMemberRepository>(WORKSPACE_MEMBER_REPOSITORY)
   const member = await memberRepo.findByUserAndWorkspace(user.id, project.workspaceId.toString())
 
+  // Non-members get the same 404 as a missing project — ids can't be probed.
   if (!member) {
-    throw HttpException.forbidden(ErrorCode.NOT_WORKSPACE_MEMBER)
+    throw HttpException.notFound(ErrorCode.PROJECT_NOT_FOUND)
   }
 
   ctx.set('project', project)

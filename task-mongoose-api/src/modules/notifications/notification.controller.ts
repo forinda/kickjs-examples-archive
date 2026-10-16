@@ -39,7 +39,7 @@ export class NotificationsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @Patch('/:id/read', { params: z.object({ id: z.string() }) })
   async markRead(ctx: RequestContext) {
-    await this.notificationRepo.markAsRead(ctx.params.id)
+    await this.notificationRepo.markAsRead(ctx.params.id, getUser(ctx).id)
     return successResponse(null, 'Marked as read')
   }
 

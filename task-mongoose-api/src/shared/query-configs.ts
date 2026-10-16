@@ -6,7 +6,8 @@
 import type { ApiQueryParamsConfig } from '@forinda/kickjs'
 
 export const TASK_QUERY_CONFIG: ApiQueryParamsConfig = {
-  filterable: ['status', 'priority', 'assigneeId', 'labelId', 'projectId'],
+  // No projectId: tasks are listed per project from the route, which the access guard checks.
+  filterable: ['status', 'priority', 'assigneeId', 'labelId'],
   sortable: ['createdAt', 'title', 'priority', 'dueDate', 'orderIndex'],
   searchable: ['title', 'description'],
 }
