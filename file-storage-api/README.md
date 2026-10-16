@@ -1,103 +1,72 @@
 # file-storage-api
 
-A **Minimal** built with [KickJS](https://kickjs.app/) — a decorator-driven Node.js framework for TypeScript that runs on Express, Fastify, or h3 (swap the engine in one line).
+A file API on **`@forinda/kickjs-storage`**: upload with type and size limits, list, download, delete, and expiring signed download links — on a local folder in development and an S3-compatible bucket (AWS S3, Cloudflare R2, MinIO) in production, behind one `Storage` interface.
 
-## Getting Started
+- `src/adapters/storage.adapter.ts` — `StorageAdapter` picks the driver from `STORAGE_DRIVER` (`diskStorage({ root: UPLOAD_DIR })` or `s3FromSettings()`), binds it to `STORAGE`, declares the `S3_*` settings section for the bucket (a missing `S3_BUCKET` stops startup), and reports `storage:<driver>` on `GET /health/ready` with a one-key `list()`.
+- `src/modules/files/files.controller.ts` — the routes. `@FileUpload({ maxSize, allowedTypes })` answers **413** for a file over `MAX_UPLOAD_BYTES` and **415** for a type outside png / jpeg / pdf / text. Downloads stream through `ctx.sendResponse(new Response(stream))` with `nosniff`.
+- `src/modules/files/files.service.ts` — keys are `files/<uuid>.<ext>` (never the client's filename); signed URLs: the bucket presigns its own GET (`storage.url(key, { expiresIn })`, expiry enforced by the bucket), disk gets an app-signed `/files/:id/signed?expires=&sig=` (HMAC with `SIGNING_SECRET`; expired or tampered → **403**).
+- `src/guards/api-key.guard.ts` — `Authorization: Bearer <API_KEY>` on every route except the signed-link target.
 
-```bash
-pnpm install
-pnpm dev
-```
+Guide: [File Storage](https://kickjs.app/guide/file-storage) · [File Uploads](https://kickjs.app/guide/file-uploads) · API: [@forinda/kickjs-storage](https://kickjs.app/api/storage)
 
-## Scripts
+## Routes (`/api/v1/files`)
 
-| Command                                  | Description                          |
-| ---------------------------------------- | ------------------------------------ |
-| `pnpm dev`                             | Start dev server with Vite HMR       |
-| `pnpm build`                           | Production build                     |
-| `pnpm start`                           | Run production build                 |
-| `pnpm test`                            | Run tests with Vitest                |
-| `pnpm exec kick g module <name>`               | Generate a DDD module                |
-| `pnpm exec kick g scaffold <name> <fields...>` | Generate CRUD from field definitions |
-| `pnpm exec kick add <package>`                 | Add a KickJS package                 |
+| Method & path                   | Auth          | Answer                                                         |
+| ------------------------------- | ------------- | -------------------------------------------------------------- |
+| `POST /` (form field `file`)    | API key       | `201 { id, size, contentType }`, `413`, `415`                  |
+| `GET /?cursor=`                 | API key       | `{ files: [{ id, size, contentType, lastModified }], cursor }` |
+| `GET /:id`                      | API key       | the file, or `404`                                             |
+| `GET /:id/url?expiresIn=`       | API key       | `{ url, expiresAt }` — 1 s to 7 days, default 300 s            |
+| `GET /:id/signed?expires=&sig=` | the signature | the file, or `403` when expired / tampered (disk driver)       |
+| `DELETE /:id`                   | API key       | `204`, or `404`                                                |
 
-The `kick` CLI is a dev dependency of this project, so it runs through your package manager (`pnpm exec kick …`) unless you install `@forinda/kickjs-cli` globally.
+## Env
 
-## Project Structure
+| Variable                                                                            | Default (dev)               | Notes                                     |
+| ----------------------------------------------------------------------------------- | --------------------------- | ----------------------------------------- |
+| `STORAGE_DRIVER`                                                                    | `disk` (`s3` in production) |                                           |
+| `UPLOAD_DIR`                                                                        | `uploads`                   | disk driver; relative to the project root |
+| `MAX_UPLOAD_BYTES`                                                                  | `5242880`                   | over it → 413                             |
+| `API_KEY`                                                                           | `dev-api-key`               | required in production, 32+ chars         |
+| `SIGNING_SECRET`                                                                    | dev-only default            | required in production, 32+ chars         |
+| `PUBLIC_URL`                                                                        | the request's Host          | base of disk signed URLs                  |
+| `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT` | —                           | s3 driver; `S3_ENDPOINT` for MinIO / R2   |
 
-```
-src/
-├── index.ts           # Application entry point
-├── modules/           # Feature modules (controllers, services, repos)
-│   └── index.ts       # Module registry
-└── ...
-```
-
-## Packages
-
-- `@forinda/kickjs`
-- `@forinda/kickjs-schema`
-- `@forinda/kickjs-cli`
-- `@forinda/kickjs-testing`
-- `@forinda/kickjs-vite`
-
-## Adding Features
+## Run
 
 ```bash
-pnpm exec kick add swagger    # OpenAPI documentation
-pnpm exec kick add ws         # WebSocket support
-pnpm exec kick add queue      # Background job processing
-pnpm exec kick add --list     # Show all available packages
+pnpm install          # or: npm install
+cp .env.example .env
+pnpm dev              # or: npm run dev — files land in ./uploads
 ```
 
-For email, scheduled tasks, multi-tenancy, OpenTelemetry, GraphQL, and notifications use the BYO recipes in the [KickJS guides](https://kickjs.app/guide/) — they wire the upstream library through `defineAdapter()` / `definePlugin()` directly, so you keep control of the integration.
-
-## Environment Variables
-
-Copy `.env.example` to `.env` and configure:
-
-| Variable    | Default       | Description                    |
-| ----------- | ------------- | ------------------------------ |
-| `PORT`      | `3000`        | Server port                    |
-| `NODE_ENV`  | `development` | Environment                    |
-| `LOG_LEVEL` | `info`        | Log level (`debug` shows more) |
-
-The env schema lives in `src/config/index.ts`. `src/index.ts` imports it once (`import './config'`) before `bootstrap()`, which registers and validates it — a missing or malformed value fails at startup with a clear message. To add a variable, add it to the schema, then to `.env` and `.env.example`.
-
-You don't import anything from `src/config` after that. Read values anywhere through the framework, not `process.env` — they come back parsed (`PORT` is a number, defaults applied) and typed:
-
-```ts
-import { getEnv } from '@forinda/kickjs'
-
-const port = getEnv('PORT') // number
-
-// For a key the schema marks optional, a fallback for when it's unset:
-// const region = getEnv('S3_REGION', 'eu-west-1')
+```bash
+K='authorization: Bearer dev-api-key'
+ID=$(curl -s -H "$K" -F 'file=@README.md;type=text/plain' localhost:3000/api/v1/files \
+  | node -pe 'JSON.parse(require("fs").readFileSync(0)).id')
+curl -s -H "$K" localhost:3000/api/v1/files
+URL=$(curl -s -H "$K" "localhost:3000/api/v1/files/$ID/url?expiresIn=60" \
+  | node -pe 'JSON.parse(require("fs").readFileSync(0)).url')
+curl "$URL"                                  # no API key needed; 403 after 60 s
+curl -X DELETE -H "$K" localhost:3000/api/v1/files/$ID
+curl localhost:3000/health/ready             # {"status":"ready","checks":[{"name":"storage:disk","status":"up"}]}
 ```
 
-In services and controllers, inject `ConfigService`, or a single value with `@Value`:
+Against MinIO (what production looks like):
 
-```ts
-import { Autowired, ConfigService, Service, Value, type Env } from '@forinda/kickjs'
-
-@Service()
-export class StatusService {
-  @Autowired() private readonly config!: ConfigService
-  @Value('NODE_ENV') private readonly nodeEnv!: Env<'NODE_ENV'> // the schema's type
-
-  status() {
-    return {
-      env: this.nodeEnv,
-      logLevel: this.config.get('LOG_LEVEL'), // typed from the schema
-      port: this.config.getAll().PORT, // getAll(): every validated value
-    }
-  }
-}
+```bash
+docker run -d --rm --name files-minio -p 9000:9000 minio/minio server /data
+docker exec files-minio sh -c 'mc alias set local http://localhost:9000 minioadmin minioadmin && mc mb local/files'
+pnpm build            # or: npm run build
+STORAGE_DRIVER=s3 S3_BUCKET=files S3_REGION=us-east-1 S3_ENDPOINT=http://localhost:9000 \
+  S3_ACCESS_KEY_ID=minioadmin S3_SECRET_ACCESS_KEY=minioadmin pnpm start
+# same curl calls; /url now returns a presigned MinIO URL
 ```
 
-Keys and types come from the schema: `pnpm dev` keeps them up to date as you edit it (or run `pnpm exec kick typegen`), so a misspelt key is a type error.
+## Test
 
-## Learn More
+```bash
+pnpm test             # or: npm test
+```
 
-- [KickJS Documentation](https://kickjs.app/)
-- [CLI Reference](https://kickjs.app/api/cli.html)
+`src/modules/files/files.test.ts` runs the module with `STORAGE` overridden by `memoryStorage()`: upload → list → download → delete (then 404); 413 over the limit and 415 for `text/html`, with nothing stored; 401 without the API key; a signed URL works without the key, a tampered id or expiry gets 403, and so does the same URL once its time has passed.

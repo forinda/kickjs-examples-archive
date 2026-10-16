@@ -2,40 +2,57 @@ import { loadEnvFromSchema } from '@forinda/kickjs/config'
 import { fromZod } from '@forinda/kickjs-schema/zod'
 import { z } from 'zod'
 
-/**
- * Project environment schema (Zod).
- *
- * `fromZod` wraps the Zod schema as a `KickSchema` so the env loader,
- * validate middleware, and swagger spec generator all see the same
- * shape. The default export is the contract `kick typegen` reads to
- * populate `KickEnv` via `InferSchemaOutput<typeof _envSchema>` —
- * that's what makes `@Value('FOO')` autocomplete and
- * `process.env.FOO` typed.
- *
- * @example
- *   DATABASE_URL: z.url(),
- *   JWT_SECRET: z.string().min(32),
- *   REDIS_URL: z.url().optional(),
- */
+/** Dev-only fallbacks. Rejected when NODE_ENV=production. */
+const DEV_API_KEY = 'dev-api-key'
+const DEV_SIGNING_SECRET = 'dev-signing-secret-change-me'
+
 const envSchema = fromZod(
-  z.object({
-    PORT: z.coerce.number().default(3000),
-    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-    LOG_LEVEL: z.string().default('info'),
-    // DATABASE_URL: z.url(),
-  }),
+  z
+    .object({
+      PORT: z.coerce.number().default(3000),
+      NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+      LOG_LEVEL: z.string().default('info'),
+      // `disk` keeps files under UPLOAD_DIR; `s3` uses the bucket from the S3_* variables
+      // (validated at startup by the storage package's S3 settings section).
+      // Unset: `s3` in production, `disk` otherwise.
+      STORAGE_DRIVER: z.enum(['disk', 's3']).optional(),
+      UPLOAD_DIR: z.string().default('uploads'),
+      MAX_UPLOAD_BYTES: z.coerce
+        .number()
+        .int()
+        .positive()
+        .default(5 * 1024 * 1024),
+      // Bearer key for the /files API. Signed URLs work without it.
+      API_KEY: z.string().min(8).default(DEV_API_KEY),
+      // Signs download URLs for the disk driver (a bucket presigns its own).
+      SIGNING_SECRET: z.string().min(16).default(DEV_SIGNING_SECRET),
+      // Base for signed download URLs, e.g. https://files.example.com. Default: the request's Host.
+      PUBLIC_URL: z.url().optional(),
+    })
+    // Required in production — the public dev defaults would open the API and let anyone sign URLs.
+    .superRefine((env, ctx) => {
+      if (env.NODE_ENV !== 'production') return
+      if (env.API_KEY === DEV_API_KEY || env.API_KEY.length < 32) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['API_KEY'],
+          message: 'API_KEY must be set to a 32+ character secret in production',
+        })
+      }
+      if (env.SIGNING_SECRET === DEV_SIGNING_SECRET || env.SIGNING_SECRET.length < 32) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['SIGNING_SECRET'],
+          message: 'SIGNING_SECRET must be set to a 32+ character secret in production',
+        })
+      }
+    }),
 )
 
-/**
- * IMPORTANT — side effect: register the schema with kickjs's env cache
- * **at module-load time**. `ConfigService` and `@Value()` both consume
- * this cache, and they will fall back to the base schema (or undefined)
- * if no extended schema has been registered before they're resolved.
- *
- * As long as `src/index.ts` imports this file (`import './config'`) at
- * the top — before `bootstrap()` runs — every controller and service
- * in the app sees the typed extended values.
- */
+/** Side effect: registers the schema before bootstrap(), so `ConfigService` / `@Value()` see it. */
 export const env = loadEnvFromSchema(envSchema)
+
+/** The driver this process uses. */
+export const storageDriver = env.STORAGE_DRIVER ?? (env.NODE_ENV === 'production' ? 's3' : 'disk')
 
 export default envSchema

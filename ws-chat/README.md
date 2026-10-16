@@ -16,22 +16,22 @@ Guide: [WebSockets](https://kickjs.app/guide/websockets) · API: [@forinda/kickj
 
 Connect to `ws://localhost:3000/ws/chat?token=<token>`. Frames are JSON `{ "event": …, "data": … }`.
 
-| Client → server | data             | Server → client | data                         |
-| --------------- | ---------------- | --------------- | ---------------------------- |
-| `room:join`     | `{ room }`       | `welcome`       | `{ id, name }`               |
-| `room:leave`    | `{ room }`       | `room:users`    | `{ room, users }`            |
-| `message:send`  | `{ room, text }` | `message`       | `{ room, from, text, at }`   |
-|                 |                  | `error`         | `{ message }`                |
+| Client → server | data             | Server → client | data                       |
+| --------------- | ---------------- | --------------- | -------------------------- |
+| `room:join`     | `{ room }`       | `welcome`       | `{ id, name }`             |
+| `room:leave`    | `{ room }`       | `room:users`    | `{ room, users }`          |
+| `message:send`  | `{ room, text }` | `message`       | `{ room, from, text, at }` |
+|                 |                  | `error`         | `{ message }`              |
 
 Room names match `[a-z0-9-]{1,32}`; text is 1–500 characters. The server pings every `WS_HEARTBEAT_MS` and drops a socket that missed the previous pong.
 
 ## Env
 
-| Variable          | Default (dev)    | Notes                                                       |
-| ----------------- | ---------------- | ----------------------------------------------------------- |
-| `CHAT_SECRET`     | dev-only default | Required in production, 32+ chars (`openssl rand -hex 32`)  |
-| `REDIS_URL`       | unset            | Set it to run more than one instance                        |
-| `WS_HEARTBEAT_MS` | `30000`          | `0` disables the heartbeat                                  |
+| Variable          | Default (dev)    | Notes                                                      |
+| ----------------- | ---------------- | ---------------------------------------------------------- |
+| `CHAT_SECRET`     | dev-only default | Required in production, 32+ chars (`openssl rand -hex 32`) |
+| `REDIS_URL`       | unset            | Set it to run more than one instance                       |
+| `WS_HEARTBEAT_MS` | `30000`          | `0` disables the heartbeat                                 |
 
 ## Run
 

@@ -1,19 +1,12 @@
 import 'reflect-metadata'
-// Side-effect import — registers the extended env schema with kickjs
-// **before** any controller / service / @Value gets resolved. Without
-// this line ConfigService.get('YOUR_KEY') returns undefined because the
-// cached schema would still be the base shape. See guide/configuration.
+// Side-effect import — registers the env schema before anything reads it.
 import './config'
 import { bootstrap, expressRuntime } from '@forinda/kickjs'
 import { modules } from './modules'
-import { storageAdapter } from './storage'
+import { StorageAdapter } from './adapters/storage.adapter'
 
-// Export the app for the Vite plugin (dev mode)
 export const app = await bootstrap({
   modules,
   runtime: expressRuntime(),
-  adapters: [
-    // Files on disk under uploads/ until S3_BUCKET is set. Inject with @Autowired(STORAGE).
-    storageAdapter(),
-  ],
+  adapters: [StorageAdapter()],
 })
