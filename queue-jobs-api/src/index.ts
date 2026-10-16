@@ -1,11 +1,12 @@
 import 'reflect-metadata'
-import { env } from './config'
+// Side-effect import — registers the env schema before anything reads it.
+import './config'
 import express from 'express'
-import { bootstrap, expressRuntime } from '@forinda/kickjs'
+import { bootstrap, expressRuntime, getEnv } from '@forinda/kickjs'
 import { QueueAdapter } from '@forinda/kickjs-queue'
 import { JobErrorsAdapter } from './adapters/job-errors.adapter'
 import { QueueHealthAdapter } from './adapters/queue-health.adapter'
-import { JOB_QUEUES } from './modules/jobs/jobs.dto'
+import { JOB_QUEUES } from './modules/jobs/job.dto'
 import { modules } from './modules'
 
 /*
@@ -14,25 +15,29 @@ import { modules } from './modules'
  *   api    — dispatches jobs, runs none
  *   worker — runs jobs, no API routes (`pnpm worker`, src/worker.ts)
  */
-const role = env.APP_ROLE
+const role = getEnv('APP_ROLE')
 
 // Importing the @Job classes is what starts their workers.
-if (role !== 'api') await import('./modules/jobs/jobs.processors')
+if (role !== 'api') await import('./modules/jobs/job.processors')
 
 export const app = await bootstrap({
   modules: role === 'worker' ? [] : modules,
   runtime: expressRuntime(),
-  port: role === 'worker' ? env.WORKER_PORT : env.PORT,
+  port: role === 'worker' ? getEnv('WORKER_PORT') : getEnv('PORT'),
   middlewares: [express.json()],
   // On SIGTERM, QueueAdapter closes its workers, and BullMQ's worker.close()
   // waits for the jobs they're running. This bounds that wait.
-  shutdownTimeout: env.SHUTDOWN_TIMEOUT_MS,
+  shutdownTimeout: getEnv('SHUTDOWN_TIMEOUT_MS'),
   adapters: [
     QueueAdapter({
-      redis: { host: env.REDIS_HOST, port: env.REDIS_PORT, password: env.REDIS_PASSWORD },
+      redis: {
+        host: getEnv('REDIS_HOST'),
+        port: getEnv('REDIS_PORT'),
+        password: getEnv('REDIS_PASSWORD'),
+      },
       // An API-only process has no @Job classes, so name the queues it adds to.
       queues: JOB_QUEUES,
-      concurrency: env.QUEUE_CONCURRENCY,
+      concurrency: getEnv('QUEUE_CONCURRENCY'),
     }),
     QueueHealthAdapter(),
     JobErrorsAdapter(),

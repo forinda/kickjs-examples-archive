@@ -22,7 +22,7 @@ import {
   reminderSchema,
   reportSchema,
   sendEmailSchema,
-} from './jobs.dto'
+} from './job.dto'
 
 /** Retries with exponential backoff: 1s, 2s, 4s between attempts. */
 const RETRY = { attempts: 4, backoff: { type: 'exponential', delay: 1000 } }

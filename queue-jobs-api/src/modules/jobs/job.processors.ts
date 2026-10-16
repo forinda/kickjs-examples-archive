@@ -1,6 +1,6 @@
 import { Job, Logger, Process } from '@forinda/kickjs'
 import type { Job as BullJob } from 'bullmq'
-import { EMAIL_QUEUE, REPORTS_QUEUE, type EmailData, type ReportData } from './jobs.dto'
+import { EMAIL_QUEUE, REPORTS_QUEUE, type EmailData, type ReportData } from './job.dto'
 
 /*
  * The handlers. Importing this file is what makes a process a worker:

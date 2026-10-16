@@ -4,9 +4,9 @@ import { Container, type ErrorInfo } from '@forinda/kickjs'
 import { createTestApp } from '@forinda/kickjs-testing'
 import { QueueAdapter, type QueueProvider } from '@forinda/kickjs-queue'
 import { JobErrorsAdapter } from '@/adapters/job-errors.adapter'
-import { JOB_QUEUES } from './jobs.dto'
-import { JobsModule } from './jobs.module'
-import './jobs.processors'
+import { JOB_QUEUES } from './job.dto'
+import { JobsModule } from './job.module'
+import './job.processors'
 
 type Processor = (job: MemoryJob) => Promise<void>
 
