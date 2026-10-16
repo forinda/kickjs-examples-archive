@@ -18,8 +18,8 @@ import {
   updateWorkspaceSchema,
   inviteMemberSchema,
   updateMemberRoleSchema,
-} from './workspaces.dto'
-import { WorkspacesService } from './workspaces.service'
+} from './workspace.dto'
+import { WorkspacesService } from './workspace.service'
 import { successResponse } from '@/shared/api-response'
 import {
   workspaceMembershipGuard,

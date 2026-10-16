@@ -1,6 +1,6 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
 import { ErrorCode } from '@/shared/error-codes'
-import type { CreateProjectDto, UpdateProjectDto } from './projects.dto'
+import type { CreateProjectDto, UpdateProjectDto } from './project.dto'
 import { PROJECT_REPOSITORY, type ProjectRepository } from './project.repository'
 import { TASK_REPOSITORY, type TaskRepository } from '@/modules/tasks/task.repository'
 

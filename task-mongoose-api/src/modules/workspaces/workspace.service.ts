@@ -7,7 +7,7 @@ import {
   type JobDispatcher,
 } from '@forinda/kickjs'
 import { ErrorCode } from '@/shared/error-codes'
-import type { CreateWorkspaceDto, InviteMemberDto, UpdateWorkspaceDto } from './workspaces.dto'
+import type { CreateWorkspaceDto, InviteMemberDto, UpdateWorkspaceDto } from './workspace.dto'
 import { WORKSPACE_REPOSITORY, type WorkspaceRepository } from './workspace.repository'
 import {
   WORKSPACE_MEMBER_REPOSITORY,

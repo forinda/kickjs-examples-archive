@@ -1,5 +1,5 @@
 import { Service, Inject, Logger, JOB_DISPATCHER, type JobDispatcher } from '@forinda/kickjs'
-import type { CreateCommentDto } from './comments.dto'
+import type { CreateCommentDto } from './comment.dto'
 import {
   COMMENT_REPOSITORY,
   type CommentRepository,

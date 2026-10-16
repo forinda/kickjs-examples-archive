@@ -14,7 +14,7 @@ import {
 import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { ErrorCode } from '@/shared/error-codes'
-import { createLabelSchema, updateLabelSchema } from './labels.dto'
+import { createLabelSchema, updateLabelSchema } from './label.dto'
 import { successResponse } from '@/shared/api-response'
 import { workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
 import { LABEL_QUERY_CONFIG } from '@/shared/query-configs'

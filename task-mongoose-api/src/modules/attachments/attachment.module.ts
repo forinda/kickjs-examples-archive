@@ -1,5 +1,5 @@
 import { defineModule } from '@forinda/kickjs'
-import { AttachmentsController } from './attachments.controller'
+import { AttachmentsController } from './attachment.controller'
 import {
   ATTACHMENT_REPOSITORY,
   createAttachmentRepository,

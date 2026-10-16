@@ -1,6 +1,6 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
 import { ErrorCode } from '@/shared/error-codes'
-import type { UpdateProfileDto } from './users.dto'
+import type { UpdateProfileDto } from './user.dto'
 import { USER_REPOSITORY, type UserRepository } from './user.repository'
 
 @Service()

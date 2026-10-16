@@ -13,7 +13,7 @@ import {
 import { z } from 'zod'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { ErrorCode } from '@/shared/error-codes'
-import { createChannelSchema } from './channels.dto'
+import { createChannelSchema } from './channel.dto'
 import { successResponse } from '@/shared/api-response'
 import { workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
 import { channelMembershipGuard } from '@/guards/channel-membership.guard'

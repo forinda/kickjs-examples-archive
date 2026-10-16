@@ -7,7 +7,7 @@ import {
   type JobDispatcher,
 } from '@forinda/kickjs'
 import { ErrorCode } from '@/shared/error-codes'
-import type { CreateTaskDto, ReorderTaskDto, UpdateTaskDto } from './tasks.dto'
+import type { CreateTaskDto, ReorderTaskDto, UpdateTaskDto } from './task.dto'
 import { TASK_REPOSITORY, type TaskRepository } from './task.repository'
 import { PROJECT_REPOSITORY, type ProjectRepository } from '@/modules/projects/project.repository'
 import { USER_REPOSITORY, type UserRepository } from '@/modules/users/user.repository'

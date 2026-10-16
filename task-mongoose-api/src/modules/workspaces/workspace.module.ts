@@ -1,5 +1,5 @@
 import { defineModule } from '@forinda/kickjs'
-import { WorkspacesController } from './workspaces.controller'
+import { WorkspacesController } from './workspace.controller'
 import {
   WORKSPACE_REPOSITORY,
   createWorkspaceRepository,

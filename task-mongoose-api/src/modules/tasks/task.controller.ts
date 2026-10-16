@@ -22,10 +22,10 @@ import {
   changeStatusSchema,
   updateAssigneesSchema,
   reorderTaskSchema,
-} from './tasks.dto'
+} from './task.dto'
 import { getUser } from '@/auth'
 
-import { TasksService } from './tasks.service'
+import { TasksService } from './task.service'
 import { successResponse } from '@/shared/api-response'
 import { projectAccessGuard } from '@/guards/project-access.guard'
 import {

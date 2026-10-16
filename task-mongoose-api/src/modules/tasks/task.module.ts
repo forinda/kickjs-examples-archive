@@ -1,5 +1,5 @@
 import { defineModule } from '@forinda/kickjs'
-import { TasksController } from './tasks.controller'
+import { TasksController } from './task.controller'
 import {
   TASK_REPOSITORY,
   createTaskRepository,

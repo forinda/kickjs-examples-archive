@@ -3,7 +3,7 @@ import type { Job as BullMQJob } from 'bullmq'
 import {
   ACTIVITY_REPOSITORY,
   type ActivityRepository,
-} from '@/modules/activity/activity.repository'
+} from '@/modules/activities/activity.repository'
 
 const logger = Logger.for('ActivityProcessor')
 

@@ -1,5 +1,5 @@
 import { defineModule } from '@forinda/kickjs'
-import { NotificationsController } from './notifications.controller'
+import { NotificationsController } from './notification.controller'
 import {
   NOTIFICATION_REPOSITORY,
   createNotificationRepository,
