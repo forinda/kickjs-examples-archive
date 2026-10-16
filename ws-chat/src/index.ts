@@ -1,19 +1,34 @@
 import 'reflect-metadata'
-// Side-effect import — registers the extended env schema with kickjs
-// **before** any controller / service / @Value gets resolved. Without
-// this line ConfigService.get('YOUR_KEY') returns undefined because the
-// cached schema would still be the base shape. See guide/configuration.
-import './config'
+// Side-effect import — registers the env schema before anything reads it.
+import { env } from './config'
 import { bootstrap, expressRuntime } from '@forinda/kickjs'
-import { modules } from './modules'
 import { WsAdapter } from '@forinda/kickjs-ws'
+import { redisBroker } from '@forinda/kickjs-ws/redis'
+import { modules } from './modules'
+import { resolveSocketUser } from './auth'
+import { createRedisClients, RedisAdapter } from './adapters/redis.adapter'
+import { PublicPageAdapter } from './adapters/public-page.adapter'
 
-// Export the app for the Vite plugin (dev mode)
+// With REDIS_URL, every instance relays room broadcasts through Redis pub/sub
+// and keeps presence in Redis; without it, one process holds everything.
+const redis = env.REDIS_URL ? createRedisClients(env.REDIS_URL) : null
+
 export const app = await bootstrap({
   modules,
   runtime: expressRuntime(),
   adapters: [
-    // WebSocket upgrades on /ws — see guide/websockets.
-    WsAdapter({ path: '/ws' }),
+    ...(redis ? [RedisAdapter(redis)] : []),
+    WsAdapter({
+      path: '/ws',
+      heartbeatInterval: env.WS_HEARTBEAT_MS,
+      maxPayload: 16 * 1024,
+      auth: { resolveUser: resolveSocketUser },
+      // `close: undefined`: RedisAdapter quits both connections, which ends the subscription.
+      // The broker's own unsubscribe would race that quit (adapters shut down concurrently).
+      broker: redis
+        ? { ...redisBroker({ ...redis, channel: 'ws-chat' }), close: undefined }
+        : undefined,
+    }),
+    PublicPageAdapter(),
   ],
 })

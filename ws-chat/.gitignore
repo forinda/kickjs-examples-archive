@@ -9,6 +9,3 @@ coverage/
 .DS_Store
 *.tsbuildinfo
 .kickjs/
-# Platform build output — written by `kick build:netlify` / `kick build:vercel`.
-.netlify/
-.vercel/

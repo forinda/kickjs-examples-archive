@@ -1,103 +1,71 @@
 # ws-chat
 
-A **Minimal** built with [KickJS](https://kickjs.app/) — a decorator-driven Node.js framework for TypeScript that runs on Express, Fastify, or h3 (swap the engine in one line).
+Real-time chat on **`@forinda/kickjs-ws`**: decorator WebSocket controllers, rooms, a per-room user list, token auth on connect, heartbeat, and a Redis broker so several instances share one chat.
 
-## Getting Started
+- `src/modules/chats/chat.gateway.ts` — `@WsController('/chat')`: `room:join`, `room:leave`, `message:send` (only to rooms you joined), `room:users` pushed to the room on every join/leave/disconnect, a `*` catch-all for unknown events.
+- `src/auth.ts` — HMAC-signed chat tokens (`issueToken` / `verifyToken`) and `resolveSocketUser`, the `WsAdapter({ auth: { resolveUser } })` hook. It reads `?token=` (browsers can't set WebSocket headers) or `Authorization: Bearer`; no or bad token → the socket closes with **4401** before any handler runs.
+- `src/modules/chats/chat.controller.ts` — `POST /api/v1/chat/token {name}` (demo sign-in; swap for your auth) and `GET /api/v1/chat/rooms/:room/users`.
+- `src/modules/chats/presence.repository.ts` — who is in which room: a Redis hash when Redis is configured (shared by every instance), a `Map` otherwise.
+- `src/adapters/redis.adapter.ts` — `RedisAdapter` owns the two ioredis connections (publisher + subscriber), binds `REDIS`, reports `redis` on `GET /health/ready`, quits on shutdown.
+- `src/index.ts` — `WsAdapter({ heartbeatInterval, auth, broker: redisBroker(...) })`; the broker relays `ctx.to(room).send()` between instances.
+- `src/adapters/public-page.adapter.ts` + `public/index.html` — a plain page at `/` to try it in a browser.
 
-```bash
-pnpm install
-pnpm dev
-```
+Guide: [WebSockets](https://kickjs.app/guide/websockets) · API: [@forinda/kickjs-ws](https://kickjs.app/api/ws)
 
-## Scripts
+## Protocol
 
-| Command                                  | Description                          |
-| ---------------------------------------- | ------------------------------------ |
-| `pnpm dev`                             | Start dev server with Vite HMR       |
-| `pnpm build`                           | Production build                     |
-| `pnpm start`                           | Run production build                 |
-| `pnpm test`                            | Run tests with Vitest                |
-| `pnpm exec kick g module <name>`               | Generate a DDD module                |
-| `pnpm exec kick g scaffold <name> <fields...>` | Generate CRUD from field definitions |
-| `pnpm exec kick add <package>`                 | Add a KickJS package                 |
+Connect to `ws://localhost:3000/ws/chat?token=<token>`. Frames are JSON `{ "event": …, "data": … }`.
 
-The `kick` CLI is a dev dependency of this project, so it runs through your package manager (`pnpm exec kick …`) unless you install `@forinda/kickjs-cli` globally.
+| Client → server | data             | Server → client | data                         |
+| --------------- | ---------------- | --------------- | ---------------------------- |
+| `room:join`     | `{ room }`       | `welcome`       | `{ id, name }`               |
+| `room:leave`    | `{ room }`       | `room:users`    | `{ room, users }`            |
+| `message:send`  | `{ room, text }` | `message`       | `{ room, from, text, at }`   |
+|                 |                  | `error`         | `{ message }`                |
 
-## Project Structure
+Room names match `[a-z0-9-]{1,32}`; text is 1–500 characters. The server pings every `WS_HEARTBEAT_MS` and drops a socket that missed the previous pong.
 
-```
-src/
-├── index.ts           # Application entry point
-├── modules/           # Feature modules (controllers, services, repos)
-│   └── index.ts       # Module registry
-└── ...
-```
+## Env
 
-## Packages
+| Variable          | Default (dev)    | Notes                                                       |
+| ----------------- | ---------------- | ----------------------------------------------------------- |
+| `CHAT_SECRET`     | dev-only default | Required in production, 32+ chars (`openssl rand -hex 32`)  |
+| `REDIS_URL`       | unset            | Set it to run more than one instance                        |
+| `WS_HEARTBEAT_MS` | `30000`          | `0` disables the heartbeat                                  |
 
-- `@forinda/kickjs`
-- `@forinda/kickjs-schema`
-- `@forinda/kickjs-cli`
-- `@forinda/kickjs-testing`
-- `@forinda/kickjs-vite`
-
-## Adding Features
+## Run
 
 ```bash
-pnpm exec kick add swagger    # OpenAPI documentation
-pnpm exec kick add ws         # WebSocket support
-pnpm exec kick add queue      # Background job processing
-pnpm exec kick add --list     # Show all available packages
+pnpm install          # or: npm install
+cp .env.example .env
+pnpm dev              # or: npm run dev — open http://localhost:3000 in two tabs
 ```
 
-For email, scheduled tasks, multi-tenancy, OpenTelemetry, GraphQL, and notifications use the BYO recipes in the [KickJS guides](https://kickjs.app/guide/) — they wire the upstream library through `defineAdapter()` / `definePlugin()` directly, so you keep control of the integration.
+Two instances sharing one chat:
 
-## Environment Variables
-
-Copy `.env.example` to `.env` and configure:
-
-| Variable    | Default       | Description                    |
-| ----------- | ------------- | ------------------------------ |
-| `PORT`      | `3000`        | Server port                    |
-| `NODE_ENV`  | `development` | Environment                    |
-| `LOG_LEVEL` | `info`        | Log level (`debug` shows more) |
-
-The env schema lives in `src/config/index.ts`. `src/index.ts` imports it once (`import './config'`) before `bootstrap()`, which registers and validates it — a missing or malformed value fails at startup with a clear message. To add a variable, add it to the schema, then to `.env` and `.env.example`.
-
-You don't import anything from `src/config` after that. Read values anywhere through the framework, not `process.env` — they come back parsed (`PORT` is a number, defaults applied) and typed:
-
-```ts
-import { getEnv } from '@forinda/kickjs'
-
-const port = getEnv('PORT') // number
-
-// For a key the schema marks optional, a fallback for when it's unset:
-// const region = getEnv('S3_REGION', 'eu-west-1')
+```bash
+docker run -d --rm --name ws-chat-redis -p 6379:6379 redis:7-alpine
+pnpm build            # or: npm run build
+REDIS_URL=redis://localhost:6379 PORT=3001 pnpm start &
+REDIS_URL=redis://localhost:6379 PORT=3002 pnpm start &
+# open http://localhost:3001 and http://localhost:3002, join the same room, chat across them
+curl http://localhost:3001/health/ready   # {"status":"ready","checks":[{"name":"redis","status":"up"}]}
 ```
 
-In services and controllers, inject `ConfigService`, or a single value with `@Value`:
+From a terminal instead of the page:
 
-```ts
-import { Autowired, ConfigService, Service, Value, type Env } from '@forinda/kickjs'
-
-@Service()
-export class StatusService {
-  @Autowired() private readonly config!: ConfigService
-  @Value('NODE_ENV') private readonly nodeEnv!: Env<'NODE_ENV'> // the schema's type
-
-  status() {
-    return {
-      env: this.nodeEnv,
-      logLevel: this.config.get('LOG_LEVEL'), // typed from the schema
-      port: this.config.getAll().PORT, // getAll(): every validated value
-    }
-  }
-}
+```bash
+TOKEN=$(curl -s -X POST -H 'content-type: application/json' -d '{"name":"alice"}' \
+  http://localhost:3000/api/v1/chat/token | node -pe 'JSON.parse(require("fs").readFileSync(0)).token')
+npx wscat -c "ws://localhost:3000/ws/chat?token=$TOKEN"
+> {"event":"room:join","data":{"room":"general"}}
+> {"event":"message:send","data":{"room":"general","text":"hi"}}
 ```
 
-Keys and types come from the schema: `pnpm dev` keeps them up to date as you edit it (or run `pnpm exec kick typegen`), so a misspelt key is a type error.
+## Test
 
-## Learn More
+```bash
+pnpm test             # or: npm test
+```
 
-- [KickJS Documentation](https://kickjs.app/)
-- [CLI Reference](https://kickjs.app/api/cli.html)
+`src/modules/chats/chat.test.ts` starts the app on a free port with real `ws` clients: a socket without a token (or with a forged or expired one) is closed with 4401; one client's room message reaches the other, with the room user list kept in step (also over HTTP) and updated on disconnect; a client in another room gets nothing, and sending to a room you haven't joined is refused; the heartbeat pings. The tests run without Redis (single process); the two-instance path is the run above.
