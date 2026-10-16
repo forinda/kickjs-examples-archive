@@ -45,13 +45,16 @@ export class UserController {
   @ApiTags('User')
   @ApiQueryParams(USER_QUERY_CONFIG)
   async list(ctx: RequestContext) {
-    return ctx.paginate((parsed) => this.repo.findPaginated(parsed), USER_QUERY_CONFIG)
+    // Only the caller and people who share a workspace with them.
+    const viewerId = getUser(ctx).id
+    return ctx.paginate((parsed) => this.repo.findPaginated(parsed, viewerId), USER_QUERY_CONFIG)
   }
 
   @Get('/:id')
   @ApiTags('User')
   async getById(ctx: RequestContext) {
-    const result = await this.repo.findById(ctx.params.id)
+    // Someone outside every shared workspace gets the same 404 as a missing id.
+    const result = await this.repo.findVisibleById(ctx.params.id, getUser(ctx).id)
     if (!result) throw HttpException.notFound('User not found')
     return successResponse(result)
   }

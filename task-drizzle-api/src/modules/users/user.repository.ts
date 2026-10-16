@@ -1,7 +1,7 @@
 import { createToken, HttpException, type ParsedQuery } from '@forinda/kickjs'
-import { eq, getTableColumns, sql } from 'drizzle-orm'
+import { and, eq, getTableColumns, inArray, or, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
-import { users } from '@/db/schema'
+import { users, workspaceMembers } from '@/db/schema'
 import { USER_QUERY_CONFIG } from './user.constants'
 import { queryAdapter } from '@/shared/query-adapter'
 
@@ -15,9 +15,40 @@ export type NewUser = typeof users.$inferInsert
 const { passwordHash: _passwordHash, ...publicColumns } = getTableColumns(users)
 
 export function createUserRepository(db: AppDatabase) {
+  /** The viewer plus everyone who shares at least one workspace with them. */
+  const visibleTo = (viewerId: string) =>
+    or(
+      eq(users.id, viewerId),
+      inArray(
+        users.id,
+        db
+          .select({ id: workspaceMembers.userId })
+          .from(workspaceMembers)
+          .where(
+            inArray(
+              workspaceMembers.workspaceId,
+              db
+                .select({ id: workspaceMembers.workspaceId })
+                .from(workspaceMembers)
+                .where(eq(workspaceMembers.userId, viewerId)),
+            ),
+          ),
+      ),
+    )
+
   return {
+    /** Unscoped — for the caller's own record and internal lookups (invites), never for reading others. */
     async findById(id: string): Promise<User | null> {
       const [user] = await db.select(publicColumns).from(users).where(eq(users.id, id))
+      return user ?? null
+    },
+
+    /** `id` if the viewer may see it (themselves or a workspace teammate), else null. */
+    async findVisibleById(id: string, viewerId: string): Promise<User | null> {
+      const [user] = await db
+        .select(publicColumns)
+        .from(users)
+        .where(and(eq(users.id, id), visibleTo(viewerId)))
       return user ?? null
     },
 
@@ -30,21 +61,26 @@ export function createUserRepository(db: AppDatabase) {
       return db.select(publicColumns).from(users)
     },
 
-    async findPaginated(parsed: ParsedQuery): Promise<{ data: User[]; total: number }> {
+    /** Users visible to `viewerId`, scoped in SQL so filters, pages and the total all agree. */
+    async findPaginated(
+      parsed: ParsedQuery,
+      viewerId: string,
+    ): Promise<{ data: User[]; total: number }> {
       const query = queryAdapter.buildFromColumns(parsed, USER_QUERY_CONFIG)
+      const where = and(query.where, visibleTo(viewerId))
 
       const [data, countResult] = await Promise.all([
         db
           .select(publicColumns)
           .from(users)
-          .where(query.where)
+          .where(where)
           .orderBy(...query.orderBy)
           .limit(query.limit)
           .offset(query.offset),
         db
-          .select({ count: sql<number>`count(*)` })
+          .select({ count: sql<number>`count(*)`.mapWith(Number) })
           .from(users)
-          .where(query.where),
+          .where(where),
       ])
 
       return { data, total: countResult[0]?.count ?? 0 }
