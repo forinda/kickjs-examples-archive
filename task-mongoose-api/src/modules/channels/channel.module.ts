@@ -1,9 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
 import { ChannelsController } from './channel.controller'
-import {
-  CHANNEL_REPOSITORY,
-  createChannelRepository,
-} from './channel.repository'
+import { CHANNEL_REPOSITORY, createChannelRepository } from './channel.repository'
 import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()

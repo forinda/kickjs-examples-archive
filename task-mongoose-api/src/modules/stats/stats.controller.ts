@@ -4,10 +4,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kick
 import { workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
 import { projectAccessGuard } from '@/guards/project-access.guard'
 import { getOnlineUsers } from '@/modules/messages/chat.ws-controller'
-import {
-  TASK_REPOSITORY,
-  type TaskRepository,
-} from '@/modules/tasks/task.repository'
+import { TASK_REPOSITORY, type TaskRepository } from '@/modules/tasks/task.repository'
 
 @ApiTags('Stats')
 @ApiBearerAuth()

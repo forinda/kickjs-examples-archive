@@ -15,10 +15,7 @@ import {
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import type { WorkspaceEntity } from './workspace.schema'
 import type { Types } from 'mongoose'
-import {
-  WORKSPACE_REPOSITORY,
-  type WorkspaceRepository,
-} from './workspace.repository'
+import { WORKSPACE_REPOSITORY, type WorkspaceRepository } from './workspace.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 

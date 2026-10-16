@@ -7,10 +7,7 @@ import {
   type WsContext,
 } from '@forinda/kickjs-ws'
 import jwt from 'jsonwebtoken'
-import {
-  MESSAGE_REPOSITORY,
-  type MessageRepository,
-} from './message.repository'
+import { MESSAGE_REPOSITORY, type MessageRepository } from './message.repository'
 
 const logger = Logger.for('ChatWsController')
 

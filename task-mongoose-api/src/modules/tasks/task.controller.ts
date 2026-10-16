@@ -28,10 +28,7 @@ import { getUser } from '@/auth'
 import { TasksService } from './task.service'
 import { successResponse } from '@/shared/api-response'
 import { projectAccessGuard } from '@/guards/project-access.guard'
-import {
-  TASK_REPOSITORY,
-  type TaskRepository,
-} from './task.repository'
+import { TASK_REPOSITORY, type TaskRepository } from './task.repository'
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
@@ -125,10 +122,7 @@ export class TasksController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Task not found' })
   async updateAssignees(ctx: RequestContext) {
-    const result = await this.tasksService.updateAssignees(
-      ctx.params.taskId,
-      ctx.body.assigneeIds,
-    )
+    const result = await this.tasksService.updateAssignees(ctx.params.taskId, ctx.body.assigneeIds)
     return successResponse(result)
   }
 

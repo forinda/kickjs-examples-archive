@@ -6,14 +6,8 @@ import {
   JOB_DISPATCHER,
   type JobDispatcher,
 } from '@forinda/kickjs'
-import {
-  TASK_REPOSITORY,
-  type TaskRepository,
-} from '@/modules/tasks/task.repository'
-import {
-  USER_REPOSITORY,
-  type UserRepository,
-} from '@/modules/users/user.repository'
+import { TASK_REPOSITORY, type TaskRepository } from '@/modules/tasks/task.repository'
+import { USER_REPOSITORY, type UserRepository } from '@/modules/users/user.repository'
 
 const logger = Logger.for('TaskCronJobs')
 

@@ -2,11 +2,7 @@ import { createToken } from '@forinda/kickjs'
 import type { Connection } from 'mongoose'
 import { bindModel } from '@/db/bind-model'
 import { type LabelEntity, LabelModel as LabelModelDef } from './label.schema'
-import {
-  buildMongoFilter,
-  buildMongoSort,
-  buildMongoSearch,
-} from '@/db/query-helpers'
+import { buildMongoFilter, buildMongoSort, buildMongoSearch } from '@/db/query-helpers'
 
 /** Mongo-backed Label repository. `connection` is the one MongooseAdapter registers under MONGO_CONNECTION. */
 export function createLabelRepository(connection: Connection) {

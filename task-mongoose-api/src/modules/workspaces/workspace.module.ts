@@ -1,9 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
 import { WorkspacesController } from './workspace.controller'
-import {
-  WORKSPACE_REPOSITORY,
-  createWorkspaceRepository,
-} from './workspace.repository'
+import { WORKSPACE_REPOSITORY, createWorkspaceRepository } from './workspace.repository'
 import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 import {
   WORKSPACE_MEMBER_REPOSITORY,

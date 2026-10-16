@@ -19,10 +19,7 @@ import { successResponse } from '@/shared/api-response'
 import { workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
 import { projectAccessGuard } from '@/guards/project-access.guard'
 import { PROJECT_QUERY_CONFIG } from '@/shared/query-configs'
-import {
-  PROJECT_REPOSITORY,
-  type ProjectRepository,
-} from './project.repository'
+import { PROJECT_REPOSITORY, type ProjectRepository } from './project.repository'
 
 @ApiTags('Projects')
 @ApiBearerAuth()

@@ -19,10 +19,7 @@ import { workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
 import { channelMembershipGuard } from '@/guards/channel-membership.guard'
 import { CHANNEL_QUERY_CONFIG } from '@/shared/query-configs'
 import { getUser } from '@/auth'
-import {
-  CHANNEL_REPOSITORY,
-  type ChannelRepository,
-} from './channel.repository'
+import { CHANNEL_REPOSITORY, type ChannelRepository } from './channel.repository'
 
 @ApiTags('Channels')
 @ApiBearerAuth()

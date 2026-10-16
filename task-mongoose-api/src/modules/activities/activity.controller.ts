@@ -12,10 +12,7 @@ import { ACTIVITY_QUERY_CONFIG } from '@/shared/query-configs'
 import { successResponse } from '@/shared/api-response'
 import { workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
 import { projectAccessGuard } from '@/guards/project-access.guard'
-import {
-  ACTIVITY_REPOSITORY,
-  type ActivityRepository,
-} from './activity.repository'
+import { ACTIVITY_REPOSITORY, type ActivityRepository } from './activity.repository'
 
 @ApiTags('Activity')
 @ApiBearerAuth()

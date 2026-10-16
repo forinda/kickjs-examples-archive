@@ -1,9 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
 import { ActivityController } from './activity.controller'
-import {
-  ACTIVITY_REPOSITORY,
-  createActivityRepository,
-} from './activity.repository'
+import { ACTIVITY_REPOSITORY, createActivityRepository } from './activity.repository'
 import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()

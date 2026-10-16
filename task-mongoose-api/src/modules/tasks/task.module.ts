@@ -1,9 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
 import { TasksController } from './task.controller'
-import {
-  TASK_REPOSITORY,
-  createTaskRepository,
-} from './task.repository'
+import { TASK_REPOSITORY, createTaskRepository } from './task.repository'
 import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()

@@ -1,9 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
 import { NotificationsController } from './notification.controller'
-import {
-  NOTIFICATION_REPOSITORY,
-  createNotificationRepository,
-} from './notification.repository'
+import { NOTIFICATION_REPOSITORY, createNotificationRepository } from './notification.repository'
 import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()

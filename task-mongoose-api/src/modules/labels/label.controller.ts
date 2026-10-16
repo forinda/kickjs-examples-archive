@@ -18,10 +18,7 @@ import { createLabelSchema, updateLabelSchema } from './label.dto'
 import { successResponse } from '@/shared/api-response'
 import { workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
 import { LABEL_QUERY_CONFIG } from '@/shared/query-configs'
-import {
-  LABEL_REPOSITORY,
-  type LabelRepository,
-} from './label.repository'
+import { LABEL_REPOSITORY, type LabelRepository } from './label.repository'
 
 @ApiTags('Labels')
 @ApiBearerAuth()

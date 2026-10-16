@@ -16,14 +16,8 @@ import { ErrorCode } from '@/shared/error-codes'
 import { successResponse } from '@/shared/api-response'
 import { ATTACHMENT_QUERY_CONFIG } from '@/shared/query-configs'
 import { getUser } from '@/auth'
-import {
-  ATTACHMENT_REPOSITORY,
-  type AttachmentRepository,
-} from './attachment.repository'
-import {
-  TASK_REPOSITORY,
-  type TaskRepository,
-} from '@/modules/tasks/task.repository'
+import { ATTACHMENT_REPOSITORY, type AttachmentRepository } from './attachment.repository'
+import { TASK_REPOSITORY, type TaskRepository } from '@/modules/tasks/task.repository'
 
 @ApiTags('Attachments')
 @ApiBearerAuth()

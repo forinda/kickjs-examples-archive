@@ -1,17 +1,8 @@
 import { Service, Inject, Logger, JOB_DISPATCHER, type JobDispatcher } from '@forinda/kickjs'
 import type { CreateCommentDto } from './comment.dto'
-import {
-  COMMENT_REPOSITORY,
-  type CommentRepository,
-} from './comment.repository'
-import {
-  TASK_REPOSITORY,
-  type TaskRepository,
-} from '@/modules/tasks/task.repository'
-import {
-  USER_REPOSITORY,
-  type UserRepository,
-} from '@/modules/users/user.repository'
+import { COMMENT_REPOSITORY, type CommentRepository } from './comment.repository'
+import { TASK_REPOSITORY, type TaskRepository } from '@/modules/tasks/task.repository'
+import { USER_REPOSITORY, type UserRepository } from '@/modules/users/user.repository'
 
 const logger = Logger.for('CommentsService')
 

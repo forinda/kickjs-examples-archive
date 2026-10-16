@@ -2,11 +2,7 @@ import { createToken } from '@forinda/kickjs'
 import type { Connection } from 'mongoose'
 import { bindModel } from '@/db/bind-model'
 import { type ChannelEntity, ChannelModel as ChannelModelDef } from './channel.schema'
-import {
-  buildMongoFilter,
-  buildMongoSort,
-  buildMongoSearch,
-} from '@/db/query-helpers'
+import { buildMongoFilter, buildMongoSort, buildMongoSearch } from '@/db/query-helpers'
 
 /** Mongo-backed Channel repository. `connection` is the one MongooseAdapter registers under MONGO_CONNECTION. */
 export function createChannelRepository(connection: Connection) {

@@ -1,9 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
 import { AttachmentsController } from './attachment.controller'
-import {
-  ATTACHMENT_REPOSITORY,
-  createAttachmentRepository,
-} from './attachment.repository'
+import { ATTACHMENT_REPOSITORY, createAttachmentRepository } from './attachment.repository'
 import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()

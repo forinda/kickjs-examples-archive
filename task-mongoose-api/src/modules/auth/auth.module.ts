@@ -1,9 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
 import { AuthController } from './auth.controller'
-import {
-  REFRESH_TOKEN_REPOSITORY,
-  createRefreshTokenRepository,
-} from './refresh-token.repository'
+import { REFRESH_TOKEN_REPOSITORY, createRefreshTokenRepository } from './refresh-token.repository'
 import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()

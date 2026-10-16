@@ -1,9 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
 import { MessagesController } from './message.controller'
-import {
-  MESSAGE_REPOSITORY,
-  createMessageRepository,
-} from './message.repository'
+import { MESSAGE_REPOSITORY, createMessageRepository } from './message.repository'
 import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()

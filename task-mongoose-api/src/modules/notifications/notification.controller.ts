@@ -13,10 +13,7 @@ import { NOTIFICATION_QUERY_CONFIG } from '@/shared/query-configs'
 import { getUser } from '@/auth'
 
 import { successResponse } from '@/shared/api-response'
-import {
-  NOTIFICATION_REPOSITORY,
-  type NotificationRepository,
-} from './notification.repository'
+import { NOTIFICATION_REPOSITORY, type NotificationRepository } from './notification.repository'
 
 @ApiTags('Notifications')
 @ApiBearerAuth()

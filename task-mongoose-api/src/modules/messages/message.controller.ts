@@ -14,10 +14,7 @@ import { ErrorCode } from '@/shared/error-codes'
 import { successResponse } from '@/shared/api-response'
 import { channelMembershipGuard } from '@/guards/channel-membership.guard'
 import { getUser } from '@/auth'
-import {
-  MESSAGE_REPOSITORY,
-  type MessageRepository,
-} from './message.repository'
+import { MESSAGE_REPOSITORY, type MessageRepository } from './message.repository'
 
 @ApiTags('Messages')
 @ApiBearerAuth()

@@ -19,14 +19,8 @@ import { CommentsService } from './comment.service'
 import { successResponse } from '@/shared/api-response'
 import { COMMENT_QUERY_CONFIG } from '@/shared/query-configs'
 import { getUser } from '@/auth'
-import {
-  COMMENT_REPOSITORY,
-  type CommentRepository,
-} from './comment.repository'
-import {
-  TASK_REPOSITORY,
-  type TaskRepository,
-} from '@/modules/tasks/task.repository'
+import { COMMENT_REPOSITORY, type CommentRepository } from './comment.repository'
+import { TASK_REPOSITORY, type TaskRepository } from '@/modules/tasks/task.repository'
 
 @ApiTags('Comments')
 @ApiBearerAuth()

@@ -21,10 +21,7 @@ import {
 } from './workspace.dto'
 import { WorkspacesService } from './workspace.service'
 import { successResponse } from '@/shared/api-response'
-import {
-  workspaceMembershipGuard,
-  requireWorkspaceRole,
-} from '@/guards/workspace-membership.guard'
+import { workspaceMembershipGuard, requireWorkspaceRole } from '@/guards/workspace-membership.guard'
 import { getUser } from '@/auth'
 import { WORKSPACE_QUERY_CONFIG, MEMBER_QUERY_CONFIG } from '@/shared/query-configs'
 import {

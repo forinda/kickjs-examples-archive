@@ -1,9 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
 import { LabelsController } from './label.controller'
-import {
-  LABEL_REPOSITORY,
-  createLabelRepository,
-} from './label.repository'
+import { LABEL_REPOSITORY, createLabelRepository } from './label.repository'
 import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()

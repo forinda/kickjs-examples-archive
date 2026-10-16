@@ -1,9 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
 import { CommentsController } from './comment.controller'
-import {
-  COMMENT_REPOSITORY,
-  createCommentRepository,
-} from './comment.repository'
+import { COMMENT_REPOSITORY, createCommentRepository } from './comment.repository'
 import { MONGO_CONNECTION } from '@/adapters/mongoose.adapter'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()

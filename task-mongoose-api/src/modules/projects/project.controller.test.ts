@@ -15,10 +15,7 @@ import {
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import type { ProjectEntity } from './project.schema'
 import type { Types } from 'mongoose'
-import {
-  PROJECT_REPOSITORY,
-  type ProjectRepository,
-} from './project.repository'
+import { PROJECT_REPOSITORY, type ProjectRepository } from './project.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 

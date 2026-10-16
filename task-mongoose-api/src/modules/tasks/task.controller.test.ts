@@ -15,10 +15,7 @@ import {
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
 import type { TaskEntity } from './task.schema'
 import type { Types } from 'mongoose'
-import {
-  TASK_REPOSITORY,
-  type TaskRepository,
-} from './task.repository'
+import { TASK_REPOSITORY, type TaskRepository } from './task.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 

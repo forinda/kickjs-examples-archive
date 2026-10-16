@@ -7,12 +7,7 @@
  * https://kickjs.app/guide/byo-recipes#auth
  */
 import jwt from 'jsonwebtoken'
-import {
-  createToken,
-  defineRouteFlag,
-  HttpException,
-  type RequestContext,
-} from '@forinda/kickjs'
+import { createToken, defineRouteFlag, HttpException, type RequestContext } from '@forinda/kickjs'
 
 export interface AuthUser {
   id: string
