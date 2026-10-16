@@ -6,9 +6,14 @@ import 'reflect-metadata'
 import './config'
 import { bootstrap, expressRuntime } from '@forinda/kickjs'
 import { modules } from './modules'
+import { WsAdapter } from '@forinda/kickjs-ws'
 
 // Export the app for the Vite plugin (dev mode)
 export const app = await bootstrap({
   modules,
   runtime: expressRuntime(),
+  adapters: [
+    // WebSocket upgrades on /ws — see guide/websockets.
+    WsAdapter({ path: '/ws' }),
+  ],
 })

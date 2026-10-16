@@ -12,3 +12,5 @@ coverage/
 # Platform build output — written by `kick build:netlify` / `kick build:vercel`.
 .netlify/
 .vercel/
+uploads/
+.tus/
