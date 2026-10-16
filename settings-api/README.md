@@ -47,6 +47,6 @@ cp .env.example .env  # fill in the required values, or use *_FILE for secrets
 NODE_ENV=production pnpm start
 ```
 
-Tests: `src/adapters/mail.settings.test.ts` (production and unset `NODE_ENV` refuse to boot without the password; a `_FILE` secret boots and reports origin `file`; dev defaults under `test`), `src/modules/features/features.test.ts` (env parsing incl. booleans and a list, injection into the service, `.provide()` instead of env), `src/modules/config-report/config-report.test.ts` (origins and masking).
+Tests: `src/adapters/mail.settings.test.ts` (production and unset `NODE_ENV` refuse to boot without the password; a `_FILE` secret boots and reports origin `file`; dev defaults under `test`), `src/modules/features/feature.test.ts` (env parsing incl. booleans and a list, injection into the service, `.provide()` instead of env), `src/modules/config-reports/config-report.test.ts` (origins and masking).
 
 The template's Netlify / Vercel / Docker files were removed; take them from a fresh `kick new` if you deploy there.

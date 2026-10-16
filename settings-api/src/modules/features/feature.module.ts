@@ -1,6 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
-import { FeaturesController } from './features.controller'
-import { FeatureSettings } from './features.settings'
+import { FeaturesController } from './feature.controller'
+import { FeatureSettings } from './feature.settings'
 
 export const FeaturesModule = defineModule({
   name: 'FeaturesModule',

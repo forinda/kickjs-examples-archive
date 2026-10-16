@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { isDevOrTest } from './dev-default'
+import { z } from 'zod'
+import { devDefault, isDevOrTest } from './dev-default'
 
 const original = process.env.NODE_ENV
 afterEach(() => {
@@ -17,7 +18,14 @@ describe('isDevOrTest', () => {
   })
 
   it('fails closed when NODE_ENV is unset, so /api/v1/config and /_debug stay off', () => {
-    delete process.env.NODE_ENV
+    Reflect.deleteProperty(process.env, 'NODE_ENV')
     expect(isDevOrTest()).toBe(false)
+  })
+
+  it('refuses the dev default when NODE_ENV is unset', () => {
+    Reflect.deleteProperty(process.env, 'NODE_ENV')
+    expect(devDefault(z.string(), 'x').safeParse(undefined).success).toBe(false)
+    process.env.NODE_ENV = 'test'
+    expect(devDefault(z.string(), 'x').parse(undefined)).toBe('x')
   })
 })

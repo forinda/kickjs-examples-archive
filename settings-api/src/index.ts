@@ -16,7 +16,7 @@ import { MailAdapter } from './adapters/mail.adapter'
 import { MarketingMail, TransactionalMail } from './adapters/mail.settings'
 import { AppSettings } from './config/app.settings'
 import { isDevOrTest } from './config/dev-default'
-import { APPLICATION } from './modules/config-report/config-report.controller'
+import { APPLICATION } from './modules/config-reports/config-report.controller'
 import { modules } from './modules'
 
 // Export the app for the Vite plugin (dev mode)

@@ -1,6 +1,6 @@
 import { Inject, Service, type SettingsOf } from '@forinda/kickjs'
 import { AppSettings } from '@/config/app.settings'
-import { FeatureSettings } from './features.settings'
+import { FeatureSettings } from './feature.settings'
 
 @Service()
 export class FeaturesService {

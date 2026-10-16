@@ -3,9 +3,9 @@ import request from 'supertest'
 import { Container } from '@forinda/kickjs'
 import { createTestApp } from '@forinda/kickjs-testing'
 import { AppSettings } from '@/config/app.settings'
-import { FeatureSettings } from './features.settings'
-import { FeaturesModule } from './features.module'
-import { FeaturesService } from './features.service'
+import { FeatureSettings } from './feature.settings'
+import { FeaturesModule } from './feature.module'
+import { FeaturesService } from './feature.service'
 
 describe('FeaturesModule', () => {
   it('injects its section into the service, parsed from the env', async () => {

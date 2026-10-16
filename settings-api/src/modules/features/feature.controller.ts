@@ -1,5 +1,5 @@
 import { Autowired, Controller, Get } from '@forinda/kickjs'
-import { FeaturesService } from './features.service'
+import { FeaturesService } from './feature.service'
 
 @Controller()
 export class FeaturesController {
