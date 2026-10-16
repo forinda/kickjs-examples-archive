@@ -7,8 +7,9 @@ import { USER_REPOSITORY, type UserRepository } from './user.repository'
 export class UsersService {
   constructor(@Inject(USER_REPOSITORY) private userRepo: UserRepository) {}
 
-  async getProfile(userId: string) {
-    const user = await this.userRepo.findById(userId)
+  /** `userId`'s profile as `viewerId` may see it — themselves or a workspace teammate, else 404. */
+  async getProfile(userId: string, viewerId = userId) {
+    const user = await this.userRepo.findVisibleById(userId, viewerId)
     if (!user) {
       throw HttpException.notFound(ErrorCode.USER_NOT_FOUND)
     }

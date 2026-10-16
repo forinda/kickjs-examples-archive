@@ -87,7 +87,7 @@ class TestUserController {
 
   @Get('/')
   async list() {
-    const result = await this.repo.findPaginated({})
+    const result = await this.repo.findPaginated({}, 'u1')
     return { data: result.data, total: result.total }
   }
 
