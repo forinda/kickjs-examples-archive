@@ -1,9 +1,8 @@
-import { defineAdapter } from '@forinda/kickjs'
+import { defineAdapter, getEnv } from '@forinda/kickjs'
 import type { Storage } from '@forinda/kickjs-storage'
 import { STORAGE } from '@forinda/kickjs-storage/adapter'
 import { diskStorage } from '@forinda/kickjs-storage/disk'
 import { S3Settings, s3FromSettings } from '@forinda/kickjs-storage/settings'
-import { env, storageDriver } from '@/config'
 
 export { STORAGE }
 
@@ -16,9 +15,10 @@ export { STORAGE }
 export const StorageAdapter = defineAdapter({
   name: 'StorageAdapter',
   build: () => {
+    const storageDriver = getEnv('STORAGE_DRIVER')
     // Lazy: s3FromSettings reads its section on first use, after the app has bound it.
     const storage: Storage =
-      storageDriver === 's3' ? s3FromSettings() : diskStorage({ root: env.UPLOAD_DIR })
+      storageDriver === 's3' ? s3FromSettings() : diskStorage({ root: getEnv('UPLOAD_DIR') })
     return {
       settings: () => (storageDriver === 's3' ? [S3Settings] : []),
       beforeStart({ container }) {

@@ -3,6 +3,7 @@ import {
   Delete,
   FileUpload,
   Get,
+  getEnv,
   HttpException,
   Inject,
   Middleware,
@@ -11,9 +12,10 @@ import {
   type Ctx,
 } from '@forinda/kickjs'
 import { z } from 'zod'
-import { env } from '@/config'
+// Side effect: the env schema is registered before @FileUpload reads MAX_UPLOAD_BYTES below.
+import '@/config'
 import { apiKeyGuard } from '@/guards/api-key.guard'
-import { ALLOWED_TYPES, FILE_ID, FilesService } from './files.service'
+import { ALLOWED_TYPES, FILE_ID, FilesService } from './file.service'
 
 export const idParams = z.object({ id: z.string().regex(FILE_ID) })
 export const listQuery = z.object({ cursor: z.string().optional() })
@@ -33,7 +35,7 @@ export class FilesController {
   @FileUpload({
     mode: 'single',
     fieldName: 'file',
-    maxSize: env.MAX_UPLOAD_BYTES,
+    maxSize: getEnv('MAX_UPLOAD_BYTES'),
     allowedTypes: Object.keys(ALLOWED_TYPES),
   })
   async upload(ctx: Ctx<KickRoutes.FilesController['upload']>) {
@@ -57,7 +59,7 @@ export class FilesController {
   @Middleware(apiKeyGuard)
   async url(ctx: Ctx<KickRoutes.FilesController['url']>) {
     if (!(await this.files.exists(ctx.params.id))) throw HttpException.notFound()
-    const origin = env.PUBLIC_URL ?? `http://${ctx.headers.host}`
+    const origin = getEnv('PUBLIC_URL') ?? `http://${ctx.headers.host}`
     return this.files.signedUrl(ctx.params.id, ctx.query.expiresIn, origin)
   }
 

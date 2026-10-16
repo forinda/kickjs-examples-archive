@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Container } from '@forinda/kickjs'
+import { Container, getEnv } from '@forinda/kickjs'
 import { createTestApp } from '@forinda/kickjs-testing'
 import { memoryStorage } from '@forinda/kickjs-storage'
 import { STORAGE } from '@/adapters/storage.adapter'
-import { env } from '@/config'
-import { FilesModule } from './files.module'
+import '@/config'
+import { FilesModule } from './file.module'
 
 const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3])
 
@@ -14,7 +14,7 @@ async function makeApp() {
     modules: [FilesModule()],
     overrides: [[STORAGE, files]],
   })
-  return { files, http: client(), api: client({ bearer: env.API_KEY }) }
+  return { files, http: client(), api: client({ bearer: getEnv('API_KEY') }) }
 }
 
 /** Path + query of a signed URL, to call it through the test client. */
@@ -48,7 +48,7 @@ describe('file-storage-api', () => {
 
   it('answers 413 for a file over the limit and 415 for a type not allowed', async () => {
     const { files, api } = await makeApp()
-    const big = Buffer.alloc(env.MAX_UPLOAD_BYTES + 1)
+    const big = Buffer.alloc(getEnv('MAX_UPLOAD_BYTES') + 1)
     await api.post('/api/v1/files').attach('file', big, 'big.png').expect(413)
     await api
       .post('/api/v1/files')

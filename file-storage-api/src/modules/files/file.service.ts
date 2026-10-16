@@ -1,8 +1,7 @@
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto'
-import { Inject, Service } from '@forinda/kickjs'
+import { getEnv, Inject, Service } from '@forinda/kickjs'
 import type { Storage } from '@forinda/kickjs-storage'
 import { STORAGE } from '@/adapters/storage.adapter'
-import { env, storageDriver } from '@/config'
 
 /** What may be uploaded, and the extension each type is stored under. */
 export const ALLOWED_TYPES: Record<string, string> = {
@@ -18,7 +17,7 @@ const PREFIX = 'files/'
 export const FILE_ID = /^[0-9a-f-]{36}\.[a-z]+$/
 
 const sign = (id: string, expires: number) =>
-  createHmac('sha256', env.SIGNING_SECRET).update(`${id}:${expires}`).digest('base64url')
+  createHmac('sha256', getEnv('SIGNING_SECRET')).update(`${id}:${expires}`).digest('base64url')
 
 @Service()
 export class FilesService {
@@ -70,7 +69,7 @@ export class FilesService {
   async signedUrl(id: string, expiresIn: number, origin: string) {
     const expires = Math.floor(Date.now() / 1000) + expiresIn
     const url =
-      storageDriver === 's3'
+      getEnv('STORAGE_DRIVER') === 's3'
         ? await this.storage.url(PREFIX + id, { expiresIn })
         : `${origin}/api/v1/files/${id}/signed?expires=${expires}&sig=${sign(id, expires)}`
     return { url, expiresAt: new Date(expires * 1000).toISOString() }
