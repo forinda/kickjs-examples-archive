@@ -39,3 +39,31 @@ Log in as `alice@vibed.dev` / `Password123!` via `POST /api/v1/auth/login`, then
 | `RESEND_API_KEY` | required unless `NODE_ENV` is `development` or `test` (mail goes through Resend); development/test log mail to the console |
 
 `pnpm test` (no services needed), `pnpm typecheck`, `pnpm build && pnpm start`, `pnpm db:reset` (drop + reseed).
+
+## Deploy
+
+**Required env** (fail closed — with `NODE_ENV=production`, the image's, or unset, the app refuses to boot without them): `MONGODB_URI`, `REDIS_URL`, `JWT_SECRET` (32+ chars), `RESEND_API_KEY` (mail goes through Resend outside development/test).
+
+**Docker**
+
+```bash
+docker build -t task-mongoose-api .
+docker run -p 3000:3000 -e MONGODB_URI=mongodb://… -e REDIS_URL=redis://… \
+  -e JWT_SECRET=$(openssl rand -hex 32) -e RESEND_API_KEY=re_… task-mongoose-api
+```
+
+**Compose** — MongoDB, Redis and the API:
+
+```bash
+JWT_SECRET=$(openssl rand -hex 32) RESEND_API_KEY=re_… docker compose up --build
+```
+
+- **Schema:** none to migrate — Mongoose creates collections and indexes on first use. `pnpm seed` (dev only, needs `tsx`) loads demo data.
+- **State:** MongoDB (`mongo-data` volume) and Redis queues (`redis-data`); attachments are stored in MongoDB. The container keeps nothing.
+- **Swagger** (`/docs`, `/openapi.json`) is mounted only under development/test.
+
+**Not serverless:** WebSockets (`/ws`), BullMQ workers and `@Cron` jobs need a long-running process.
+
+- **Health:** `GET /health/ready` runs every adapter's health check — the image's `HEALTHCHECK` and a load balancer's readiness probe use it; `GET /health/live` for liveness.
+- **DevTools** is dev-only and not in the production build: `/_debug` answers 404 in the image.
+- The image installs from the committed `pnpm-lock.yaml` (frozen) and runs `node dist/index.js` as the unprivileged `node` user with `NODE_ENV=production`; `.env` files are never copied in — pass env with `-e`, `--env-file` or the platform.

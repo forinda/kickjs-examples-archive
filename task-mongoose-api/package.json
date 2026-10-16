@@ -58,5 +58,6 @@
   "allowScripts": {
     "@swc/core": true,
     "esbuild": true
-  }
+  },
+  "packageManager": "pnpm@11.24.0"
 }
