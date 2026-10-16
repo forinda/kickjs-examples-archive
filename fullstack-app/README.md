@@ -62,3 +62,25 @@ curl -X POST localhost:3000/api/v1/bookmarks -H 'content-type: application/json'
 ```
 
 The template's Netlify / Vercel / Docker files were removed: a SQLite file on local disk doesn't fit a serverless function, and this archive doesn't commit lockfiles. Take them from a fresh `kick new --template fullstack` after switching the dialect.
+
+## Deploy
+
+No required secrets. One image runs the server and serves the built web app from the same origin (`SpaAdapter`, `web/dist`).
+
+**Docker** (from the workspace root)
+
+```bash
+docker build -t fullstack-app .
+docker run -p 3000:3000 -v fullstack-data:/app/data fullstack-app
+# http://localhost:3000 — the SPA; /api/v1/bookmarks — the API
+```
+
+- **State:** bookmarks are in `/app/data/app.db` (`DB_FILE`) — keep `/app/data` on a volume.
+- **Migrations:** the image sets `MIGRATE_ON_BOOT=true`, so `server/db/migrations` is applied at startup. Without it, outside development/test, pending migrations stop the boot.
+- One instance: SQLite is a local file.
+
+**Not serverless:** a function's filesystem is ephemeral and per instance, so the SQLite database would not survive. (With a hosted database the workspace would build for Netlify/Vercel — see the KickJS serverless guide.)
+
+- **Health:** `GET /health/ready` runs every adapter's health check — the image's `HEALTHCHECK` and a load balancer's readiness probe use it; `GET /health/live` for liveness.
+- **DevTools** is dev-only and not in the production build: `/_debug` answers 404 in the image.
+- The image installs from the committed `pnpm-lock.yaml` (frozen) and runs `node dist/index.js` as the unprivileged `node` user with `NODE_ENV=production`; `.env` files are never copied in — pass env with `-e`, `--env-file` or the platform.
