@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Inject,
-  Middleware,
-  ApiQueryParams,
-  HttpException,
-} from '@forinda/kickjs'
+import { Controller, Get, Inject, Middleware, ApiQueryParams, HttpException } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'

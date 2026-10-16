@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Autowired, Inject, Middleware, reply } from '@forinda/kickjs'
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Autowired,
+  Inject,
+  Middleware,
+  reply,
+} from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
