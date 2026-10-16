@@ -41,7 +41,7 @@ pnpm build && pnpm start
 
 Apps that need a database or Redis have a `.env.example` (copy it to `.env`) and a README with the docker commands and schema/migration step. Apps that issue JWTs refuse to start with `NODE_ENV=production` unless their secrets are set.
 
-Lockfiles are not committed — each app resolves the current published versions on install. With pnpm 10+, the allowed install scripts (`@swc/core`, `esbuild`, Prisma, better-sqlite3) are listed in each app's `pnpm-workspace.yaml`; npm reads `allowScripts` from `package.json`.
+Each app commits its `pnpm-lock.yaml`: the Dockerfiles install from a frozen lockfile, so an image builds exactly what was tested. pnpm is the package manager (`packageManager` in each `package.json`); `npm install` still works but ignores the lockfile. With pnpm 10+, the allowed install scripts (`@swc/core`, `esbuild`, Prisma, better-sqlite3) are listed in each app's `pnpm-workspace.yaml`; npm reads `allowScripts` from `package.json`.
 
 ## Starting fresh — use the CLI
 
