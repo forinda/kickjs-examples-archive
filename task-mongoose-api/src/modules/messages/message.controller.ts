@@ -13,6 +13,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kick
 import { ErrorCode } from '@/shared/error-codes'
 import { successResponse } from '@/shared/api-response'
 import { channelMembershipGuard, findChannelForMember } from '@/guards/channel-membership.guard'
+import { requireOwnerOrAdmin } from '@/guards/workspace-membership.guard'
 import { getUser } from '@/auth'
 import { MESSAGE_REPOSITORY, type MessageRepository } from './message.repository'
 
@@ -21,6 +22,15 @@ import { MESSAGE_REPOSITORY, type MessageRepository } from './message.repository
 @Controller()
 export class MessagesController {
   @Inject(MESSAGE_REPOSITORY) private messageRepo!: MessageRepository
+
+  /** The message's sender or a workspace admin, among those who can see its channel. */
+  private async requireAuthor(ctx: RequestContext) {
+    const user = getUser(ctx)
+    const message = await this.messageRepo.findById(ctx.params.messageId)
+    const access = message && (await findChannelForMember(user.id, message.channelId.toString()))
+    if (!message || !access) throw HttpException.notFound(ErrorCode.MESSAGE_NOT_FOUND)
+    requireOwnerOrAdmin(access.member, message.senderId, user.id, ErrorCode.NOT_MESSAGE_AUTHOR)
+  }
 
   @ApiOperation({ summary: 'Get message history for a channel' })
   @ApiResponse({ status: 200, description: 'Paginated message history returned' })
@@ -48,13 +58,7 @@ export class MessagesController {
     body: z.object({ content: z.string().min(1) }),
   })
   async edit(ctx: RequestContext) {
-    const user = getUser(ctx)
-    const message = await this.messageRepo.findById(ctx.params.messageId)
-    if (!message || !(await findChannelForMember(user.id, message.channelId.toString()))) {
-      throw HttpException.notFound(ErrorCode.MESSAGE_NOT_FOUND)
-    }
-    if (message.senderId.toString() !== user.id)
-      throw HttpException.forbidden(ErrorCode.NOT_MESSAGE_AUTHOR)
+    await this.requireAuthor(ctx)
     const updated = await this.messageRepo.update(ctx.params.messageId, {
       content: ctx.body.content,
     })
@@ -67,13 +71,7 @@ export class MessagesController {
   @ApiResponse({ status: 404, description: 'Message not found' })
   @Delete('/messages/:messageId', { params: z.object({ messageId: z.string() }) })
   async delete(ctx: RequestContext) {
-    const user = getUser(ctx)
-    const message = await this.messageRepo.findById(ctx.params.messageId)
-    if (!message || !(await findChannelForMember(user.id, message.channelId.toString()))) {
-      throw HttpException.notFound(ErrorCode.MESSAGE_NOT_FOUND)
-    }
-    if (message.senderId.toString() !== user.id)
-      throw HttpException.forbidden(ErrorCode.NOT_MESSAGE_AUTHOR)
+    await this.requireAuthor(ctx)
     await this.messageRepo.softDelete(ctx.params.messageId)
     return successResponse(null, 'Message deleted')
   }

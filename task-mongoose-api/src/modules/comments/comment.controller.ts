@@ -20,6 +20,7 @@ import { createCommentSchema, updateCommentSchema } from './comment.dto'
 import { CommentsService } from './comment.service'
 import { successResponse } from '@/shared/api-response'
 import { COMMENT_QUERY_CONFIG } from '@/shared/query-configs'
+import { requireOwnerOrAdmin } from '@/guards/workspace-membership.guard'
 import { getUser } from '@/auth'
 import { COMMENT_REPOSITORY, type CommentRepository } from './comment.repository'
 import { TASK_REPOSITORY, type TaskRepository } from '@/modules/tasks/task.repository'
@@ -32,6 +33,16 @@ export class CommentsController {
   @Inject(COMMENT_REPOSITORY) private commentRepo!: CommentRepository
   @Inject(TASK_REPOSITORY) private taskRepo!: TaskRepository
 
+  /** The comment's author or a workspace admin, among members of its workspace. */
+  private async requireAuthor(ctx: RequestContext) {
+    const user = getUser(ctx)
+    const comment = await this.commentRepo.findById(ctx.params.commentId)
+    const access = comment && (await findTaskForMember(user.id, comment.taskId.toString()))
+    if (!comment || !access) throw HttpException.notFound(ErrorCode.COMMENT_NOT_FOUND)
+    requireOwnerOrAdmin(access.member, comment.authorId, user.id, ErrorCode.NOT_COMMENT_AUTHOR)
+    return comment
+  }
+
   @ApiOperation({ summary: 'Create a comment on a task' })
   @ApiResponse({ status: 201, description: 'Comment created successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -42,6 +53,13 @@ export class CommentsController {
   @Middleware(taskAccessGuard)
   async create(ctx: RequestContext) {
     const user = getUser(ctx)
+    // A reply only to a comment on the same task.
+    if (ctx.body.parentCommentId) {
+      const parent = await this.commentRepo.findById(ctx.body.parentCommentId)
+      if (parent?.taskId.toString() !== ctx.params.taskId) {
+        throw HttpException.notFound(ErrorCode.COMMENT_NOT_FOUND)
+      }
+    }
     const result = await this.commentsService.create(ctx.params.taskId, user.id, ctx.body)
     return reply.created(successResponse(result))
   }
@@ -68,13 +86,7 @@ export class CommentsController {
     body: updateCommentSchema,
   })
   async update(ctx: RequestContext) {
-    const user = getUser(ctx)
-    const comment = await this.commentRepo.findById(ctx.params.commentId)
-    if (!comment || !(await findTaskForMember(user.id, comment.taskId.toString()))) {
-      throw HttpException.notFound(ErrorCode.COMMENT_NOT_FOUND)
-    }
-    if (comment.authorId.toString() !== user.id)
-      throw HttpException.forbidden(ErrorCode.NOT_COMMENT_AUTHOR)
+    await this.requireAuthor(ctx)
     const updated = await this.commentRepo.update(ctx.params.commentId, { body: ctx.body.body })
     return successResponse(updated)
   }
@@ -85,13 +97,7 @@ export class CommentsController {
   @ApiResponse({ status: 404, description: 'Comment not found' })
   @Delete('/comments/:commentId', { params: z.object({ commentId: z.string() }) })
   async delete(ctx: RequestContext) {
-    const user = getUser(ctx)
-    const comment = await this.commentRepo.findById(ctx.params.commentId)
-    if (!comment || !(await findTaskForMember(user.id, comment.taskId.toString()))) {
-      throw HttpException.notFound(ErrorCode.COMMENT_NOT_FOUND)
-    }
-    if (comment.authorId.toString() !== user.id)
-      throw HttpException.forbidden(ErrorCode.NOT_COMMENT_AUTHOR)
+    const comment = await this.requireAuthor(ctx)
     await this.commentRepo.delete(ctx.params.commentId)
     await this.taskRepo.incrementCommentCount(comment.taskId.toString(), -1)
     return successResponse(null, 'Comment deleted')

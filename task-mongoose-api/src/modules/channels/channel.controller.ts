@@ -15,7 +15,11 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@forinda/kick
 import { ErrorCode } from '@/shared/error-codes'
 import { createChannelSchema } from './channel.dto'
 import { successResponse } from '@/shared/api-response'
-import { workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
+import {
+  requireOwnerOrAdmin,
+  requireTargetMember,
+  workspaceMembershipGuard,
+} from '@/guards/workspace-membership.guard'
 import { channelMembershipGuard } from '@/guards/channel-membership.guard'
 import { CHANNEL_QUERY_CONFIG } from '@/shared/query-configs'
 import { getUser } from '@/auth'
@@ -28,6 +32,15 @@ import { PROJECT_REPOSITORY, type ProjectRepository } from '@/modules/projects/p
 export class ChannelsController {
   @Inject(CHANNEL_REPOSITORY) private channelRepo!: ChannelRepository
   @Inject(PROJECT_REPOSITORY) private projectRepo!: ProjectRepository
+
+  /** Deleting a channel or removing others: its creator or a workspace admin (403). */
+  private requireManager(ctx: RequestContext) {
+    requireOwnerOrAdmin(
+      ctx.get('workspaceMember')!,
+      ctx.get('channel')!.createdById,
+      getUser(ctx).id,
+    )
+  }
 
   @ApiOperation({ summary: 'Create a channel in a workspace' })
   @ApiResponse({ status: 201, description: 'Channel created successfully' })
@@ -95,6 +108,7 @@ export class ChannelsController {
   @Delete('/channels/:channelId', { params: z.object({ channelId: z.string() }) })
   @Middleware(channelMembershipGuard)
   async delete(ctx: RequestContext) {
+    this.requireManager(ctx)
     await this.channelRepo.delete(ctx.params.channelId)
     return successResponse(null, 'Channel deleted')
   }
@@ -108,6 +122,8 @@ export class ChannelsController {
   })
   @Middleware(channelMembershipGuard)
   async addMember(ctx: RequestContext) {
+    // Anyone who can see the channel may add a teammate — from the same workspace only.
+    await requireTargetMember(ctx.get('channel')!.workspaceId.toString(), ctx.body.userId)
     await this.channelRepo.addMember(ctx.params.channelId, ctx.body.userId)
     return successResponse(null, 'Member added')
   }
@@ -120,6 +136,8 @@ export class ChannelsController {
   })
   @Middleware(channelMembershipGuard)
   async removeMember(ctx: RequestContext) {
+    // Leaving is always allowed; removing someone else is for the creator or an admin.
+    if (ctx.params.userId !== getUser(ctx).id) this.requireManager(ctx)
     await this.channelRepo.removeMember(ctx.params.channelId, ctx.params.userId)
     return successResponse(null, 'Member removed')
   }

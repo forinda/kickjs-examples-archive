@@ -22,9 +22,17 @@ export class ChatWsController {
   /** Authenticated and allowed in the channel? Otherwise reply as if it didn't exist. */
   private async inChannel(ctx: WsContext, channelId: string): Promise<boolean> {
     const userId = ctx.get('userId')
-    const channel = userId ? await findChannelForMember(userId, channelId) : null
-    if (!channel) ctx.send('error', { message: 'Channel not found' })
-    return !!channel
+    const access = userId ? await findChannelForMember(userId, channelId) : null
+    if (!access) ctx.send('error', { message: 'Channel not found' })
+    return !!access
+  }
+
+  /** The message, when the caller sees its channel and wrote it (or is a workspace admin). */
+  private async ownMessage(userId: string, messageId: string) {
+    const message = await this.messageRepo.findById(messageId)
+    const access = message && (await findChannelForMember(userId, message.channelId.toString()))
+    if (!message || !access) return null
+    return message.senderId.toString() === userId || access.member.role === 'admin' ? message : null
   }
 
   @OnConnect()
@@ -117,8 +125,8 @@ export class ChatWsController {
     const { messageId, content } = ctx.data || {}
     if (!messageId || !content) return
 
-    const message = await this.messageRepo.findById(messageId)
-    if (!message || message.senderId.toString() !== userId) return
+    const message = await this.ownMessage(userId, messageId)
+    if (!message) return
 
     const updated = await this.messageRepo.update(messageId, { content })
     if (!updated) return
@@ -139,8 +147,8 @@ export class ChatWsController {
     const { messageId } = ctx.data || {}
     if (!messageId) return
 
-    const message = await this.messageRepo.findById(messageId)
-    if (!message || message.senderId.toString() !== userId) return
+    const message = await this.ownMessage(userId, messageId)
+    if (!message) return
 
     await this.messageRepo.softDelete(messageId)
     ctx.to(`channel:${message.channelId}`).send('message:deleted', {

@@ -18,11 +18,43 @@ declare module '@forinda/kickjs' {
   }
 }
 
-export async function isWorkspaceMember(userId: string, workspaceId: string): Promise<boolean> {
+/** `userId`'s membership of `workspaceId`, or null. */
+export async function findWorkspaceMember(
+  userId: string,
+  workspaceId: string,
+): Promise<WorkspaceMemberEntity | null> {
   const memberRepo = Container.getInstance().resolve<WorkspaceMemberRepository>(
     WORKSPACE_MEMBER_REPOSITORY,
   )
-  return !!(await memberRepo.findByUserAndWorkspace(userId, workspaceId))
+  return memberRepo.findByUserAndWorkspace(userId, workspaceId)
+}
+
+export async function isWorkspaceMember(userId: string, workspaceId: string): Promise<boolean> {
+  return !!(await findWorkspaceMember(userId, workspaceId))
+}
+
+/**
+ * A user being added to something in `workspaceId` (channel, task assignee,
+ * project lead) must already belong to that workspace. Anyone else gets 404
+ * USER_NOT_FOUND — the same answer as an unknown id, so other workspaces'
+ * users can't be probed or pulled in.
+ */
+export async function requireTargetMember(workspaceId: string, userId: string): Promise<void> {
+  if (!(await isWorkspaceMember(userId, workspaceId))) {
+    throw HttpException.notFound(ErrorCode.USER_NOT_FOUND)
+  }
+}
+
+/** 403 unless `userId` is `ownerId` or `member` is a workspace admin. */
+export function requireOwnerOrAdmin(
+  member: { role: string },
+  ownerId: { toString(): string } | null | undefined,
+  userId: string,
+  code: string = ErrorCode.FORBIDDEN,
+): void {
+  if (member.role !== 'admin' && ownerId?.toString() !== userId) {
+    throw HttpException.forbidden(code)
+  }
 }
 
 export const workspaceMembershipGuard: MiddlewareHandler = async (ctx: RequestContext, next) => {

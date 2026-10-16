@@ -7,7 +7,7 @@ import {
 import { ErrorCode } from '@/shared/error-codes'
 import { TASK_REPOSITORY, type TaskRepository } from '@/modules/tasks/task.repository'
 import type { TaskEntity } from '@/modules/tasks/task.schema'
-import { isWorkspaceMember } from '@/guards/workspace-membership.guard'
+import { findWorkspaceMember } from '@/guards/workspace-membership.guard'
 import { getUser } from '@/auth'
 
 /** What this guard puts on the request context. */
@@ -17,13 +17,14 @@ declare module '@forinda/kickjs' {
   }
 }
 
-/** The task when it exists AND the user is a member of its workspace; null otherwise. */
+/** The task (and the user's workspace membership) when the user is in its workspace; null otherwise. */
 export async function findTaskForMember(userId: string, taskId: string) {
   const task = await Container.getInstance()
     .resolve<TaskRepository>(TASK_REPOSITORY)
     .findById(taskId)
   if (!task) return null
-  return (await isWorkspaceMember(userId, task.workspaceId.toString())) ? task : null
+  const member = await findWorkspaceMember(userId, task.workspaceId.toString())
+  return member ? { task, member } : null
 }
 
 /**
@@ -31,8 +32,9 @@ export async function findTaskForMember(userId: string, taskId: string) {
  * task, so task ids from other workspaces can't be probed.
  */
 export const taskAccessGuard: MiddlewareHandler = async (ctx: RequestContext, next) => {
-  const task = await findTaskForMember(getUser(ctx).id, ctx.params.taskId)
-  if (!task) throw HttpException.notFound(ErrorCode.TASK_NOT_FOUND)
-  ctx.set('task', task)
+  const access = await findTaskForMember(getUser(ctx).id, ctx.params.taskId)
+  if (!access) throw HttpException.notFound(ErrorCode.TASK_NOT_FOUND)
+  ctx.set('task', access.task)
+  ctx.set('workspaceMember', access.member)
   next()
 }

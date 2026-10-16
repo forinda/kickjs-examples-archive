@@ -30,6 +30,8 @@ import { TasksService } from './task.service'
 import { successResponse } from '@/shared/api-response'
 import { projectAccessGuard } from '@/guards/project-access.guard'
 import { TASK_REPOSITORY, type TaskRepository } from './task.repository'
+import { LABEL_REPOSITORY, type LabelRepository } from '@/modules/labels/label.repository'
+import { requireOwnerOrAdmin, requireTargetMember } from '@/guards/workspace-membership.guard'
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
@@ -37,6 +39,32 @@ import { TASK_REPOSITORY, type TaskRepository } from './task.repository'
 export class TasksController {
   @Autowired() private tasksService!: TasksService
   @Inject(TASK_REPOSITORY) private taskRepo!: TaskRepository
+  @Inject(LABEL_REPOSITORY) private labelRepo!: LabelRepository
+
+  /**
+   * Ids a task body points at must live in the task's workspace: assignees are
+   * its members (404 USER_NOT_FOUND otherwise), labels its labels, a parent a
+   * task of the same project.
+   */
+  private async checkRefs(
+    workspaceId: string,
+    projectId: string,
+    refs: { assigneeIds?: string[]; labelIds?: string[]; parentTaskId?: string },
+  ) {
+    for (const userId of refs.assigneeIds ?? []) await requireTargetMember(workspaceId, userId)
+    for (const labelId of refs.labelIds ?? []) {
+      const label = await this.labelRepo.findById(labelId)
+      if (label?.workspaceId.toString() !== workspaceId) {
+        throw HttpException.notFound(ErrorCode.LABEL_NOT_FOUND)
+      }
+    }
+    if (refs.parentTaskId) {
+      const parent = await this.taskRepo.findById(refs.parentTaskId)
+      if (parent?.projectId.toString() !== projectId) {
+        throw HttpException.notFound(ErrorCode.TASK_NOT_FOUND)
+      }
+    }
+  }
 
   @Post('/projects/:projectId/tasks', {
     params: z.object({ projectId: z.string() }),
@@ -49,6 +77,7 @@ export class TasksController {
   @ApiResponse({ status: 403, description: 'Forbidden - no access to project' })
   async create(ctx: RequestContext) {
     const user = getUser(ctx)
+    await this.checkRefs(ctx.get('project')!.workspaceId.toString(), ctx.params.projectId, ctx.body)
     const result = await this.tasksService.create(ctx.params.projectId, user.id, ctx.body)
     return reply.created(successResponse(result, 'Task created'))
   }
@@ -88,6 +117,9 @@ export class TasksController {
   @ApiResponse({ status: 404, description: 'Task not found' })
   @Middleware(taskAccessGuard)
   async update(ctx: RequestContext) {
+    // Any workspace member may edit a task.
+    const task = ctx.get('task')!
+    await this.checkRefs(task.workspaceId.toString(), task.projectId.toString(), ctx.body)
     const result = await this.tasksService.update(ctx.params.taskId, ctx.body)
     return successResponse(result)
   }
@@ -99,6 +131,8 @@ export class TasksController {
   @ApiResponse({ status: 404, description: 'Task not found' })
   @Middleware(taskAccessGuard)
   async delete(ctx: RequestContext) {
+    // Deleting is for the task's reporter or a workspace admin.
+    requireOwnerOrAdmin(ctx.get('workspaceMember')!, ctx.get('task')!.reporterId, getUser(ctx).id)
     const deleted = await this.taskRepo.delete(ctx.params.taskId)
     if (!deleted) throw HttpException.notFound(ErrorCode.TASK_NOT_FOUND)
     return successResponse(null, 'Task deleted')
@@ -128,6 +162,9 @@ export class TasksController {
   @ApiResponse({ status: 404, description: 'Task not found' })
   @Middleware(taskAccessGuard)
   async updateAssignees(ctx: RequestContext) {
+    await this.checkRefs(ctx.get('task')!.workspaceId.toString(), '', {
+      assigneeIds: ctx.body.assigneeIds,
+    })
     const result = await this.tasksService.updateAssignees(ctx.params.taskId, ctx.body.assigneeIds)
     return successResponse(result)
   }
