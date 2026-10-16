@@ -8,7 +8,7 @@ export interface CreateProject {
 
 /**
  * No tenant parameter anywhere: the client's 'column' tenancy scopes every
- * query to the request's tenant and stamps `tenantId` on insert.
+ * query to the request's tenant and stamps `workspaceId` on insert.
  */
 export function createProjectRepository(db: AppDb) {
   return {

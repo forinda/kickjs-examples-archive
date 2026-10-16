@@ -79,7 +79,7 @@ describe('ProjectController', () => {
       .set(auth)
       .send({ title: 'Rocket skates' })
       .expect(201)
-    expect(created.body.tenantId).toBe('tenant-acme')
+    expect(created.body.workspaceId).toBe('tenant-acme')
 
     const acme = await http.get('/api/v1/projects').set('x-tenant', 'acme').set(auth).expect(200)
     expect(acme.body.tenant).toBe('Acme Corp')

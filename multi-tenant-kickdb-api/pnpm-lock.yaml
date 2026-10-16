@@ -12,8 +12,8 @@ importers:
         specifier: ^10.3.1
         version: 10.3.1(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
       '@forinda/kickjs-db':
-        specifier: ^8.7.0
-        version: 8.7.0(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.3.1(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(@forinda/kickjs@10.3.1(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(better-sqlite3@13.0.3)
+        specifier: ^8.8.0
+        version: 8.8.0(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.3.1(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(@forinda/kickjs@10.3.1(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(better-sqlite3@13.0.3)
       '@forinda/kickjs-devtools':
         specifier: ^7.11.0
         version: 7.11.0(@forinda/kickjs@10.3.1(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(ws@8.22.0)(zod@4.6.7)
@@ -176,6 +176,26 @@ packages:
 
   '@forinda/kickjs-db@8.7.0':
     resolution: {integrity: sha512-TSQJzjP6vSSS4HbZ08w+ULJFq8l7K5BRdHUgoqZawFPzm40GhEH8iv8GN2itPJQtoWeR+JcRVQu2eMGp21VbWQ==}
+    engines: {node: '>=20.0'}
+    hasBin: true
+    peerDependencies:
+      '@forinda/kickjs': '>=8.8.0'
+      '@forinda/kickjs-devtools-kit': '>=7.0.0'
+      better-sqlite3: '>=12.0.0'
+      mysql2: '>=3.0.0'
+      pg: '>=8.11.0'
+    peerDependenciesMeta:
+      '@forinda/kickjs-devtools-kit':
+        optional: true
+      better-sqlite3:
+        optional: true
+      mysql2:
+        optional: true
+      pg:
+        optional: true
+
+  '@forinda/kickjs-db@8.8.0':
+    resolution: {integrity: sha512-OiU+g4CLtzaNahEKXA9kJG13T9Vuc/713kuNk9tKntwCiSQdQtUS7FbJL3cytetIYrabHqrO6JwBDasCRzqd9g==}
     engines: {node: '>=20.0'}
     hasBin: true
     peerDependencies:
@@ -2225,6 +2245,17 @@ snapshots:
       - zod
 
   '@forinda/kickjs-db@8.7.0(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.3.1(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(@forinda/kickjs@10.3.1(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(better-sqlite3@13.0.3)':
+    dependencies:
+      '@forinda/kickjs': 10.3.1(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
+      '@forinda/kickjs-cli-kit': 0.1.3(commander@15.0.0)
+      commander: 15.0.0
+      jiti: 2.7.0
+      kysely: 0.29.6
+    optionalDependencies:
+      '@forinda/kickjs-devtools-kit': 7.3.0(@forinda/kickjs@10.3.1(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))
+      better-sqlite3: 13.0.3
+
+  '@forinda/kickjs-db@8.8.0(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.3.1(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(@forinda/kickjs@10.3.1(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(better-sqlite3@13.0.3)':
     dependencies:
       '@forinda/kickjs': 10.3.1(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
       '@forinda/kickjs-cli-kit': 0.1.3(commander@15.0.0)

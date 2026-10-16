@@ -2,8 +2,8 @@
 
 Multi-tenancy on **kick/db + SQLite**, with no tenant code in handlers or repositories.
 
-- `src/db/tenancy.ts` — `defineTenancy({ strategy: 'column' })`: kick/db adds `tenantId = <current tenant>` to every query on a tenanted table and stamps it on insert. (`'rls'` and `'schema'` are Postgres-only; `'column'` works on SQLite.)
-- `src/db/schema.ts` — `tenants` (registry, not tenanted) and `projects` (`tenantId: tenantKey(tenancy)`).
+- `src/db/tenancy.ts` — `defineTenancy({ strategy: 'column' })`: kick/db adds `workspaceId = <current tenant>` to every query on a tenanted table and stamps it on insert. (`'rls'` and `'schema'` are Postgres-only; `'column'` works on SQLite.)
+- `src/db/schema.ts` — `tenants` (registry, not tenanted) and `projects` (`workspaceId: tenantKey(tenancy, varchar(64))` — the tenant column is named and typed like the registry's key).
 - `db/migrations/` — `init` from `kick db generate`, plus a hand-written `seed_tenants` data migration (Acme → `acme`, Globex → `globex`). Both reviewed.
 - `src/adapters/db.adapter.ts` — `DbAdapter` registers the client under `APP_DB`, reports `sqlite` on `GET /health/ready`, closes the handle on shutdown. `kickDbAdapter()` applies pending migrations on boot only when NODE_ENV is development or test (anywhere else pending migrations stop the boot).
 - `src/contributors/tenant.contributor.ts` — `@LoadTenant` resolves the tenant from the `x-tenant` header or the subdomain; a tenant the signed-in user doesn't belong to (the token's `tenants` claim) gets the same 404 as an unknown one, so tenant names can't be probed. kick/db reads it as the current tenant.

@@ -13,6 +13,12 @@
       "tag": "seed_tenants",
       "hash": "sha256:326026b86daf62dfa41fa085380a731c965d0200c7169cff81941ba2edf9583e",
       "createdAt": "2026-10-15T23:28:49.959Z"
+    },
+    {
+      "id": "20261016_191035_workspace_tenant_key",
+      "tag": "workspace_tenant_key",
+      "hash": "sha256:67f72acc0c7e1037c8745ba015083f111ef6f399625944bef96c358bea3a7015",
+      "createdAt": "2026-10-16T19:10:35.610Z"
     }
   ]
 }
