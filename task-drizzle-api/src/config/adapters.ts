@@ -1,10 +1,9 @@
-import { DevToolsAdapter } from '@forinda/kickjs-devtools'
-import { SwaggerAdapter } from '@forinda/kickjs-swagger'
+/// <reference types="@forinda/kickjs-vite/globals" />
 import { WsAdapter } from '@forinda/kickjs-ws'
 import { QueueAdapter } from '@forinda/kickjs-queue'
 import { getEnv, KickCronAdapter, type AppAdapter } from '@forinda/kickjs'
 import { DrizzleAdapter } from '@/adapters/drizzle.adapter'
-import { isDevOrTest } from './dev-default'
+import { swaggerAdapters } from './swagger'
 
 // Side-effect imports: register decorated classes
 import '@/modules/messages/chat.ws-controller'
@@ -40,9 +39,13 @@ export const adapters: AppAdapter[] = [
   wsAdapter,
   queueAdapter,
   KickCronAdapter(),
-  // Its own default turns /_debug on when NODE_ENV is unset; fail closed instead.
-  DevToolsAdapter({ enabled: isDevOrTest(), adapters: [wsAdapter, queueAdapter] }),
-  SwaggerAdapter({
-    info: { title: 'Vibed (Drizzle Edition)', version: '1.0.0' },
-  }),
+  // OpenAPI spec + UI under development/test only.
+  ...swaggerAdapters(),
 ]
+
+// DevTools (/_debug) in `kick dev` only: the vite plugin sets the flag false for
+// `kick build`, so the import and the package drop out of the production bundle.
+if (__KICKJS_DEVTOOLS__) {
+  const { DevToolsAdapter } = await import('@forinda/kickjs-devtools')
+  adapters.push(DevToolsAdapter({ adapters: [wsAdapter, queueAdapter] }))
+}

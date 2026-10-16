@@ -47,4 +47,4 @@ curl localhost:3000/health/ready
 | `APP_URL`                                | prod     | dev/test default `http://localhost:3000`  |
 | `JWT_*_EXPIRES_IN`, `APP_NAME`, `MAIL_FROM_*` | no | see `.env.example`                        |
 
-"prod" = required unless `NODE_ENV` is exactly `development` or `test` — an unset `NODE_ENV` gets no dev default (`src/config/dev-default.ts`). DevTools (`/_debug`) is likewise on only under development/test.
+"prod" = required unless `NODE_ENV` is exactly `development` or `test` — an unset `NODE_ENV` gets no dev default (`src/config/dev-default.ts`). Swagger (`/docs`, `/openapi.json`) is likewise on only under development/test; DevTools (`/_debug`) only in `kick dev` — the `__KICKJS_DEVTOOLS__` build flag drops it from `kick build`.
