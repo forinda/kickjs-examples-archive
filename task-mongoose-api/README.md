@@ -7,8 +7,8 @@ What it shows:
 - The [BYO Auth recipe](https://kickjs.app/guide/byo-recipes#auth): `AuthAdapter` (`src/adapters/auth.adapter.ts`) with `defaultPolicy: 'protected'`, a JWT strategy and `@Public` route flag (`src/auth.ts`), `@RequireRole({ roles: ['superadmin'] })` (`src/guards/require-role.guard.ts`). Replaces the removed `@forinda/kickjs-auth`. `LoadAuthUser` (`src/contributors/load-auth-user.contributor.ts`) runs `beforeValidation`, so anonymous requests get 401 and the membership guards (`src/guards`) can read `ctx.get('user')`.
 - Repositories — one file each (`modules/*/*.repository.ts`, next to the Mongoose model in `*.schema.ts`): `createXRepository(connection)` factory, `XRepository = ReturnType<…>`, `X_REPOSITORY` token, bound in the module's `register()` with the connection the Mongoose adapter registers (`MONGO_CONNECTION`).
 - `src/adapters/` — Mongoose and Redis clients as `defineAdapter()`s: connect in `beforeStart`, `onHealthCheck` feeding `GET /health/ready`, close in `shutdown`.
-- Background jobs — `@Job` / `@Process` classes in `modules/queue`, run by `QueueAdapter` (`@forinda/kickjs-queue`, BullMQ) and enqueued through `JOB_DISPATCHER`.
-- Scheduled jobs — `@Cron` methods in `modules/cron`, run by `KickCronAdapter()`.
+- Background jobs — `@Job` / `@Process` classes in `modules/queues`, run by `QueueAdapter` (`@forinda/kickjs-queue`, BullMQ) and enqueued through `JOB_DISPATCHER`.
+- Scheduled jobs — `@Cron` methods in `modules/crons`, run by `KickCronAdapter()`.
 - WebSockets — `@WsController` chat with presence (`@forinda/kickjs-ws`, at `/ws/chat`).
 - Mail — a small BYO mailer plugin (`src/plugins/mailer.plugin.ts`): console in dev, Resend in production.
 - OpenAPI at `/docs` (`@forinda/kickjs-swagger`), DevTools at `/_debug` (`@forinda/kickjs-devtools`).

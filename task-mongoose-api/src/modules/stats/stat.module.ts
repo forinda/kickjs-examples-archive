@@ -1,5 +1,5 @@
 import { defineModule } from '@forinda/kickjs'
-import { StatsController } from './stats.controller'
+import { StatsController } from './stat.controller'
 
 // Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
 // decorators register in the DI container.

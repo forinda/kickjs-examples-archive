@@ -1,6 +1,6 @@
 import { defineModules } from '@forinda/kickjs'
-import { QueueModule } from '@/modules/queue/queue.module'
-import { CronModule } from '@/modules/cron/cron.module'
+import { QueueModule } from '@/modules/queues/queue.module'
+import { CronModule } from '@/modules/crons/cron.module'
 import { AuthModule } from '@/modules/auth/auth.module'
 import { UsersModule } from '@/modules/users/user.module'
 import { WorkspacesModule } from '@/modules/workspaces/workspace.module'
@@ -13,7 +13,7 @@ import { ActivityModule } from '@/modules/activities/activity.module'
 import { NotificationsModule } from '@/modules/notifications/notification.module'
 import { ChannelsModule } from '@/modules/channels/channel.module'
 import { MessagesModule } from '@/modules/messages/message.module'
-import { StatsModule } from '@/modules/stats/stats.module'
+import { StatsModule } from '@/modules/stats/stat.module'
 
 export const modules = defineModules()
   .mount(QueueModule())

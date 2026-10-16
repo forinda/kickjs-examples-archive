@@ -17,7 +17,7 @@ const wsAdapter = WsAdapter({
   maxPayload: 1048576,
 })
 
-// Runs every `@Job` class (src/modules/queue) on BullMQ.
+// Runs every `@Job` class (src/modules/queues) on BullMQ.
 const queueAdapter = QueueAdapter({
   redis: {
     host: redisUrl.hostname,
@@ -46,7 +46,7 @@ export const adapters = [
   }),
   wsAdapter,
   queueAdapter,
-  // Schedules every `@Cron` method (src/modules/cron) with croner.
+  // Schedules every `@Cron` method (src/modules/crons) with croner.
   KickCronAdapter(),
   // /_debug only under development/test. Its own default (`NODE_ENV !== 'production'`)
   // would turn it on with NODE_ENV unset — fail closed instead.
