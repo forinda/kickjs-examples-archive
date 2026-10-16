@@ -21,9 +21,14 @@ export function createChannelRepository(prisma: PrismaClient) {
       return prisma.channel.findUnique({ where: { id } })
     },
 
-    async findPaginated(parsed: ParsedQuery, workspaceId: string) {
+    async findPaginated(parsed: ParsedQuery, workspaceId: string, userId: string) {
       const query = queryAdapter.build(parsed, { searchColumns: ['name'] })
-      const where = query.where ? { AND: [query.where, { workspaceId }] } : { workspaceId }
+      // Public channels, plus the private ones `userId` belongs to.
+      const scope = {
+        workspaceId,
+        OR: [{ type: 'public' as const }, { members: { some: { userId } } }],
+      }
+      const where = query.where ? { AND: [query.where, scope] } : scope
 
       const [data, total] = await Promise.all([
         prisma.channel.findMany({

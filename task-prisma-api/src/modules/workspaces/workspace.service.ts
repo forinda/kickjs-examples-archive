@@ -1,11 +1,12 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
 import { ErrorCode } from '@/shared/error-codes'
-import { WORKSPACE_REPOSITORY, type WorkspaceRepository } from './workspace.repository'
+import type { CreateWorkspaceDTO, InviteMemberDTO } from './workspace.dto'
 import {
   WORKSPACE_MEMBER_REPOSITORY,
   type WorkspaceMemberRepository,
 } from './workspace-member.repository'
-import type { CreateWorkspaceDTO, InviteMemberDTO } from './workspace.dto'
+import { WORKSPACE_REPOSITORY, type WorkspaceRepository } from './workspace.repository'
+import { USER_REPOSITORY, type UserRepository } from '@/modules/users/user.repository'
 
 @Service()
 export class WorkspaceService {
@@ -14,6 +15,8 @@ export class WorkspaceService {
     private readonly repo: WorkspaceRepository,
     @Inject(WORKSPACE_MEMBER_REPOSITORY)
     private readonly memberRepo: WorkspaceMemberRepository,
+    @Inject(USER_REPOSITORY)
+    private readonly userRepo: UserRepository,
   ) {}
 
   async create(dto: CreateWorkspaceDTO, ownerId: string) {
@@ -35,6 +38,10 @@ export class WorkspaceService {
   }
 
   async inviteMember(workspaceId: string, dto: InviteMemberDTO) {
+    // The one place a user from outside joins: the invitee must exist (404, not a FK error).
+    if (!(await this.userRepo.findById(dto.userId))) {
+      throw HttpException.notFound(ErrorCode.USER_NOT_FOUND)
+    }
     const existing = await this.memberRepo.findByWorkspaceAndUser(workspaceId, dto.userId)
     if (existing) {
       throw HttpException.conflict(ErrorCode.ALREADY_WORKSPACE_MEMBER)

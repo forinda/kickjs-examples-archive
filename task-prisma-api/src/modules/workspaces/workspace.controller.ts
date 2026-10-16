@@ -1,33 +1,37 @@
 import {
   Controller,
+  Inject,
   Get,
   Post,
   Put,
   Delete,
   Autowired,
-  Inject,
   Middleware,
   reply,
   HttpException,
+  type RequestContext,
 } from '@forinda/kickjs'
-import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
-import { requireWorkspaceRole, workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
+import {
+  requireTargetMember,
+  requireWorkspaceRole,
+  workspaceMembershipGuard,
+} from '@/guards/workspace-membership.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
-import { WorkspaceService } from './workspace.service'
-import { WORKSPACE_REPOSITORY, type WorkspaceRepository } from './workspace.repository'
-import {
-  WORKSPACE_MEMBER_REPOSITORY,
-  type WorkspaceMemberRepository,
-} from './workspace-member.repository'
 import {
   createWorkspaceSchema,
   updateWorkspaceSchema,
   inviteMemberSchema,
   updateMemberRoleSchema,
 } from './workspace.dto'
+import { WORKSPACE_REPOSITORY, type WorkspaceRepository } from './workspace.repository'
+import {
+  WORKSPACE_MEMBER_REPOSITORY,
+  type WorkspaceMemberRepository,
+} from './workspace-member.repository'
+import { WorkspaceService } from './workspace.service'
 
 @Controller()
 @Middleware(authBridgeMiddleware)
@@ -103,6 +107,7 @@ export class WorkspaceController {
   })
   @ApiTags('Workspace')
   async updateMemberRole(ctx: RequestContext) {
+    await requireTargetMember(ctx.params.id, ctx.params.userId)
     const result = await this.workspaceService.updateMemberRole(
       ctx.params.id,
       ctx.params.userId,
@@ -115,6 +120,7 @@ export class WorkspaceController {
   @Delete('/:id/members/:userId')
   @ApiTags('Workspace')
   async removeMember(ctx: RequestContext) {
+    await requireTargetMember(ctx.params.id, ctx.params.userId)
     await this.workspaceService.removeMember(ctx.params.id, ctx.params.userId)
     return reply.noContent()
   }

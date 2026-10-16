@@ -82,7 +82,7 @@ describe('InMemoryChannelRepository', () => {
     await repo.create({ workspaceId: 'w2', name: 'ch2', createdById: 'u1' })
     await repo.create({ workspaceId: 'w1', name: 'ch3', createdById: 'u1' })
 
-    const result = await repo.findPaginated({} as any, 'w1')
+    const result = await repo.findPaginated({} as any, 'w1', 'u1')
     expect(result.data).toHaveLength(2)
   })
 

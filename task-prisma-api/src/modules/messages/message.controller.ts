@@ -1,25 +1,25 @@
 import {
   Controller,
+  Inject,
   Get,
   Post,
   Put,
   Delete,
   Autowired,
-  Inject,
   Middleware,
   reply,
-  HttpException,
+  type RequestContext,
 } from '@forinda/kickjs'
-import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
 import { ErrorCode } from '@/shared/error-codes'
-import { channelMembershipGuard, requireChannelMember } from '@/guards/channel-membership.guard'
+import { channelAccess, requireChannelAccess } from '@/guards/channel-membership.guard'
+import { requireOwnerOrAdmin } from '@/guards/workspace-membership.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
+import { createMessageSchema, updateMessageSchema } from './message.dto'
 import { MESSAGE_REPOSITORY, type MessageRepository } from './message.repository'
 import { MessageService } from './message.service'
-import { createMessageSchema, updateMessageSchema } from './message.dto'
 
 @Controller()
 @Middleware(authBridgeMiddleware)
@@ -31,13 +31,13 @@ export class MessageController {
   @Post('/', { body: createMessageSchema, name: 'CreateMessage' })
   @ApiTags('Message')
   async create(ctx: RequestContext) {
-    await requireChannelMember(ctx, ctx.body.channelId)
+    await requireChannelAccess(ctx, ctx.body.channelId)
     const user = getUser(ctx)
     const result = await this.messageService.create(ctx.body, user.id)
     return reply.created(successResponse(result))
   }
 
-  @Middleware(channelMembershipGuard)
+  @Middleware(channelAccess('channelId'))
   @Get('/channel/:channelId')
   @ApiTags('Message')
   async listByChannel(ctx: RequestContext) {
@@ -49,14 +49,17 @@ export class MessageController {
     return successResponse(messages)
   }
 
+  /** The message's sender or a workspace admin, among those who can see its channel. */
+  private async requireAuthor(ctx: RequestContext) {
+    const message = await this.repo.findById(ctx.params.id)
+    const { member } = await requireChannelAccess(ctx, message?.channelId, 'Message not found')
+    requireOwnerOrAdmin(ctx, member, message?.senderId, ErrorCode.NOT_MESSAGE_AUTHOR)
+  }
+
   @Put('/:id', { body: updateMessageSchema, name: 'UpdateMessage' })
   @ApiTags('Message')
   async update(ctx: RequestContext) {
-    const message = await this.repo.findById(ctx.params.id)
-    await requireChannelMember(ctx, message?.channelId, 'Message not found')
-    if (message?.senderId !== getUser(ctx).id) {
-      throw HttpException.forbidden(ErrorCode.NOT_MESSAGE_AUTHOR)
-    }
+    await this.requireAuthor(ctx)
     const result = await this.repo.update(ctx.params.id, { content: ctx.body.content })
     return successResponse(result)
   }
@@ -64,11 +67,7 @@ export class MessageController {
   @Delete('/:id')
   @ApiTags('Message')
   async remove(ctx: RequestContext) {
-    const message = await this.repo.findById(ctx.params.id)
-    await requireChannelMember(ctx, message?.channelId, 'Message not found')
-    if (message?.senderId !== getUser(ctx).id) {
-      throw HttpException.forbidden(ErrorCode.NOT_MESSAGE_AUTHOR)
-    }
+    await this.requireAuthor(ctx)
     await this.repo.delete(ctx.params.id)
     return reply.noContent()
   }

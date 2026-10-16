@@ -6,6 +6,7 @@ import { COMMENT_REPOSITORY } from '@/modules/comments/comment.repository'
 import { ATTACHMENT_REPOSITORY } from '@/modules/attachments/attachment.repository'
 import { LABEL_REPOSITORY } from '@/modules/labels/label.repository'
 import { CHANNEL_REPOSITORY } from '@/modules/channels/channel.repository'
+import type { WorkspaceMember } from '@/modules/workspaces/workspace-member.repository'
 import { requireWorkspaceMember } from './workspace-membership.guard'
 
 export type Resource = 'project' | 'task' | 'comment' | 'attachment' | 'label' | 'channel'
@@ -53,9 +54,9 @@ export async function requireAccess(
   ctx: RequestContext,
   resource: Resource,
   id: string | null | undefined,
-): Promise<void> {
+): Promise<WorkspaceMember> {
   const workspaceId = id ? await workspaceOf[resource](id) : null
-  await requireWorkspaceMember(ctx, workspaceId, NOT_FOUND[resource])
+  return requireWorkspaceMember(ctx, workspaceId, NOT_FOUND[resource])
 }
 
 /** Route guard: `ctx.params[param]` names a `resource` the caller may access. */

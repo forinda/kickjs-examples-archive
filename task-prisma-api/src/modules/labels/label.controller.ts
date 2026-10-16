@@ -1,26 +1,26 @@
 import {
   Controller,
+  Inject,
   Get,
   Post,
   Put,
   Delete,
-  Inject,
   Middleware,
   ApiQueryParams,
   reply,
   HttpException,
+  type RequestContext,
 } from '@forinda/kickjs'
 
-import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
 import { requireWorkspaceMember } from '@/guards/workspace-membership.guard'
-import { access, requiredQuery } from '@/guards/resource-access.guard'
+import { access, requiredQuery, workspaceIdOf } from '@/guards/resource-access.guard'
 import { successResponse } from '@/shared/api-response'
+import { LABEL_QUERY_CONFIG } from './label.constants'
+import { createLabelSchema, updateLabelSchema } from './label.dto'
 import { LABEL_REPOSITORY, type LabelRepository } from './label.repository'
 import { TASK_LABEL_REPOSITORY, type TaskLabelRepository } from './task-label.repository'
-import { createLabelSchema, updateLabelSchema } from './label.dto'
-import { LABEL_QUERY_CONFIG } from './label.constants'
 
 @Controller()
 @Middleware(authBridgeMiddleware)
@@ -88,6 +88,12 @@ export class LabelController {
   @Post('/tasks/:taskId/:labelId')
   @ApiTags('Label')
   async addToTask(ctx: RequestContext) {
+    // A label only goes on tasks in its own workspace.
+    const [taskWs, labelWs] = await Promise.all([
+      workspaceIdOf('task', ctx.params.taskId),
+      workspaceIdOf('label', ctx.params.labelId),
+    ])
+    if (taskWs !== labelWs) throw HttpException.notFound('Label not found')
     const result = await this.taskLabelRepo.add(ctx.params.taskId, ctx.params.labelId)
     return reply.created(successResponse(result))
   }

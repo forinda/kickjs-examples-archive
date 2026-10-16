@@ -3,10 +3,7 @@ import type { WsContext } from '@forinda/kickjs-ws'
 import { getEnv, Logger, Inject } from '@forinda/kickjs'
 import jwt from 'jsonwebtoken'
 import { MESSAGE_REPOSITORY, type MessageRepository } from './message.repository'
-import {
-  CHANNEL_MEMBER_REPOSITORY,
-  type ChannelMemberRepository,
-} from '@/modules/channels/channel-member.repository'
+import { findChannelAccess, type ChannelAccess } from '@/guards/channel-membership.guard'
 
 const logger = Logger.for('ChatWsController')
 
@@ -16,14 +13,22 @@ const onlineUsers = new Map<string, { userId: string; userName: string }>()
 @WsController('/chat')
 export class ChatWsController {
   @Inject(MESSAGE_REPOSITORY) private readonly messageRepo!: MessageRepository
-  @Inject(CHANNEL_MEMBER_REPOSITORY) private channelMembers!: ChannelMemberRepository
 
-  /** Authenticated channel member? Otherwise reply as if the channel didn't exist. */
-  private async inChannel(ctx: WsContext, channelId: string): Promise<boolean> {
+  /** Can the caller see this channel (same rule as HTTP)? Otherwise reply as if it didn't exist. */
+  private async inChannel(ctx: WsContext, channelId: string): Promise<ChannelAccess | null> {
     const userId = ctx.get('userId')
-    const member = userId ? await this.channelMembers.findByChannelAndUser(channelId, userId) : null
-    if (!member) ctx.send('error', { message: 'Channel not found' })
-    return !!member
+    const access = userId ? await findChannelAccess(userId, channelId) : null
+    if (!access) ctx.send('error', { message: 'Channel not found' })
+    return access
+  }
+
+  /** The message, when the caller sees its channel and wrote it (or is a workspace admin). */
+  private async ownMessage(ctx: WsContext, messageId: string) {
+    const userId = ctx.get('userId')
+    const message = await this.messageRepo.findById(messageId)
+    const access = message && userId ? await findChannelAccess(userId, message.channelId) : null
+    if (!message || !access) return null
+    return message.senderId === userId || access.member.role === 'admin' ? message : null
   }
 
   @OnConnect()
@@ -116,8 +121,8 @@ export class ChatWsController {
     const { messageId, content } = ctx.data || {}
     if (!messageId || !content) return
 
-    const message = await this.messageRepo.findById(messageId)
-    if (!message || message.senderId !== userId) return
+    const message = await this.ownMessage(ctx, messageId)
+    if (!message) return
 
     const updated = await this.messageRepo.update(messageId, { content })
 
@@ -137,8 +142,8 @@ export class ChatWsController {
     const { messageId } = ctx.data || {}
     if (!messageId) return
 
-    const message = await this.messageRepo.findById(messageId)
-    if (!message || message.senderId !== userId) return
+    const message = await this.ownMessage(ctx, messageId)
+    if (!message) return
 
     await this.messageRepo.delete(messageId)
     ctx.to(`channel:${message.channelId}`).send('message:deleted', {

@@ -1,29 +1,33 @@
 import {
   Controller,
+  Inject,
   Get,
   Post,
   Put,
   Delete,
   Autowired,
-  Inject,
   Middleware,
   ApiQueryParams,
   reply,
   HttpException,
+  type RequestContext,
 } from '@forinda/kickjs'
 
-import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
-import { requireWorkspaceMember } from '@/guards/workspace-membership.guard'
+import {
+  requireOwnerOrAdmin,
+  requireTargetMember,
+  requireWorkspaceMember,
+} from '@/guards/workspace-membership.guard'
 import { access, requireAccess, requiredQuery, workspaceIdOf } from '@/guards/resource-access.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
+import { TASK_QUERY_CONFIG } from './task.constants'
+import { createTaskSchema, updateTaskSchema } from './task.dto'
 import { TASK_REPOSITORY, type TaskRepository } from './task.repository'
 import { TASK_ASSIGNEE_REPOSITORY, type TaskAssigneeRepository } from './task-assignee.repository'
 import { TaskService } from './task.service'
-import { createTaskSchema, updateTaskSchema } from './task.dto'
-import { TASK_QUERY_CONFIG } from './task.constants'
 
 @Controller()
 @Middleware(authBridgeMiddleware)
@@ -41,6 +45,13 @@ export class TaskController {
       throw HttpException.notFound('Project not found')
     }
     await requireWorkspaceMember(ctx, ctx.body.workspaceId, 'Project not found')
+    if (ctx.body.parentTaskId) {
+      const parent = await this.repo.findById(ctx.body.parentTaskId)
+      if (parent?.projectId !== ctx.body.projectId) throw HttpException.notFound('Task not found')
+    }
+    for (const userId of ctx.body.assigneeIds) {
+      await requireTargetMember(ctx.body.workspaceId, userId)
+    }
     const user = getUser(ctx)
     const result = await this.taskService.create(ctx.body, user.id)
     return reply.created(successResponse(result))
@@ -72,10 +83,12 @@ export class TaskController {
     return successResponse(result)
   }
 
-  @Middleware(access('task'))
   @Delete('/:id')
   @ApiTags('Task')
   async remove(ctx: RequestContext) {
+    // Any member edits a task; deleting it is for its reporter or a workspace admin.
+    const member = await requireAccess(ctx, 'task', ctx.params.id)
+    requireOwnerOrAdmin(ctx, member, (await this.repo.findById(ctx.params.id))?.reporterId)
     await this.repo.delete(ctx.params.id)
     return reply.noContent()
   }
@@ -94,6 +107,7 @@ export class TaskController {
   @Post('/:id/assignees/:userId')
   @ApiTags('Task')
   async addAssignee(ctx: RequestContext) {
+    await requireTargetMember(await workspaceIdOf('task', ctx.params.id), ctx.params.userId)
     const result = await this.assigneeRepo.add(ctx.params.id, ctx.params.userId)
     return reply.created(successResponse(result))
   }
