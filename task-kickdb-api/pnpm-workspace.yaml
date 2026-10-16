@@ -3,7 +3,7 @@ allowBuilds:
   esbuild: true
 minimumReleaseAgeExclude:
   - '@forinda/kickjs-cli@8.10.2'
-  - '@forinda/kickjs-db@8.7.0'
+  - '@forinda/kickjs-db@8.9.0'
   - '@forinda/kickjs-devtools@7.11.0'
   - '@forinda/kickjs-di@0.1.0'
   - '@forinda/kickjs-testing@8.3.0'
