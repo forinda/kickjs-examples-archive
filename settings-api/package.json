@@ -12,7 +12,9 @@
     "lint": "oxlint src/",
     "format": "oxfmt src/",
     "env:example": "NODE_ENV=production kick env example",
-    "env:check": "NODE_ENV=production kick env example --check"
+    "env:check": "NODE_ENV=production kick env example --check",
+    "build:netlify": "kick build && kick build:netlify",
+    "build:vercel": "kick build && kick build:vercel"
   },
   "dependencies": {
     "@forinda/kickjs": "^10.3.1",

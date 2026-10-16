@@ -50,3 +50,37 @@ NODE_ENV=production pnpm start
 Tests: `src/adapters/mail.settings.test.ts` (production and unset `NODE_ENV` refuse to boot without the password; a `_FILE` secret boots and reports origin `file`; dev defaults under `test`), `src/modules/features/feature.test.ts` (env parsing incl. booleans and a list, injection into the service, `.provide()` instead of env), `src/modules/config-reports/config-report.test.ts` (origins and masking).
 
 The template's Netlify / Vercel / Docker files were removed; take them from a fresh `kick new` if you deploy there.
+
+## Deploy
+
+**Required env** (fail closed: with `NODE_ENV=production` — the image's — or unset, the app refuses to boot without them): `APP_PUBLIC_URL`, `TRANSACTIONAL_MAIL_PASSWORD`, `TRANSACTIONAL_MAIL_FROM`, `MARKETING_MAIL_PASSWORD`, `MARKETING_MAIL_FROM` — plus `*_MAIL_HOST` / `*_MAIL_PORT` for your SMTP servers. Any of them can come from a mounted file: `TRANSACTIONAL_MAIL_PASSWORD_FILE=/run/secrets/…`. `pnpm env:check` fails when `.env.example` is stale.
+
+**Docker**
+
+```bash
+docker build -t settings-api .
+docker run -p 3000:3000 -e APP_PUBLIC_URL=https://api.example.com \
+  -e TRANSACTIONAL_MAIL_HOST=smtp.example.com -e TRANSACTIONAL_MAIL_PASSWORD=… -e TRANSACTIONAL_MAIL_FROM=noreply@example.com \
+  -e MARKETING_MAIL_HOST=smtp.example.com -e MARKETING_MAIL_PASSWORD=… -e MARKETING_MAIL_FROM=news@example.com \
+  settings-api
+```
+
+**Compose** — the app with Mailpit standing in for both SMTP servers (UI on :8025):
+
+```bash
+TRANSACTIONAL_MAIL_PASSWORD=change-me MARKETING_MAIL_PASSWORD=change-me docker compose up --build
+curl localhost:3000/health/ready   # both MailAdapter checks "up"
+```
+
+**Netlify / Vercel** — stateless, so it also runs as a function (`src/serverless.ts`, `netlify.toml`, `vercel.json`); set the same env in the platform:
+
+```bash
+pnpm build:netlify   # → .netlify/v1/functions/api.mjs
+pnpm build:vercel    # → .vercel/output
+```
+
+No state. `/api/v1/config` is mounted only under development/test.
+
+- **Health:** `GET /health/ready` runs every adapter's health check — the image's `HEALTHCHECK` and a load balancer's readiness probe use it; `GET /health/live` for liveness.
+- **DevTools** is dev-only and not in the production build: `/_debug` answers 404 in the image.
+- The image installs from the committed `pnpm-lock.yaml` (frozen) and runs `node dist/index.js` as the unprivileged `node` user with `NODE_ENV=production`; `.env` files are never copied in — pass env with `-e`, `--env-file` or the platform.

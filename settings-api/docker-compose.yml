@@ -1,0 +1,20 @@
+# docker compose up --build — the API and Mailpit as both SMTP servers
+# (web UI on :8025). /health/ready checks each SMTP server.
+# The mail passwords are required: export them or put them in .env.
+services:
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: ['${MAILPIT_UI_PORT:-8025}:8025']
+
+  app:
+    build: .
+    environment:
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost:3000}
+      TRANSACTIONAL_MAIL_HOST: mailpit
+      TRANSACTIONAL_MAIL_PASSWORD: ${TRANSACTIONAL_MAIL_PASSWORD:?set TRANSACTIONAL_MAIL_PASSWORD}
+      TRANSACTIONAL_MAIL_FROM: ${TRANSACTIONAL_MAIL_FROM:-noreply@example.com}
+      MARKETING_MAIL_HOST: mailpit
+      MARKETING_MAIL_PASSWORD: ${MARKETING_MAIL_PASSWORD:?set MARKETING_MAIL_PASSWORD}
+      MARKETING_MAIL_FROM: ${MARKETING_MAIL_FROM:-news@example.com}
+    ports: ['${APP_PORT:-3000}:3000']
+    depends_on: [mailpit]
