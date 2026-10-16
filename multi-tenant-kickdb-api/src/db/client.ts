@@ -16,7 +16,13 @@ if (file !== ':memory:') mkdirSync(dirname(file), { recursive: true })
 /** One SQLite handle serves the query client and migrations (app boot and `kick db`). */
 export const database = new Database(file)
 
-export const db = createDbClient({ schema, tenancy, dialect: sqliteDialect({ database }) })
+export const db = createDbClient({
+  schema,
+  tenancy,
+  dialect: sqliteDialect({ database }),
+  // A failed query's stack shows the line that built it, not only the driver's.
+  asyncStackTraces: getEnv('NODE_ENV') !== 'production',
+})
 
 export const migrationAdapter = sqliteAdapter({ database })
 

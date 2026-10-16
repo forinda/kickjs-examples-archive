@@ -50,4 +50,18 @@ describe("'column' tenancy on workspaceId", () => {
     )
     expect(seen).toEqual([{ title: 'Acme plan' }])
   })
+
+  it('a transaction finished by hand: tenant-scoped inside, gone after rollback', async () => {
+    const tx = await db.startTransaction()
+    try {
+      await tenancy.run('tenant-acme', async () => {
+        await tx.insertInto('projects').values({ title: 'Draft' }).execute()
+        const seen = await tx.selectFrom('projects').select('title').orderBy('title').execute()
+        expect(seen).toEqual([{ title: 'Acme plan' }, { title: 'Draft' }])
+      })
+    } finally {
+      await tx.rollback()
+    }
+    expect((await owners()).map((p) => p.title)).toEqual(['Acme plan', 'Globex plan'])
+  })
 })
