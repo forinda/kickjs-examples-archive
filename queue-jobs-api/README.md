@@ -65,3 +65,32 @@ pnpm typecheck && pnpm lint
 ```
 
 The suite runs QueueAdapter with an in-memory `QueueProvider` (in `job.test.ts`) and checks dispatch, retries and their error reports, final failure, bulk, delay, progress, the repeatable scheduler, and 404s.
+
+## Deploy
+
+**Required env:** `REDIS_PASSWORD` (fail closed — with `NODE_ENV=production`, the image's, or unset, the app refuses to boot without it), plus `REDIS_HOST` / `REDIS_PORT`.
+
+**Docker** — one image, two processes. The API dispatches; the worker runs the jobs (same image, different command):
+
+```bash
+docker build -t queue-jobs-api .
+docker run -p 3000:3000 -e APP_ROLE=api -e REDIS_HOST=… -e REDIS_PASSWORD=… queue-jobs-api
+docker run -e REDIS_HOST=… -e REDIS_PASSWORD=… -e PORT=3001 queue-jobs-api node dist/worker.js
+```
+
+`PORT=3001` on the worker points the image's `HEALTHCHECK` at the worker's own `/health` server (`WORKER_PORT`, default 3001). Without `APP_ROLE` a single container runs API and workers together. Scale workers independently; `SHUTDOWN_TIMEOUT_MS` bounds how long a stopping worker waits for running jobs — keep the platform's grace period above it.
+
+**Compose** — Redis (password-protected, persisted), the API and one worker:
+
+```bash
+REDIS_PASSWORD=$(openssl rand -hex 16) docker compose up --build
+curl -X POST localhost:3000/api/v1/jobs/emails -H 'content-type: application/json' -d '{"to":"a@b.co","subject":"hi"}'
+```
+
+**Not serverless:** workers are long-lived Redis consumers; a function can dispatch but nothing would run the jobs.
+
+State: jobs live in Redis (`redis-data` volume in compose).
+
+- **Health:** `GET /health/ready` runs every adapter's health check — the image's `HEALTHCHECK` and a load balancer's readiness probe use it; `GET /health/live` for liveness.
+- **DevTools** is dev-only and not in the production build: `/_debug` answers 404 in the image.
+- The image installs from the committed `pnpm-lock.yaml` (frozen) and runs `node dist/index.js` as the unprivileged `node` user with `NODE_ENV=production`; `.env` files are never copied in — pass env with `-e`, `--env-file` or the platform.

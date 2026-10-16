@@ -1,0 +1,39 @@
+# docker compose up --build — Redis, the API (dispatches jobs) and a worker (runs them),
+# both from the same image. REDIS_PASSWORD is required: export it or put it in .env.
+services:
+  redis:
+    image: redis:7-alpine
+    command: ['redis-server', '--requirepass', '${REDIS_PASSWORD:?set REDIS_PASSWORD}']
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli -a "$$REDIS_PASSWORD" --no-auth-warning ping | grep PONG']
+      interval: 5s
+      retries: 10
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+  api:
+    build: .
+    environment: &env
+      APP_ROLE: api
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    ports: ['${APP_PORT:-3000}:3000']
+    depends_on:
+      redis: { condition: service_healthy }
+
+  worker:
+    build: .
+    # Same image, jobs only: no API routes, /health on WORKER_PORT.
+    command: ['node', 'dist/worker.js']
+    environment:
+      <<: *env
+      APP_ROLE: worker
+      PORT: 3001
+      WORKER_PORT: 3001
+    depends_on:
+      redis: { condition: service_healthy }
+
+volumes:
+  redis-data:
