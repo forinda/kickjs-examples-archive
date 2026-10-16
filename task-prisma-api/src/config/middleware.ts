@@ -1,7 +1,11 @@
 import express from 'express'
-import type { MiddlewareEntry } from '@forinda/kickjs'
+import { cors, helmet, requestId, requestLogger } from '@forinda/kickjs'
 
-export const middleware: MiddlewareEntry[] = [
+export const middlewares = [
+  helmet(),
+  cors({ origin: '*' }),
+  requestId(),
+  requestLogger(),
   express.json({ limit: '10mb' }),
   express.urlencoded({ extended: true }),
 ]

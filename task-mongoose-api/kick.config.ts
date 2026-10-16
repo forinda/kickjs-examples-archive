@@ -1,43 +1,25 @@
 import { defineConfig } from '@forinda/kickjs-cli'
 
 export default defineConfig({
-  pattern: 'ddd',
+  pattern: 'rest',
+  runtime: 'express',
   modules: {
     dir: 'src/modules',
-    repo: { name: 'mongoose' },
+    pluralize: true,
+  },
+
+  typegen: {
+    schemaValidator: 'kickjs-schema',
   },
 
   commands: [
-    {
-      name: 'seed',
-      description: 'Populate database with sample data',
-      steps: 'npx tsx src/db/seed.ts',
-    },
+    { name: 'seed', description: 'Populate the database with sample data', steps: 'tsx src/db/seed.ts' },
     {
       name: 'db:reset',
-      description: 'Drop database and reseed',
-      steps: ['npx tsx src/db/reset.ts', 'npx tsx src/db/seed.ts'],
+      description: 'Drop the database and reseed',
+      steps: ['tsx src/db/reset.ts', 'tsx src/db/seed.ts'],
     },
-    {
-      name: 'test',
-      description: 'Run tests with Vitest',
-      steps: 'npx vitest run',
-    },
-    {
-      name: 'format',
-      description: 'Format code with Prettier',
-      steps: 'npx prettier --write src/',
-    },
-    {
-      name: 'format:check',
-      description: 'Check formatting without writing',
-      steps: 'npx prettier --check src/',
-    },
-    {
-      name: 'check',
-      description: 'Run typecheck + format check',
-      steps: ['npx tsc --noEmit', 'npx prettier --check src/'],
-      aliases: ['verify', 'ci'],
-    },
+    { name: 'lint', description: 'Lint with oxlint', steps: 'oxlint src/' },
+    { name: 'format', description: 'Format code with oxfmt', steps: 'oxfmt src/' },
   ],
 })

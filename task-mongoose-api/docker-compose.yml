@@ -1,0 +1,34 @@
+# docker compose up --build — MongoDB, Redis (BullMQ) and the API.
+# JWT_SECRET (32+ chars) and RESEND_API_KEY are required: export them or put them in .env.
+services:
+  mongo:
+    image: mongo:8.2
+    volumes: [mongo-data:/data/db]
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.adminCommand("ping").ok']
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      retries: 10
+
+  app:
+    build: .
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/vibed
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+      RESEND_API_KEY: ${RESEND_API_KEY:?set RESEND_API_KEY}
+    ports: ['${APP_PORT:-3000}:3000']
+    depends_on:
+      mongo: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+volumes:
+  mongo-data:
+  redis-data:

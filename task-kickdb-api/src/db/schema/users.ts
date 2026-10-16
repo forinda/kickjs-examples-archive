@@ -1,6 +1,6 @@
 import { table, uuid, varchar, text, boolean, timestamp, index } from '@forinda/kickjs-db'
 
-import { globalRole } from './enums.ts'
+import { globalRole } from './enums'
 
 export const users = table(
   'users',

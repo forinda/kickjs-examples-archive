@@ -1,4 +1,4 @@
-import { definePlugin, createToken, Logger } from '@forinda/kickjs'
+import { definePlugin, createToken, Logger, Inject } from '@forinda/kickjs'
 import nodemailer, { type Transporter } from 'nodemailer'
 
 const log = Logger.for('Mailer')
@@ -34,7 +34,7 @@ export interface MailerService {
 }
 
 // DI token consumers resolve via `@Autowired(MAILER)` or `@Inject(MAILER)`.
-export const MAILER = createToken<MailerService>('app/mailer/service')
+export const MAILER = createToken<MailerService>('app/Mailer/service')
 
 // ── Provider: console (dev / no-SMTP) ───────────────────────────────────
 
@@ -115,9 +115,7 @@ function formatAddr(addr: MailRecipient | MailRecipient[] | undefined): string {
   return addr.name ? `"${addr.name}" <${addr.address}>` : addr.address
 }
 
-function toNodemailerRecipient(
-  addr: MailRecipient | MailRecipient[],
-): string | string[] {
+function toNodemailerRecipient(addr: MailRecipient | MailRecipient[]): string | string[] {
   if (Array.isArray(addr)) return addr.map((r) => formatAddr(r))
   return formatAddr(addr)
 }

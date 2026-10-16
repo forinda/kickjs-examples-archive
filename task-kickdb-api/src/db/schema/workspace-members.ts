@@ -1,8 +1,8 @@
 import { table, uuid, timestamp, index, unique } from '@forinda/kickjs-db'
 
-import { users } from './users.ts'
-import { workspaces } from './workspaces.ts'
-import { workspaceRole } from './enums.ts'
+import { users } from './users'
+import { workspaces } from './workspaces'
+import { workspaceRole } from './enums'
 
 // Join table — Prisma's `@@id([workspaceId, userId])` composite PK is
 // modelled here as a uuid primary key + a unique index on the pair.

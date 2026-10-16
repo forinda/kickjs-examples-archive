@@ -11,8 +11,8 @@ import {
   unique,
 } from '@forinda/kickjs-db'
 
-import { users } from './users.ts'
-import { workspaces } from './workspaces.ts'
+import { users } from './users'
+import { workspaces } from './workspaces'
 
 // Exported so TS can name `StatusColumn` from the inferred type of
 // `projects.statusColumns` when other modules read it transitively

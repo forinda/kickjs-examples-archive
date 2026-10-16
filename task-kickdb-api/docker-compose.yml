@@ -1,0 +1,27 @@
+# docker compose up --build — Postgres and the API. The API applies pending
+# migrations at startup (MIGRATE_ON_BOOT); with several replicas, run them once
+# per release instead (see README).
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: app
+    volumes: [pg-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d app']
+      interval: 5s
+      retries: 10
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/app
+      MIGRATE_ON_BOOT: 'true'
+    ports: ['${APP_PORT:-3000}:3000']
+    depends_on:
+      postgres: { condition: service_healthy }
+
+volumes:
+  pg-data:

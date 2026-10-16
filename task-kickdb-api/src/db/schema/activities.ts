@@ -1,9 +1,9 @@
 import { table, uuid, varchar, jsonb, timestamp, index } from '@forinda/kickjs-db'
 
-import { workspaces } from './workspaces.ts'
-import { projects } from './projects.ts'
-import { tasks } from './tasks.ts'
-import { users } from './users.ts'
+import { workspaces } from './workspaces'
+import { projects } from './projects'
+import { tasks } from './tasks'
+import { users } from './users'
 
 export const activities = table(
   'activities',

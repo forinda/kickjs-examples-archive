@@ -1,7 +1,7 @@
 import { table, uuid, varchar, integer, text, timestamp, index } from '@forinda/kickjs-db'
 
-import { tasks } from './tasks.ts'
-import { users } from './users.ts'
+import { tasks } from './tasks'
+import { users } from './users'
 
 export const attachments = table(
   'attachments',

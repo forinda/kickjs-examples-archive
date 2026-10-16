@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "dialect": "sqlite",
+  "tables": {
+    "bookmarks": {
+      "name": "bookmarks",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "nullable": false,
+          "default": null,
+          "primaryKey": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "primaryKey": false
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(120)",
+          "nullable": false,
+          "default": null,
+          "primaryKey": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "primaryKey": false
+        }
+      },
+      "indexes": [],
+      "foreignKeys": [],
+      "checks": []
+    }
+  }
+}

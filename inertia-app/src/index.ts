@@ -1,0 +1,65 @@
+/// <reference types="@forinda/kickjs-vite/globals" />
+import 'reflect-metadata'
+// Side-effect import — registers and validates the env schema before
+// bootstrap(). SESSION_SECRET is required unless NODE_ENV is development or test.
+import './config'
+import {
+  bootstrap,
+  getEnv,
+  requestId,
+  session,
+  expressRuntime,
+  type AppAdapter,
+} from '@forinda/kickjs'
+import { kickDbAdapter } from '@forinda/kickjs-db'
+import { InertiaAdapter, inertiaErrorHandler, inertiaNotFound } from '@forinda/kickjs-inertia'
+import express from 'express'
+import { migrationAdapter } from './db/client'
+import { DbAdapter } from './adapters/db.adapter'
+import { isDevOrTest } from './config/dev-default'
+import { inertiaOptions } from './config/inertia'
+import { modules } from './modules'
+
+const adapters: AppAdapter[] = [
+  DbAdapter(),
+  kickDbAdapter({
+    migrationAdapter,
+    migrationsDir: 'db/migrations',
+    // Auto-apply only in development/test; anywhere else (incl. unset NODE_ENV) pending migrations stop the boot.
+    migrationsOnBoot: isDevOrTest() || getEnv('MIGRATE_ON_BOOT') ? 'apply' : 'fail-if-pending',
+  }),
+  InertiaAdapter({
+    ...inertiaOptions,
+    head: '<link rel="icon" href="/favicon.svg" type="image/svg+xml" />',
+    ssr: { entry: 'src/client/ssr.tsx' },
+  }),
+]
+
+// DevTools (/_debug) in `kick dev` only: the build sets __KICKJS_DEVTOOLS__ to false and
+// drops this branch, so the package is not in the production bundle.
+if (__KICKJS_DEVTOOLS__) {
+  const { DevToolsAdapter } = await import('@forinda/kickjs-devtools')
+  adapters.push(DevToolsAdapter())
+}
+
+// Export the app for the Vite plugin (dev mode)
+export const app = await bootstrap({
+  modules,
+  runtime: expressRuntime(),
+  middlewares: [
+    requestId(),
+    // Express needs a body parser; Fastify and h3 parse bodies natively.
+    express.json(),
+    // Carries validation errors and flash messages to the next page, in an
+    // encrypted cookie — nothing shared between instances.
+    session({ secret: getEnv('SESSION_SECRET'), store: 'cookie' }),
+  ],
+  adapters,
+  // A failed validation on an Inertia visit goes back to the form with
+  // `props.errors` instead of answering 422.
+  onError: inertiaErrorHandler(),
+  // Unknown URLs: the Error page for browsers, the usual 404 / 405 for API calls.
+  onNotFound: inertiaNotFound(),
+  // Answer unknown URLs here in dev too — not by handing them back to Vite.
+  notFoundFallthrough: false,
+})

@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "dialect": "sqlite",
+  "tables": {
+    "notes": {
+      "name": "notes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "nullable": false,
+          "default": null,
+          "primaryKey": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(120)",
+          "nullable": false,
+          "default": null,
+          "primaryKey": false
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "nullable": false,
+          "default": "",
+          "primaryKey": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "primaryKey": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "primaryKey": false
+        }
+      },
+      "indexes": [],
+      "foreignKeys": [],
+      "checks": []
+    }
+  }
+}

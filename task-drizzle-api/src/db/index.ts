@@ -1,13 +1,16 @@
+// Drizzle wired directly (BYO) — replaces the removed @forinda/kickjs-drizzle.
+// The connection's lifecycle lives in DrizzleAdapter (@/adapters/drizzle.adapter).
 import postgres from 'postgres'
 import { drizzle } from 'drizzle-orm/postgres-js'
+import { createToken } from '@forinda/kickjs'
 import * as schema from './schema'
 
-const connectionString = process.env.DATABASE_URL!
+export function createDb(url: string, max = 10) {
+  const client = postgres(url, { max })
+  return { client, db: drizzle(client, { schema }) }
+}
 
-const client = postgres(connectionString, { max: 10 })
+export type AppDatabase = ReturnType<typeof createDb>['db']
 
-export const db = drizzle(client, { schema })
-
-export type AppDatabase = typeof db
-
-export { client }
+/** Inject with `@Inject(DRIZZLE_DB)`. */
+export const DRIZZLE_DB = createToken<AppDatabase>('app/Drizzle/db')

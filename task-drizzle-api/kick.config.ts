@@ -1,23 +1,25 @@
 import { defineConfig } from '@forinda/kickjs-cli'
 
 export default defineConfig({
-  pattern: 'ddd',
+  pattern: 'rest',
+  runtime: 'express',
   modules: {
     dir: 'src/modules',
-    repo: 'drizzle',
+    pluralize: true,
   },
 
-  // Asset Manager (assets-plan.md). Mail templates live next to the
-  // code in dev (`src/templates/mails/*.ejs`); `kick build` copies
-  // them to `dist/mails/` + emits a manifest so the runtime resolver
-  // returns the right path in either mode without dev/prod branching
-  // at the call site.
-  //
-  // Usage in code:
-  //   import { assets } from '@forinda/kickjs'
-  //   const path = assets.mails.welcome()
-  //   const html = await ejs.renderFile(path, { user })
+  // Mail templates live in src/templates/mails in dev; `kick build` copies
+  // them to dist/ and `assets.mails.welcome()` resolves the right path.
   assetMap: {
     mails: { src: 'src/templates/mails', glob: '**/*.ejs' },
   },
+
+  typegen: {
+    schemaValidator: 'kickjs-schema',
+  },
+
+  commands: [
+    { name: 'lint', description: 'Lint with oxlint', steps: 'oxlint src/' },
+    { name: 'format', description: 'Format code with oxfmt', steps: 'oxfmt src/' },
+  ],
 })

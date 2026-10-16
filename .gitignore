@@ -36,3 +36,9 @@ coverage/
 .turbo/
 .wireit/
 *.tsbuildinfo
+
+# Lockfiles — pnpm-lock.yaml is committed (the Dockerfiles install frozen);
+# other package managers resolve fresh against the package.json ranges.
+package-lock.json
+yarn.lock
+bun.lock

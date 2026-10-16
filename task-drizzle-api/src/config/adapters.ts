@@ -1,31 +1,22 @@
-import { DrizzleAdapter } from '@forinda/kickjs-drizzle'
-import { DevToolsAdapter } from '@forinda/kickjs-devtools'
-import { SwaggerAdapter } from '@forinda/kickjs-swagger'
+/// <reference types="@forinda/kickjs-vite/globals" />
 import { WsAdapter } from '@forinda/kickjs-ws'
 import { QueueAdapter } from '@forinda/kickjs-queue'
-import { CronAdapter } from '@/modules/cron/cron.adapter'
-import { db, client } from '@/db'
-import { AppAdapter } from '@forinda/kickjs'
-import { env } from './env'
+import { getEnv, KickCronAdapter, type AppAdapter } from '@forinda/kickjs'
+import { DrizzleAdapter } from '@/adapters/drizzle.adapter'
+import { swaggerAdapters } from './swagger'
 
 // Side-effect imports: register decorated classes
-import '@/modules/messages/presentation/chat.ws-controller'
-import '@/modules/queue/queue.module'
+import '@/modules/messages/chat.ws-controller'
+import '@/modules/queues/queue.module'
 
-// Cron job classes
-import { TaskCronJobs } from '@/modules/cron/infrastructure/jobs/overdue-reminders.cron'
-import { CleanupCronJobs } from '@/modules/cron/infrastructure/jobs/token-cleanup.cron'
-import { HealthCheckCronJobs } from '@/modules/cron/infrastructure/jobs/health-check.cron'
-import { DigestCronJobs } from '@/modules/cron/infrastructure/jobs/daily-digest.cron'
-import { PresenceCronJobs } from '@/modules/cron/infrastructure/jobs/presence-cleanup.cron'
+// Cron job classes — imported so their @Cron methods register with KickCronAdapter
+import '@/modules/crons/overdue-reminders.cron'
+import '@/modules/crons/token-cleanup.cron'
+import '@/modules/crons/health-check.cron'
+import '@/modules/crons/daily-digest.cron'
+import '@/modules/crons/presence-cleanup.cron'
 
-const redisUrl = new URL(env.REDIS_URL)
-
-const drizzleAdapter = DrizzleAdapter({
-  db,
-  logging: true,
-  onShutdown: () => client.end(),
-})
+const redisUrl = new URL(getEnv('REDIS_URL'))
 
 const wsAdapter = WsAdapter({
   path: '/ws',
@@ -44,21 +35,17 @@ const queueAdapter = QueueAdapter({
 })
 
 export const adapters: AppAdapter[] = [
-  drizzleAdapter,
+  DrizzleAdapter({ url: getEnv('DATABASE_URL') }),
   wsAdapter,
   queueAdapter,
-  CronAdapter({
-    services: [
-      TaskCronJobs,
-      CleanupCronJobs,
-      HealthCheckCronJobs,
-      DigestCronJobs,
-      PresenceCronJobs,
-    ],
-    enabled: true,
-  }),
-  DevToolsAdapter({ adapters: [wsAdapter, queueAdapter] }),
-  SwaggerAdapter({
-    info: { title: 'Vibed (Drizzle Edition)', version: '1.0.0' },
-  }),
+  KickCronAdapter(),
+  // OpenAPI spec + UI under development/test only.
+  ...swaggerAdapters(),
 ]
+
+// DevTools (/_debug) in `kick dev` only: the vite plugin sets the flag false for
+// `kick build`, so the import and the package drop out of the production bundle.
+if (__KICKJS_DEVTOOLS__) {
+  const { DevToolsAdapter } = await import('@forinda/kickjs-devtools')
+  adapters.push(DevToolsAdapter({ adapters: [wsAdapter, queueAdapter] }))
+}

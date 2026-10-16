@@ -1,0 +1,13 @@
+import { defineModule } from '@forinda/kickjs'
+import { StatsController } from './stat.controller'
+
+// Eagerly load decorated classes so @Controller()/@Service()/@Repository()/@Job()/@Cron()
+// decorators register in the DI container.
+import.meta.glob(['./**/*.ts', '!./**/*.test.ts', '!./**/*.d.ts'], { eager: true })
+
+export const StatsModule = defineModule({
+  name: 'StatsModule',
+  build: () => ({
+    routes: () => ({ path: '/', controller: StatsController }),
+  }),
+})

@@ -1,7 +1,7 @@
 import { table, uuid, text, jsonb, timestamp, index } from '@forinda/kickjs-db'
 
-import { tasks } from './tasks.ts'
-import { users } from './users.ts'
+import { tasks } from './tasks'
+import { users } from './users'
 
 export const comments = table(
   'comments',

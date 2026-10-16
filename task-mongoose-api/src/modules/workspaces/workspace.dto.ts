@@ -1,0 +1,35 @@
+import { z } from 'zod'
+
+export const createWorkspaceSchema = z.object({
+  name: z.string().min(1).max(100),
+  slug: z
+    .string()
+    .min(1)
+    .max(50)
+    .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens'),
+  description: z.string().max(500).optional(),
+  logoUrl: z.string().url().optional(),
+})
+
+export type CreateWorkspaceDto = z.infer<typeof createWorkspaceSchema>
+
+export const inviteMemberSchema = z.object({
+  email: z.string().email(),
+  role: z.enum(['admin', 'member']).default('member'),
+})
+
+export type InviteMemberDto = z.infer<typeof inviteMemberSchema>
+
+export const updateMemberRoleSchema = z.object({
+  role: z.enum(['admin', 'member']),
+})
+
+export type UpdateMemberRoleDto = z.infer<typeof updateMemberRoleSchema>
+
+export const updateWorkspaceSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().max(500).optional(),
+  logoUrl: z.string().url().optional(),
+})
+
+export type UpdateWorkspaceDto = z.infer<typeof updateWorkspaceSchema>

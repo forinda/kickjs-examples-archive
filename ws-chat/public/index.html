@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ws-chat</title>
+    <style>
+      body { font: 15px system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+      form { display: flex; gap: 0.5rem; margin: 0.5rem 0; }
+      input { flex: 1; padding: 0.4rem; }
+      #log { border: 1px solid #ccc; height: 320px; overflow-y: auto; padding: 0.5rem; }
+      #log p { margin: 0.2rem 0; }
+      .sys { color: #777; }
+    </style>
+  </head>
+  <body>
+    <h1>ws-chat</h1>
+    <form id="login">
+      <input id="name" placeholder="your name" required pattern="[\w-]{1,24}" />
+      <button>Connect</button>
+    </form>
+    <form id="room">
+      <input id="roomName" placeholder="room (a-z, 0-9, -)" value="general" required />
+      <button>Join</button>
+      <button type="button" id="leave">Leave</button>
+    </form>
+    <p>In <b id="current">—</b>: <span id="users"></span></p>
+    <div id="log" aria-live="polite"></div>
+    <form id="say">
+      <input id="text" placeholder="message" required maxlength="500" />
+      <button>Send</button>
+    </form>
+    <script>
+      const $ = (id) => document.getElementById(id)
+      let ws
+      const log = (text, cls) => {
+        const p = document.createElement('p')
+        p.textContent = text
+        if (cls) p.className = cls
+        $('log').append(p)
+        $('log').scrollTop = $('log').scrollHeight
+      }
+      const send = (event, data) => ws?.send(JSON.stringify({ event, data }))
+
+      $('login').onsubmit = async (e) => {
+        e.preventDefault()
+        ws?.close()
+        const res = await fetch('/api/v1/chat/token', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ name: $('name').value }),
+        })
+        if (!res.ok) return log(`token refused (${res.status})`, 'sys')
+        const { token } = await res.json()
+        const proto = location.protocol === 'https:' ? 'wss' : 'ws'
+        ws = new WebSocket(`${proto}://${location.host}/ws/chat?token=${encodeURIComponent(token)}`)
+        ws.onclose = (e) => log(`disconnected (${e.code})`, 'sys')
+        ws.onmessage = (e) => {
+          const { event, data } = JSON.parse(e.data)
+          if (event === 'welcome') log(`connected as ${data.name}`, 'sys')
+          if (event === 'room:users' && data.room === $('current').textContent)
+            $('users').textContent = data.users.join(', ')
+          if (event === 'message') log(`[${data.room}] ${data.from}: ${data.text}`)
+          if (event === 'error') log(`error: ${data.message}`, 'sys')
+        }
+      }
+      $('room').onsubmit = (e) => {
+        e.preventDefault()
+        $('current').textContent = $('roomName').value
+        send('room:join', { room: $('roomName').value })
+      }
+      $('leave').onclick = () => send('room:leave', { room: $('roomName').value })
+      $('say').onsubmit = (e) => {
+        e.preventDefault()
+        send('message:send', { room: $('current').textContent, text: $('text').value })
+        $('text').value = ''
+      }
+    </script>
+  </body>
+</html>

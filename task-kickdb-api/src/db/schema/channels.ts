@@ -1,9 +1,9 @@
 import { table, uuid, varchar, text, timestamp, unique, index } from '@forinda/kickjs-db'
 
-import { workspaces } from './workspaces.ts'
-import { projects } from './projects.ts'
-import { users } from './users.ts'
-import { channelType } from './enums.ts'
+import { workspaces } from './workspaces'
+import { projects } from './projects'
+import { users } from './users'
+import { channelType } from './enums'
 
 export const channels = table(
   'channels',

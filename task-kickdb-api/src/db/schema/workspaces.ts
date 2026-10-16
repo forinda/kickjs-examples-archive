@@ -1,6 +1,6 @@
 import { table, uuid, varchar, text, timestamp, index } from '@forinda/kickjs-db'
 
-import { users } from './users.ts'
+import { users } from './users'
 
 export const workspaces = table(
   'workspaces',

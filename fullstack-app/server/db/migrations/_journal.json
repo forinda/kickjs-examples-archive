@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "id": "20261016_000329_init",
+      "tag": "init",
+      "hash": "sha256:5b6a069d2936a8ad787ef79d14660b681fa86b35ac36d90a61e4d73648780696",
+      "createdAt": "2026-10-16T00:03:29.484Z"
+    }
+  ]
+}

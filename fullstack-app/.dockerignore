@@ -1,0 +1,14 @@
+# Rebuilt inside the image.
+**/node_modules
+**/dist
+**/.kickjs
+# Secrets stay out of the image; pass them at run time.
+**/.env
+**/.env.*
+!**/.env.example
+# Platform and tooling output.
+.netlify
+.vercel
+.git
+**/coverage
+*.log
