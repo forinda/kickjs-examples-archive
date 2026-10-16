@@ -6,7 +6,12 @@ import type { z } from 'zod'
  * never falls back to a value committed to the repo. Read when the schema is
  * defined (at import), after `@forinda/kickjs` has loaded `.env`.
  */
-export function devDefault<T extends z.ZodType>(schema: T, value: z.input<T>) {
+/** True only for `kick dev` (development) and Vitest (test). Unset NODE_ENV is NOT development. */
+export function isDevOrTest(): boolean {
   const env = process.env.NODE_ENV
-  return env === 'development' || env === 'test' ? schema.default(value as never) : schema
+  return env === 'development' || env === 'test'
+}
+
+export function devDefault<T extends z.ZodType>(schema: T, value: z.input<T>) {
+  return isDevOrTest() ? schema.default(value as never) : schema
 }

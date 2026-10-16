@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import request from 'supertest'
+import { Container } from '@forinda/kickjs'
 import { createTestApp } from '@forinda/kickjs-testing'
 import { AppSettings } from '@/config/app.settings'
 import { FeatureSettings } from './features.settings'
 import { FeaturesModule } from './features.module'
+import { FeaturesService } from './features.service'
 
 describe('FeaturesModule', () => {
   it('injects its section into the service, parsed from the env', async () => {
@@ -13,15 +15,19 @@ describe('FeaturesModule', () => {
       const { app } = await createTestApp({ modules: [FeaturesModule()], settings: [AppSettings] })
       const http = request(app.handle.bind(app))
 
-      const ann = await http.get('/api/v1/features?email=ann@example.com').expect(200)
-      expect(ann.body).toEqual({
+      const res = await http.get('/api/v1/features').expect(200)
+      expect(res.body).toEqual({
         app: 'settings-api',
         signupUrl: null,
-        betaBanner: true,
+        betaBanner: false,
         maxUploadBytes: 10 * 1024 * 1024,
       })
-      const other = await http.get('/api/v1/features?email=eve@example.com').expect(200)
-      expect(other.body.betaBanner).toBe(false)
+      // The list is read server-side only; the endpoint takes no email.
+      const features = Container.getInstance().resolve(FeaturesService)
+      expect(features.isBetaTester('Ann@example.com')).toBe(true)
+      expect(features.isBetaTester('eve@example.com')).toBe(false)
+      const probe = await http.get('/api/v1/features?email=ann@example.com').expect(200)
+      expect(probe.body.betaBanner).toBe(false)
     } finally {
       delete process.env.FEATURES_BETA_TESTERS
       delete process.env.FEATURES_SIGNUPS

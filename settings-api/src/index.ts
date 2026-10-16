@@ -15,6 +15,7 @@ import express from 'express'
 import { MailAdapter } from './adapters/mail.adapter'
 import { MarketingMail, TransactionalMail } from './adapters/mail.settings'
 import { AppSettings } from './config/app.settings'
+import { isDevOrTest } from './config/dev-default'
 import { APPLICATION } from './modules/config-report/config-report.controller'
 import { modules } from './modules'
 
@@ -32,6 +33,9 @@ export const app = await bootstrap({
     MailAdapter.scoped('marketing', { settings: MarketingMail }),
     // /_debug — the Config tab lists where every declared variable's value came from.
     DevToolsAdapter({
+      // Its own default is `NODE_ENV !== 'production'`, which turns /_debug on
+      // when NODE_ENV is unset. Fail closed instead.
+      enabled: isDevOrTest(),
       exposeConfig: true,
       configPrefixes: ['APP_', 'FEATURES_', 'NODE_ENV', 'PORT'],
     }),

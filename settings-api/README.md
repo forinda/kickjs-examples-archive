@@ -10,7 +10,7 @@ Configuration with **settings sections** (`defineSettings`): each concern gets i
 | `FeatureSettings` (`src/modules/features/`) | `FEATURES_*` (incl. a list)       | module `FeaturesModule` — `settings: () => [...]` |
 
 - **One adapter, two instances** — `src/adapters/mail.adapter.ts`: `MailAdapter.scoped('transactional', { settings: TransactionalMail })` and `.scoped('marketing', …)`. Each instance declares its own scoped section and answers `/health/ready` with a TCP check of its SMTP server.
-- **A service injecting a section** — `FeaturesService` takes `@Inject(FeatureSettings) features: SettingsOf<typeof FeatureSettings>` (and `AppSettings`); `GET /api/v1/features?email=` returns what a client should render.
+- **A service injecting a section** — `FeaturesService` takes `@Inject(FeatureSettings) features: SettingsOf<typeof FeatureSettings>` (and `AppSettings`); `GET /api/v1/features` returns the public flags. The beta-tester list stays server-side (`isBetaTester(email)` for code that already knows the user): answering it for any email a caller sends would reveal who is on the list.
 - **Secrets fail closed** — `src/config/dev-default.ts`: the SMTP passwords, senders and `APP_PUBLIC_URL` have a default only when `NODE_ENV` is `development` or `test`. In production, or with `NODE_ENV` unset, boot stops with every missing variable named:
   ```
   Settings 'TRANSACTIONAL_MAIL' are invalid:
@@ -31,7 +31,7 @@ pnpm dev              # or: npm run dev — http://localhost:3000, dev defaults 
 ```
 
 ```bash
-curl 'localhost:3000/api/v1/features?email=ann@example.com'
+curl localhost:3000/api/v1/features
 curl localhost:3000/api/v1/config     # origins + described variables, secrets masked
 curl localhost:3000/health/ready      # one check per MailAdapter instance (down without an SMTP server)
 ```
