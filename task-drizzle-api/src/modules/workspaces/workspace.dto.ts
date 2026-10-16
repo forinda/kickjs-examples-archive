@@ -14,7 +14,7 @@ export const createWorkspaceSchema = z.object({
 export type CreateWorkspaceDTO = z.infer<typeof createWorkspaceSchema>
 
 export const inviteMemberSchema = z.object({
-  userId: z.string().uuid(),
+  email: z.string().email(),
   role: z.enum(['admin', 'member']).default('member'),
 })
 

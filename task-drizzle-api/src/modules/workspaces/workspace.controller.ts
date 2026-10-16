@@ -57,6 +57,28 @@ export class WorkspaceController {
     return successResponse(workspaces)
   }
 
+  // Before `/:id`, so `invites` isn't taken for a workspace id.
+  @Get('/invites')
+  @ApiTags('Workspace')
+  async listInvites(ctx: RequestContext) {
+    return successResponse(await this.memberRepo.listInvitesForUser(getUser(ctx).id))
+  }
+
+  // No membership guard: the invitee isn't a member yet. Both act on the caller's own invite only.
+  @Post('/:id/invite/accept')
+  @ApiTags('Workspace')
+  async acceptInvite(ctx: RequestContext) {
+    await this.workspaceService.acceptInvite(ctx.params.id, getUser(ctx).id)
+    return successResponse(null, 'Invite accepted')
+  }
+
+  @Post('/:id/invite/decline')
+  @ApiTags('Workspace')
+  async declineInvite(ctx: RequestContext) {
+    await this.workspaceService.declineInvite(ctx.params.id, getUser(ctx).id)
+    return successResponse(null, 'Invite declined')
+  }
+
   @Middleware(workspaceMembershipGuard)
   @Get('/:id')
   @ApiTags('Workspace')
@@ -96,8 +118,9 @@ export class WorkspaceController {
   @Post('/:id/members', { body: inviteMemberSchema, name: 'InviteMember' })
   @ApiTags('Workspace')
   async inviteMember(ctx: RequestContext) {
-    const result = await this.workspaceService.inviteMember(ctx.params.id, ctx.body)
-    return reply.created(successResponse(result))
+    // Same answer whether or not the email has an account (no account enumeration).
+    await this.workspaceService.inviteMember(ctx.params.id, ctx.body)
+    return reply.accepted(successResponse(null, 'Invitation sent'))
   }
 
   @Middleware(requireWorkspaceRole('admin'))

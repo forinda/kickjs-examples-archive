@@ -4,6 +4,7 @@ import type { AppDatabase } from '@/db'
 import { users, workspaceMembers } from '@/db/schema'
 import { USER_QUERY_CONFIG } from './user.constants'
 import { queryAdapter } from '@/shared/query-adapter'
+import { acceptedMembership } from '@/modules/workspaces/workspace-member.repository'
 
 /** A user as the API exposes it — never carries the password hash. */
 export type User = Omit<typeof users.$inferSelect, 'passwordHash'>
@@ -14,8 +15,21 @@ export type NewUser = typeof users.$inferInsert
 // Every read/write except findByEmail (the credential lookup) omits the hash.
 const { passwordHash: _passwordHash, ...publicColumns } = getTableColumns(users)
 
+/** What another user may see of a profile — an explicit list, so a new column never leaks by default. */
+const profileColumns = {
+  id: users.id,
+  email: users.email,
+  firstName: users.firstName,
+  lastName: users.lastName,
+  avatarUrl: users.avatarUrl,
+  globalRole: users.globalRole,
+  lastLoginAt: users.lastLoginAt,
+  createdAt: users.createdAt,
+}
+export type UserProfile = { [K in keyof typeof profileColumns]: User[K] }
+
 export function createUserRepository(db: AppDatabase) {
-  /** The viewer plus everyone who shares at least one workspace with them. */
+  /** The viewer plus everyone who shares an accepted membership with them (pending invites don't count). */
   const visibleTo = (viewerId: string) =>
     or(
       eq(users.id, viewerId),
@@ -25,12 +39,15 @@ export function createUserRepository(db: AppDatabase) {
           .select({ id: workspaceMembers.userId })
           .from(workspaceMembers)
           .where(
-            inArray(
-              workspaceMembers.workspaceId,
-              db
-                .select({ id: workspaceMembers.workspaceId })
-                .from(workspaceMembers)
-                .where(eq(workspaceMembers.userId, viewerId)),
+            and(
+              acceptedMembership,
+              inArray(
+                workspaceMembers.workspaceId,
+                db
+                  .select({ id: workspaceMembers.workspaceId })
+                  .from(workspaceMembers)
+                  .where(and(eq(workspaceMembers.userId, viewerId), acceptedMembership)),
+              ),
             ),
           ),
       ),
@@ -44,9 +61,9 @@ export function createUserRepository(db: AppDatabase) {
     },
 
     /** `id` if the viewer may see it (themselves or a workspace teammate), else null. */
-    async findVisibleById(id: string, viewerId: string): Promise<User | null> {
+    async findVisibleById(id: string, viewerId: string): Promise<UserProfile | null> {
       const [user] = await db
-        .select(publicColumns)
+        .select(profileColumns)
         .from(users)
         .where(and(eq(users.id, id), visibleTo(viewerId)))
       return user ?? null
@@ -61,17 +78,17 @@ export function createUserRepository(db: AppDatabase) {
       return db.select(publicColumns).from(users)
     },
 
-    /** Users visible to `viewerId`, scoped in SQL so filters, pages and the total all agree. */
+    /** Users visible to `viewerId`; the scope is AND-ed with the filters in SQL, so pages and the total agree. */
     async findPaginated(
       parsed: ParsedQuery,
       viewerId: string,
-    ): Promise<{ data: User[]; total: number }> {
+    ): Promise<{ data: UserProfile[]; total: number }> {
       const query = queryAdapter.buildFromColumns(parsed, USER_QUERY_CONFIG)
       const where = and(query.where, visibleTo(viewerId))
 
       const [data, countResult] = await Promise.all([
         db
-          .select(publicColumns)
+          .select(profileColumns)
           .from(users)
           .where(where)
           .orderBy(...query.orderBy)

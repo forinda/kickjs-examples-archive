@@ -12,6 +12,7 @@ import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
+import { paginate } from '@/shared/query-adapter'
 import { NOTIFICATION_QUERY_CONFIG } from './notification.constants'
 import { NOTIFICATION_REPOSITORY, type NotificationRepository } from './notification.repository'
 
@@ -26,7 +27,8 @@ export class NotificationController {
   @ApiQueryParams(NOTIFICATION_QUERY_CONFIG)
   async list(ctx: RequestContext) {
     const user = getUser(ctx)
-    return ctx.paginate(
+    return paginate(
+      ctx,
       (parsed) => this.repo.findPaginated(parsed, user.id),
       NOTIFICATION_QUERY_CONFIG,
     )

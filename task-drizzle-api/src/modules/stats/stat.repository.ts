@@ -1,7 +1,8 @@
 import { createToken } from '@forinda/kickjs'
-import { eq, sql } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
 import { attachments, channels, comments, projects, tasks, workspaceMembers } from '@/db/schema'
+import { acceptedMembership } from '@/modules/workspaces/workspace-member.repository'
 
 export interface WorkspaceStats {
   memberCount: number
@@ -28,7 +29,7 @@ export function createStatsRepository(db: AppDatabase) {
           db
             .select({ count: sql<number>`count(*)` })
             .from(workspaceMembers)
-            .where(eq(workspaceMembers.workspaceId, workspaceId)),
+            .where(and(eq(workspaceMembers.workspaceId, workspaceId), acceptedMembership)),
           db
             .select({ count: sql<number>`count(*)` })
             .from(projects)
