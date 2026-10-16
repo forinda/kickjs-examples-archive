@@ -5,8 +5,8 @@ Multi-tenancy on **kick/db + SQLite**, with no tenant code in handlers or reposi
 - `src/db/tenancy.ts` — `defineTenancy({ strategy: 'column' })`: kick/db adds `tenantId = <current tenant>` to every query on a tenanted table and stamps it on insert. (`'rls'` and `'schema'` are Postgres-only; `'column'` works on SQLite.)
 - `src/db/schema.ts` — `tenants` (registry, not tenanted) and `projects` (`tenantId: tenantKey(tenancy)`).
 - `db/migrations/` — `init` from `kick db generate`, plus a hand-written `seed_tenants` data migration (Acme → `acme`, Globex → `globex`). Both reviewed.
-- `src/adapters/db.adapter.ts` — `DbAdapter` registers the client under `APP_DB`, reports `sqlite` on `GET /health/ready`, closes the handle on shutdown. `kickDbAdapter()` applies pending migrations on boot outside production.
-- `src/contributors/tenant.contributor.ts` — `@LoadTenant` resolves the tenant from the `x-tenant` header or the subdomain; unknown tenants get 404, and a tenant the signed-in user doesn't belong to (the token's `tenants` claim) gets 403. kick/db reads it as the current tenant.
+- `src/adapters/db.adapter.ts` — `DbAdapter` registers the client under `APP_DB`, reports `sqlite` on `GET /health/ready`, closes the handle on shutdown. `kickDbAdapter()` applies pending migrations on boot only when NODE_ENV is development or test (anywhere else pending migrations stop the boot).
+- `src/contributors/tenant.contributor.ts` — `@LoadTenant` resolves the tenant from the `x-tenant` header or the subdomain; a tenant the signed-in user doesn't belong to (the token's `tenants` claim) gets the same 404 as an unknown one, so tenant names can't be probed. kick/db reads it as the current tenant.
 - `src/modules/projects/project.repository.ts` — factory repository (`createProjectRepository(db)`, contract = its `ReturnType`, `PROJECT_REPOSITORY` token).
 - BYO Auth recipe: `src/auth.ts` (`jwtStrategy`, `@Public`), `src/contributors/auth-user.contributor.ts` (`@LoadAuthUser`), `src/adapters/auth.adapter.ts` (`AuthAdapter`).
 
@@ -16,13 +16,13 @@ Guides: [Tenancy](https://kickjs.app/guide/database/tenancy) · [Multi-tenancy](
 
 ```bash
 pnpm install        # or: npm install  (builds better-sqlite3)
-cp .env.example .env  # DB_FILE defaults to data/app.db; JWT_SECRET required in production
+cp .env.example .env  # DB_FILE defaults to data/app.db; JWT_SECRET required unless NODE_ENV is development or test
 pnpm dev            # or: npm run dev — applies migrations on boot
 ```
 
 ```bash
-# The token lists the tenants this user belongs to; any other tenant answers 403.
-TOKEN=$(node -e "console.log(require('jsonwebtoken').sign({sub:'u1',email:'me@acme.test',tenants:['acme','globex']},process.argv[1]))" "${JWT_SECRET:-dev-secret-change-me}")
+# The token lists the tenants this user belongs to; any other tenant answers 404, same as one that doesn't exist.
+TOKEN=$(node -e "console.log(require('jsonwebtoken').sign({sub:'u1',email:'me@acme.test',tenants:['acme','globex']},process.argv[1]))" "${JWT_SECRET:-dev-only-jwt-secret-change-me-0123456789}")
 curl -X POST -H "x-tenant: acme" -H "Authorization: Bearer $TOKEN" -H 'content-type: application/json' \
   -d '{"title":"Anvil"}' http://localhost:3000/api/v1/projects
 curl -H "x-tenant: acme"   -H "Authorization: Bearer $TOKEN" http://localhost:3000/api/v1/projects  # Anvil

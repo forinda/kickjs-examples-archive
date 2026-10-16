@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
 import jwt from 'jsonwebtoken'
-import { Container } from '@forinda/kickjs'
+import { Container, getEnv } from '@forinda/kickjs'
 import { kickDbAdapter } from '@forinda/kickjs-db'
 import { createTestApp } from '@forinda/kickjs-testing'
-import { env } from '@/config'
+import '@/config'
 import { jwtStrategy } from '@/auth'
 import { AuthAdapter } from '@/adapters/auth.adapter'
 import { migrationAdapter } from '@/db/client'
@@ -25,7 +25,7 @@ async function makeApp() {
         defaultPolicy: 'open',
         strategies: [
           jwtStrategy({
-            secret: env.JWT_SECRET,
+            secret: getEnv('JWT_SECRET'),
             mapPayload: (p) => ({
               id: p.sub!,
               email: p.email,
@@ -41,7 +41,7 @@ async function makeApp() {
 }
 
 const bearer = (tenants: string[]) => ({
-  Authorization: `Bearer ${jwt.sign({ sub: 'u1', email: 'a@example.test', tenants }, env.JWT_SECRET)}`,
+  Authorization: `Bearer ${jwt.sign({ sub: 'u1', email: 'a@example.test', tenants }, getEnv('JWT_SECRET'))}`,
 })
 const auth = bearer(['acme', 'globex'])
 
@@ -58,17 +58,17 @@ describe('ProjectController', () => {
     await http.get('/api/v1/projects').set('x-tenant', 'nope').set(auth).expect(404)
   })
 
-  it('refuses a tenant the user does not belong to', async () => {
+  it('answers a tenant the user does not belong to like an unknown one (404, no enumeration)', async () => {
     const http = await makeApp()
     const acmeOnly = bearer(['acme'])
     await http.get('/api/v1/projects').set('x-tenant', 'acme').set(acmeOnly).expect(200)
-    await http.get('/api/v1/projects').set('x-tenant', 'globex').set(acmeOnly).expect(403)
+    await http.get('/api/v1/projects').set('x-tenant', 'globex').set(acmeOnly).expect(404)
     await http
       .post('/api/v1/projects')
       .set('Host', 'globex.localhost')
       .set(acmeOnly)
       .send({ title: 'Not mine' })
-      .expect(403)
+      .expect(404)
   })
 
   it("keeps each tenant's projects apart", async () => {

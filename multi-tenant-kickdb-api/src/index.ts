@@ -1,12 +1,14 @@
 import 'reflect-metadata'
-import { env } from './config'
+// Side-effect import — registers the env schema before bootstrap().
+import './config'
 import express from 'express'
-import { bootstrap, expressRuntime } from '@forinda/kickjs'
+import { bootstrap, expressRuntime, getEnv } from '@forinda/kickjs'
 import { kickDbAdapter } from '@forinda/kickjs-db'
 import { jwtStrategy } from './auth'
 import { AuthAdapter } from './adapters/auth.adapter'
 import { migrationAdapter } from './db/client'
 import { DbAdapter } from './adapters/db.adapter'
+import { isDevOrTest } from './config/dev-default'
 import { modules } from './modules'
 
 /**
@@ -30,12 +32,13 @@ export const app = await bootstrap({
     kickDbAdapter({
       migrationAdapter,
       migrationsDir: 'db/migrations',
-      migrationsOnBoot: env.NODE_ENV === 'production' ? 'fail-if-pending' : 'apply',
+      // Auto-apply only in development/test; anywhere else (incl. unset NODE_ENV) pending migrations stop the boot.
+      migrationsOnBoot: isDevOrTest() ? 'apply' : 'fail-if-pending',
     }),
     AuthAdapter({
       strategies: [
         jwtStrategy({
-          secret: env.JWT_SECRET,
+          secret: getEnv('JWT_SECRET'),
           mapPayload: (p) => ({
             id: p.sub!,
             email: p.email,
