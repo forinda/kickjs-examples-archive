@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@forinda/kickjs": "^10.3.1",
-    "@forinda/kickjs-db": "^8.7.0",
+    "@forinda/kickjs-db": "^8.9.0",
     "@forinda/kickjs-devtools": "^7.11.0",
     "@forinda/kickjs-schema": "^0.2.4",
     "dotenv": "^17.4.2",

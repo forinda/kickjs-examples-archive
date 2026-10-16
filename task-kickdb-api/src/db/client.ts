@@ -16,6 +16,8 @@ export const dbClient = createDbClient({
   schema,
   dialect: pgDialect({ pool }),
   events: true,
+  // A failed query's stack shows the line that built it, not only the driver's.
+  asyncStackTraces: getEnv('NODE_ENV') !== 'production',
 })
 
 // The pool is shared, so the migration adapter leaves it open — DbAdapter ends it.

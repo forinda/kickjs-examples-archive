@@ -7,7 +7,8 @@ Multi-tenancy on **kick/db + SQLite**, with no tenant code in handlers or reposi
 - `db/migrations/` — `init` from `kick db generate`, plus a hand-written `seed_tenants` data migration (Acme → `acme`, Globex → `globex`). Both reviewed.
 - `src/adapters/db.adapter.ts` — `DbAdapter` registers the client under `APP_DB`, reports `sqlite` on `GET /health/ready`, closes the handle on shutdown. `kickDbAdapter()` applies pending migrations on boot only when NODE_ENV is development or test (anywhere else pending migrations stop the boot).
 - `src/contributors/tenant.contributor.ts` — `@LoadTenant` resolves the tenant from the `x-tenant` header or the subdomain; a tenant the signed-in user doesn't belong to (the token's `tenants` claim) gets the same 404 as an unknown one, so tenant names can't be probed. kick/db reads it as the current tenant.
-- `src/modules/projects/project.repository.ts` — factory repository (`createProjectRepository(db)`, contract = its `ReturnType`, `PROJECT_REPOSITORY` token).
+- `src/modules/projects/project.repository.ts` — factory repository (`createProjectRepository(db)`, contract = its `ReturnType`, `PROJECT_REPOSITORY` token). `importMany()` is an idempotent bulk add: `db.upsert('projects', { values, target: ['workspaceId', 'title'], update: false })` skips a title the workspace already has (`projects_workspace_title_unique`) and returns every row as stored — tenancy fills `workspaceId`, so the rows don't carry it.
+- `src/db/tenancy.test.ts` — besides isolation, a `db.startTransaction()` test: writes inside a transaction it finishes by hand, then `rollback()`s them.
 - BYO Auth recipe: `src/auth.ts` (`jwtStrategy`, `@Public`), `src/contributors/auth-user.contributor.ts` (`@LoadAuthUser`), `src/adapters/auth.adapter.ts` (`AuthAdapter`).
 
 Guides: [Tenancy](https://kickjs.app/guide/database/tenancy) · [Multi-tenancy](https://kickjs.app/guide/multi-tenancy) · [BYO Auth](https://kickjs.app/guide/byo-recipes#auth)
@@ -27,6 +28,9 @@ curl -X POST -H "x-tenant: acme" -H "Authorization: Bearer $TOKEN" -H 'content-t
   -d '{"title":"Anvil"}' http://localhost:3000/api/v1/projects
 curl -H "x-tenant: acme"   -H "Authorization: Bearer $TOKEN" http://localhost:3000/api/v1/projects  # Anvil
 curl -H "x-tenant: globex" -H "Authorization: Bearer $TOKEN" http://localhost:3000/api/v1/projects  # empty
+# Safe to retry: Anvil is skipped, both rows come back as stored.
+curl -X POST -H "x-tenant: acme" -H "Authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+  -d '{"projects":[{"title":"Anvil"},{"title":"Magnet"}]}' http://localhost:3000/api/v1/projects/import
 curl http://localhost:3000/health/ready
 ```
 

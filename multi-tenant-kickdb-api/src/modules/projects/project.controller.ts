@@ -5,11 +5,15 @@ import { LoadAuthUser } from '@/contributors/auth-user.contributor'
 import { LoadTenant } from '@/contributors/tenant.contributor'
 import { PROJECT_REPOSITORY, type ProjectRepository } from './project.repository'
 
-export const createProjectSchema = fromZod(
-  z.object({
-    title: z.string().min(1).max(200),
-    description: z.string().max(2000).nullish(),
-  }),
+const projectInput = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).nullish(),
+})
+
+export const createProjectSchema = fromZod(projectInput)
+
+export const importProjectsSchema = fromZod(
+  z.object({ projects: z.array(projectInput).min(1).max(500) }),
 )
 
 @Controller()
@@ -27,5 +31,11 @@ export class ProjectController {
   @Post('/', { body: createProjectSchema })
   async create(ctx: Ctx<KickRoutes.ProjectController['create']>) {
     return reply.created(await this.projects.create(ctx.body))
+  }
+
+  /** Safe to retry: titles the workspace already has are left as they are. */
+  @Post('/import', { body: importProjectsSchema })
+  async import(ctx: Ctx<KickRoutes.ProjectController['import']>) {
+    return { projects: await this.projects.importMany(ctx.body.projects) }
   }
 }

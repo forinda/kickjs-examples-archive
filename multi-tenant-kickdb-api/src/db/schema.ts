@@ -1,4 +1,4 @@
-import { index, table, tenantKey, text, timestamp, uuid, varchar } from '@forinda/kickjs-db'
+import { index, table, tenantKey, text, timestamp, unique, uuid, varchar } from '@forinda/kickjs-db'
 import { tenancy } from './tenancy'
 
 /** Tenant registry — not tenanted itself. Seeded by the `seed_tenants` migration. */
@@ -21,5 +21,7 @@ export const projects = table(
   },
   (t) => ({
     workspaceIdx: index('projects_workspace_idx').on(t.workspaceId),
+    // A title is unique within a workspace — the key `import` skips duplicates by.
+    workspaceTitle: unique('projects_workspace_title_unique').on(t.workspaceId, t.title),
   }),
 )

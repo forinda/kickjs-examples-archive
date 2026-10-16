@@ -23,6 +23,19 @@ export function createProjectRepository(db: AppDb) {
         .returningAll()
         .executeTakeFirstOrThrow()
     },
+
+    /**
+     * Idempotent bulk add: a title the workspace already has is skipped, not
+     * updated, and every row comes back as stored — the new ones and the ones
+     * that were there.
+     */
+    importMany(inputs: CreateProject[]) {
+      return db.upsert('projects', {
+        values: inputs.map((p) => ({ title: p.title, description: p.description ?? null })),
+        target: ['workspaceId', 'title'],
+        update: false,
+      })
+    },
   }
 }
 

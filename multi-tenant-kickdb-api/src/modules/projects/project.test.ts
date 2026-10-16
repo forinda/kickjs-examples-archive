@@ -92,4 +92,33 @@ describe('ProjectController', () => {
       .expect(200)
     expect(globex.body.projects).toEqual([])
   })
+
+  it('imports idempotently: a title the workspace has is skipped, and every row comes back', async () => {
+    const http = await makeApp()
+    const send = (titles: string[]) =>
+      http
+        .post('/api/v1/projects/import')
+        .set('x-tenant', 'acme')
+        .set(auth)
+        .send({ projects: titles.map((title) => ({ title })) })
+        .expect(200)
+    const first = await send(['Anvil', 'Magnet'])
+    const again = await send(['Magnet', 'Tornado seeds'])
+    const magnet = (rows: { id: string; title: string }[]) =>
+      rows.find((p) => p.title === 'Magnet')!.id
+    expect(magnet(again.body.projects)).toBe(magnet(first.body.projects))
+
+    const acme = await http.get('/api/v1/projects').set('x-tenant', 'acme').set(auth).expect(200)
+    const titles = acme.body.projects.map((p: { title: string }) => p.title)
+    expect(titles).toEqual(expect.arrayContaining(['Anvil', 'Magnet', 'Tornado seeds']))
+    expect(titles.filter((t: string) => t === 'Magnet')).toHaveLength(1)
+    // Another workspace may use the same titles.
+    const globex = await http
+      .post('/api/v1/projects/import')
+      .set('x-tenant', 'globex')
+      .set(auth)
+      .send({ projects: [{ title: 'Anvil' }] })
+      .expect(200)
+    expect(globex.body.projects[0].workspaceId).toBe('tenant-globex')
+  })
 })
