@@ -11,8 +11,8 @@ import { NotificationModule } from './notifications/notification.module'
 import { ActivityModule } from './activities/activity.module'
 import { ChannelModule } from './channels/channel.module'
 import { MessageModule } from './messages/message.module'
-import { StatModule } from './stats/stats.module'
-import { QueueModule } from './queue/queue.module'
+import { StatModule } from './stats/stat.module'
+import { QueueModule } from './queues/queue.module'
 export const modules = defineModules()
   .mount(UserModule())
   .mount(AuthModule())

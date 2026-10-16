@@ -1,6 +1,7 @@
 import { loadEnvFromSchema } from '@forinda/kickjs/config'
 import { fromZod } from '@forinda/kickjs-schema/zod'
 import { z } from 'zod'
+import { devDefault } from './dev-default'
 
 const envSchema = fromZod(
   z.object({
@@ -13,16 +14,18 @@ const envSchema = fromZod(
     JWT_REFRESH_SECRET: z.string().min(32),
     JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
     JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
-    APP_URL: z.string().default('http://localhost:3000'),
+    // Public URLs: dev defaults only under NODE_ENV=development|test (fail closed).
+    APP_URL: devDefault(z.string(), 'http://localhost:3000'),
     APP_NAME: z.string().default('Vibed'),
-    REDIS_URL: z.string().default('redis://localhost:6379'),
-    SMTP_URL: z.string().optional(),
+    REDIS_URL: devDefault(z.string(), 'redis://localhost:6379'),
+    /** SMTP transport URL. Empty logs mail (reset links included) to the console — dev default only. */
+    SMTP_URL: devDefault(z.string(), ''),
     MAIL_FROM_NAME: z.string().default('Vibed'),
     MAIL_FROM_EMAIL: z.string().default('noreply@vibed.dev'),
   }),
 )
 
-/** Side effect: registers the schema before bootstrap(), so `ConfigService` / `@Value()` see it. */
+/** Side effect: registers the schema before bootstrap(), so `getEnv` / `@Value()` see it. */
 export const env = loadEnvFromSchema(envSchema)
 export type Env = typeof env
 

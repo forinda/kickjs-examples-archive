@@ -78,7 +78,7 @@ class TestActivityController {
       projectId: ctx.query.projectId as string | undefined,
       taskId: ctx.query.taskId as string | undefined,
     })
-    ctx.json(result)
+    return result
   }
 }
 

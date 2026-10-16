@@ -39,7 +39,7 @@ class TestProtectedController {
   @Get('/me')
   async me(ctx: RequestContext) {
     const user = ctx.get('user')
-    ctx.json({ data: user })
+    return { data: user }
   }
 }
 

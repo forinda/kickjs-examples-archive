@@ -1,7 +1,16 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Post, Delete, Inject } from '@forinda/kickjs'
+import {
+  HttpException,
+  reply,
+  Container,
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Inject,
+} from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
@@ -64,26 +73,26 @@ class TestChannelController {
   @Post('/')
   async create(ctx: RequestContext) {
     const result = await this.repo.create(ctx.body)
-    ctx.created({ data: result })
+    return reply.created({ data: result })
   }
 
   @Get('/')
   async list(ctx: RequestContext) {
     const result = await this.repo.findPaginated({} as any, 'w1')
-    ctx.json(result)
+    return result
   }
 
   @Get('/:id')
   async getById(ctx: RequestContext) {
     const result = await this.repo.findById(ctx.params.id)
-    if (!result) return ctx.notFound('Channel not found')
-    ctx.json({ data: result })
+    if (!result) throw HttpException.notFound('Channel not found')
+    return { data: result }
   }
 
   @Delete('/:id')
   async remove(ctx: RequestContext) {
     await this.repo.delete(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }
 

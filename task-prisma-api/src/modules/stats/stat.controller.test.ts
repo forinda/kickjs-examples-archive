@@ -9,7 +9,7 @@ import {
   type ProjectStats,
   STATS_REPOSITORY,
   type StatsRepository,
-} from '@/modules/stats/stats.repository'
+} from '@/modules/stats/stat.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
@@ -64,13 +64,13 @@ class TestStatController {
   @Get('/workspace/:workspaceId')
   async workspaceStats(ctx: RequestContext) {
     const stats = await this.repo.getWorkspaceStats(ctx.params.workspaceId)
-    ctx.json({ data: stats })
+    return { data: stats }
   }
 
   @Get('/project/:projectId')
   async projectStats(ctx: RequestContext) {
     const stats = await this.repo.getProjectStats(ctx.params.projectId)
-    ctx.json({ data: stats })
+    return { data: stats }
   }
 }
 

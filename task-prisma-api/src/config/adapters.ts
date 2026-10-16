@@ -3,21 +3,21 @@ import { DevToolsAdapter } from '@forinda/kickjs-devtools'
 import { SwaggerAdapter } from '@forinda/kickjs-swagger'
 import { WsAdapter } from '@forinda/kickjs-ws'
 import { QueueAdapter } from '@forinda/kickjs-queue'
-import { KickCronAdapter } from '@forinda/kickjs'
-import { env } from '@/config'
+import { getEnv, KickCronAdapter } from '@forinda/kickjs'
+import { isDevOrTest } from './dev-default'
 
 // Side-effect imports: register decorated classes
 import '@/modules/messages/chat.ws-controller'
-import '@/modules/queue/queue.module'
+import '@/modules/queues/queue.module'
 
 // @Cron job classes — imported so their decorators register; KickCronAdapter schedules them
-import '@/modules/cron/overdue-reminders.cron'
-import '@/modules/cron/token-cleanup.cron'
-import '@/modules/cron/health-check.cron'
-import '@/modules/cron/daily-digest.cron'
-import '@/modules/cron/presence-cleanup.cron'
+import '@/modules/crons/overdue-reminders.cron'
+import '@/modules/crons/token-cleanup.cron'
+import '@/modules/crons/health-check.cron'
+import '@/modules/crons/daily-digest.cron'
+import '@/modules/crons/presence-cleanup.cron'
 
-const redisUrl = new URL(env.REDIS_URL)
+const redisUrl = new URL(getEnv('REDIS_URL'))
 
 const wsAdapter = WsAdapter({
   path: '/ws',
@@ -36,11 +36,12 @@ const queueAdapter = QueueAdapter({
 })
 
 export const adapters = [
-  PrismaAdapter({ connectionString: env.DATABASE_URL }),
+  PrismaAdapter({ connectionString: getEnv('DATABASE_URL') }),
   wsAdapter,
   queueAdapter,
   KickCronAdapter(),
-  DevToolsAdapter({ adapters: [wsAdapter, queueAdapter] }),
+  // Its own default turns /_debug on when NODE_ENV is unset; fail closed instead.
+  DevToolsAdapter({ enabled: isDevOrTest(), adapters: [wsAdapter, queueAdapter] }),
   SwaggerAdapter({
     info: { title: 'Vibed (Prisma Edition)', version: '1.0.0' },
   }),

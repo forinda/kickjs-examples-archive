@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Delete, Inject } from '@forinda/kickjs'
+import { HttpException, reply, Container, Controller, Get, Delete, Inject } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
@@ -84,20 +84,20 @@ class TestUserController {
   @Get('/')
   async list(ctx: RequestContext) {
     const users = await this.repo.findAll()
-    ctx.json({ data: users, total: users.length })
+    return { data: users, total: users.length }
   }
 
   @Get('/:id')
   async getById(ctx: RequestContext) {
     const user = await this.repo.findById(ctx.params.id)
-    if (!user) return ctx.notFound('User not found')
-    ctx.json({ data: user })
+    if (!user) throw HttpException.notFound('User not found')
+    return { data: user }
   }
 
   @Delete('/:id')
   async remove(ctx: RequestContext) {
     await this.repo.delete(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }
 

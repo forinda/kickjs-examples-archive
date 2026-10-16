@@ -1,8 +1,7 @@
 import { WsController, OnConnect, OnDisconnect, OnMessage } from '@forinda/kickjs-ws'
 import type { WsContext } from '@forinda/kickjs-ws'
-import { Logger, Inject } from '@forinda/kickjs'
+import { getEnv, Logger, Inject } from '@forinda/kickjs'
 import jwt from 'jsonwebtoken'
-import { env } from '@/config'
 import { MESSAGE_REPOSITORY, type MessageRepository } from './message.repository'
 
 const logger = Logger.for('ChatWsController')
@@ -18,7 +17,7 @@ export class ChatWsController {
   handleConnect(ctx: WsContext) {
     try {
       const token = ctx.data?.token || ''
-      const payload = jwt.verify(token, env.JWT_SECRET) as any
+      const payload = jwt.verify(token, getEnv('JWT_SECRET')) as any
       const userId = payload.sub
       const email = payload.email
 

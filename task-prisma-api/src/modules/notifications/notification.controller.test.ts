@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Put, Inject } from '@forinda/kickjs'
+import { reply, Container, Controller, Get, Put, Inject } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
@@ -80,19 +80,19 @@ class TestNotificationController {
   @Get('/')
   async list(ctx: RequestContext) {
     const result = await this.repo.findPaginated({} as any, 'u1')
-    ctx.json(result)
+    return result
   }
 
   @Get('/unread-count')
   async unreadCount(ctx: RequestContext) {
     const count = await this.repo.unreadCount('u1')
-    ctx.json({ data: { count } })
+    return { data: { count } }
   }
 
   @Put('/:id/read')
   async markRead(ctx: RequestContext) {
     await this.repo.markRead(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }
 

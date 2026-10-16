@@ -1,9 +1,8 @@
-import { Service, Inject, HttpException } from '@forinda/kickjs'
+import { getEnv, Service, Inject, HttpException } from '@forinda/kickjs'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import { ErrorCode } from '@/shared/error-codes'
-import { env } from '@/config'
 import { USER_REPOSITORY, type UserRepository } from '@/modules/users/user.repository'
 import { REFRESH_TOKEN_REPOSITORY, type RefreshTokenRepository } from './refresh-token.repository'
 import type { LoginDTO, RegisterDTO } from './auth.dto'
@@ -106,8 +105,8 @@ export class AuthService {
   private generateAccessToken(user: { id: string; email: string; globalRole: string }): string {
     return jwt.sign(
       { sub: user.id, email: user.email, globalRole: user.globalRole },
-      env.JWT_SECRET,
-      { expiresIn: env.JWT_ACCESS_EXPIRES_IN as string & jwt.SignOptions['expiresIn'] },
+      getEnv('JWT_SECRET'),
+      { expiresIn: getEnv('JWT_ACCESS_EXPIRES_IN') as string & jwt.SignOptions['expiresIn'] },
     )
   }
 }

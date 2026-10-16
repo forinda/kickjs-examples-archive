@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type {
-  ProjectStats,
-  StatsRepository,
-  WorkspaceStats,
-} from '@/modules/stats/stats.repository'
+import type { ProjectStats, StatsRepository, WorkspaceStats } from '@/modules/stats/stat.repository'
 
 // ── In-memory implementation ─────────────────────────────────────────
 

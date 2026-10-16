@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, Controller, Get, Post, Delete, Inject } from '@forinda/kickjs'
+import { reply, Container, Controller, Get, Post, Delete, Inject } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { buildRoutes } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
@@ -65,19 +65,19 @@ class TestMessageController {
   @Post('/')
   async create(ctx: RequestContext) {
     const result = await this.repo.create(ctx.body)
-    ctx.created({ data: result })
+    return reply.created({ data: result })
   }
 
   @Get('/channel/:channelId')
   async listByChannel(ctx: RequestContext) {
     const messages = await this.repo.findByChannel(ctx.params.channelId)
-    ctx.json({ data: messages })
+    return { data: messages }
   }
 
   @Delete('/:id')
   async remove(ctx: RequestContext) {
     await this.repo.delete(ctx.params.id)
-    ctx.noContent()
+    return reply.noContent()
   }
 }
 

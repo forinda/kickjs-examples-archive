@@ -1,9 +1,9 @@
 import { MailerPlugin } from '@/plugins/mailer.plugin'
-import { env } from '@/config'
+import { getEnv } from '@forinda/kickjs'
 
 export const plugins = [
   MailerPlugin({
-    smtpUrl: env.SMTP_URL,
-    defaultFrom: { name: env.MAIL_FROM_NAME, address: env.MAIL_FROM_EMAIL },
+    smtpUrl: getEnv('SMTP_URL') || undefined,
+    defaultFrom: { name: getEnv('MAIL_FROM_NAME'), address: getEnv('MAIL_FROM_EMAIL') },
   }),
 ]

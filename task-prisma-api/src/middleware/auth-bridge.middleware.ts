@@ -1,8 +1,7 @@
 import type { MiddlewareHandler } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
-import { HttpException } from '@forinda/kickjs'
+import { getEnv, HttpException } from '@forinda/kickjs'
 import jwt from 'jsonwebtoken'
-import { env } from '@/config'
 import type { AuthUser } from '@/shared/auth'
 
 export const authBridgeMiddleware: MiddlewareHandler = (ctx: RequestContext, next) => {
@@ -14,7 +13,7 @@ export const authBridgeMiddleware: MiddlewareHandler = (ctx: RequestContext, nex
   const token = header.slice(7)
 
   try {
-    const payload = jwt.verify(token, env.JWT_SECRET) as jwt.JwtPayload
+    const payload = jwt.verify(token, getEnv('JWT_SECRET')) as jwt.JwtPayload
     const user: AuthUser = {
       id: payload.sub!,
       email: payload.email as string,

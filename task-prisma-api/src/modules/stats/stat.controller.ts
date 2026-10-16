@@ -3,7 +3,7 @@ import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
 import { successResponse } from '@/shared/api-response'
-import { STATS_REPOSITORY, type StatsRepository } from './stats.repository'
+import { STATS_REPOSITORY, type StatsRepository } from './stat.repository'
 
 @Controller()
 @Middleware(authBridgeMiddleware)

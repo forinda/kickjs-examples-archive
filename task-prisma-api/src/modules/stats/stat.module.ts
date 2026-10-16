@@ -1,7 +1,7 @@
 import { defineModule } from '@forinda/kickjs'
 import { PRISMA_CLIENT } from '@/db/prisma'
-import { STATS_REPOSITORY, createStatsRepository } from './stats.repository'
-import { StatController } from './stats.controller'
+import { STATS_REPOSITORY, createStatsRepository } from './stat.repository'
+import { StatController } from './stat.controller'
 
 export const StatModule = defineModule({
   name: 'StatModule',
