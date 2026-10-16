@@ -1,10 +1,9 @@
+/// <reference types="@forinda/kickjs-vite/globals" />
 import { PrismaAdapter } from '@/adapters/prisma.adapter'
-import { DevToolsAdapter } from '@forinda/kickjs-devtools'
-import { SwaggerAdapter } from '@forinda/kickjs-swagger'
 import { WsAdapter } from '@forinda/kickjs-ws'
 import { QueueAdapter } from '@forinda/kickjs-queue'
-import { getEnv, KickCronAdapter } from '@forinda/kickjs'
-import { isDevOrTest } from './dev-default'
+import { getEnv, KickCronAdapter, type AppAdapter } from '@forinda/kickjs'
+import { swaggerAdapters } from './swagger'
 
 // Side-effect imports: register decorated classes
 import '@/modules/messages/chat.ws-controller'
@@ -35,14 +34,18 @@ const queueAdapter = QueueAdapter({
   concurrency: 5,
 })
 
-export const adapters = [
+export const adapters: AppAdapter[] = [
   PrismaAdapter({ connectionString: getEnv('DATABASE_URL') }),
   wsAdapter,
   queueAdapter,
   KickCronAdapter(),
-  // Its own default turns /_debug on when NODE_ENV is unset; fail closed instead.
-  DevToolsAdapter({ enabled: isDevOrTest(), adapters: [wsAdapter, queueAdapter] }),
-  SwaggerAdapter({
-    info: { title: 'Vibed (Prisma Edition)', version: '1.0.0' },
-  }),
+  // OpenAPI spec + UI under development/test only.
+  ...swaggerAdapters(),
 ]
+
+// DevTools (/_debug) in `kick dev` only: the vite plugin sets the flag false for
+// `kick build`, so the import and the package drop out of the production bundle.
+if (__KICKJS_DEVTOOLS__) {
+  const { DevToolsAdapter } = await import('@forinda/kickjs-devtools')
+  adapters.push(DevToolsAdapter({ adapters: [wsAdapter, queueAdapter] }))
+}
