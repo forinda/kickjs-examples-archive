@@ -1,9 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
 import { DRIZZLE_DB } from '@/db'
-import {
-  createRefreshTokenRepository,
-  REFRESH_TOKEN_REPOSITORY,
-} from './refresh-token.repository'
+import { createRefreshTokenRepository, REFRESH_TOKEN_REPOSITORY } from './refresh-token.repository'
 import { AuthController } from './auth.controller'
 
 export const AuthModule = defineModule({

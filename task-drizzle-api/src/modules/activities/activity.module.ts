@@ -1,9 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
 import { DRIZZLE_DB } from '@/db'
-import {
-  createActivityRepository,
-  ACTIVITY_REPOSITORY,
-} from './activity.repository'
+import { createActivityRepository, ACTIVITY_REPOSITORY } from './activity.repository'
 import { ActivityController } from './activity.controller'
 
 export const ActivityModule = defineModule({

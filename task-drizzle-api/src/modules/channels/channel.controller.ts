@@ -19,7 +19,10 @@ import { successResponse } from '@/shared/api-response'
 import { CHANNEL_QUERY_CONFIG } from './channel.constants'
 import { createChannelSchema, updateChannelSchema } from './channel.dto'
 import { CHANNEL_REPOSITORY, type ChannelRepository } from './channel.repository'
-import { CHANNEL_MEMBER_REPOSITORY, type ChannelMemberRepository } from './channel-member.repository'
+import {
+  CHANNEL_MEMBER_REPOSITORY,
+  type ChannelMemberRepository,
+} from './channel-member.repository'
 import { ChannelService } from './channel.service'
 
 @Controller()

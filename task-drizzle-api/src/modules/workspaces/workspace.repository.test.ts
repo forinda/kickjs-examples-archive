@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type {
-  NewWorkspace,
-  Workspace,
-  WorkspaceRepository,
-} from './workspace.repository'
+import type { NewWorkspace, Workspace, WorkspaceRepository } from './workspace.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 

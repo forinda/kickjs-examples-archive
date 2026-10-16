@@ -1,10 +1,6 @@
 import { parseQuery } from '@forinda/kickjs'
 import { describe, it, expect, beforeEach } from 'vitest'
-import type {
-  Attachment,
-  AttachmentRepository,
-  NewAttachment,
-} from './attachment.repository'
+import type { Attachment, AttachmentRepository, NewAttachment } from './attachment.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 

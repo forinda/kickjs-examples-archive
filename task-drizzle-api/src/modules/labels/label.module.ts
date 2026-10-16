@@ -1,10 +1,7 @@
 import { defineModule } from '@forinda/kickjs'
 import { DRIZZLE_DB } from '@/db'
 import { createLabelRepository, LABEL_REPOSITORY } from './label.repository'
-import {
-  createTaskLabelRepository,
-  TASK_LABEL_REPOSITORY,
-} from './task-label.repository'
+import { createTaskLabelRepository, TASK_LABEL_REPOSITORY } from './task-label.repository'
 import { LabelController } from './label.controller'
 
 export const LabelModule = defineModule({

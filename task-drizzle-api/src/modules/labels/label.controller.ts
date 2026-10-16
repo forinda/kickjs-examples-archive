@@ -39,8 +39,7 @@ export class LabelController {
   @ApiQueryParams(LABEL_QUERY_CONFIG)
   async list(ctx: RequestContext) {
     return ctx.paginate(
-      (parsed) =>
-        this.repo.findPaginated(parsed, ctx.query.workspaceId as string | undefined),
+      (parsed) => this.repo.findPaginated(parsed, ctx.query.workspaceId as string | undefined),
       LABEL_QUERY_CONFIG,
     )
   }
@@ -79,10 +78,7 @@ export class LabelController {
   @Post('/tasks/:taskId/:labelId')
   @ApiTags('Label')
   async addToTask(ctx: RequestContext) {
-    const result = await this.taskLabelRepo.add(
-      ctx.params.taskId,
-      ctx.params.labelId,
-    )
+    const result = await this.taskLabelRepo.add(ctx.params.taskId, ctx.params.labelId)
     return reply.created(successResponse(result))
   }
 

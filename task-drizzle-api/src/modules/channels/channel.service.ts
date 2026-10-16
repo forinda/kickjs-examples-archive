@@ -1,6 +1,9 @@
 import { Service, Inject, HttpException } from '@forinda/kickjs'
 import type { CreateChannelDTO } from './channel.dto'
-import { CHANNEL_MEMBER_REPOSITORY, type ChannelMemberRepository } from './channel-member.repository'
+import {
+  CHANNEL_MEMBER_REPOSITORY,
+  type ChannelMemberRepository,
+} from './channel-member.repository'
 import { CHANNEL_REPOSITORY, type ChannelRepository } from './channel.repository'
 
 @Service()

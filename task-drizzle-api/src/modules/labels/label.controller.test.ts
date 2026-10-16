@@ -14,11 +14,7 @@ import {
   type ParsedQuery,
 } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
-import {
-  LABEL_REPOSITORY,
-  type LabelRepository,
-  type NewLabel,
-} from './label.repository'
+import { LABEL_REPOSITORY, type LabelRepository, type NewLabel } from './label.repository'
 import { type Label } from './task-label.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────

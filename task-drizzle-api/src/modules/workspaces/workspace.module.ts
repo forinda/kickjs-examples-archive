@@ -4,10 +4,7 @@ import {
   createWorkspaceMemberRepository,
   WORKSPACE_MEMBER_REPOSITORY,
 } from './workspace-member.repository'
-import {
-  createWorkspaceRepository,
-  WORKSPACE_REPOSITORY,
-} from './workspace.repository'
+import { createWorkspaceRepository, WORKSPACE_REPOSITORY } from './workspace.repository'
 import { WorkspaceController } from './workspace.controller'
 
 export const WorkspaceModule = defineModule({

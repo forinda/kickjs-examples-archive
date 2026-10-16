@@ -1,9 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
 import { DRIZZLE_DB } from '@/db'
-import {
-  createTaskAssigneeRepository,
-  TASK_ASSIGNEE_REPOSITORY,
-} from './task-assignee.repository'
+import { createTaskAssigneeRepository, TASK_ASSIGNEE_REPOSITORY } from './task-assignee.repository'
 import { createTaskRepository, TASK_REPOSITORY } from './task.repository'
 import { TaskController } from './task.controller'
 

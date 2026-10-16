@@ -1,10 +1,6 @@
 import { parseQuery } from '@forinda/kickjs'
 import { describe, it, expect, beforeEach } from 'vitest'
-import type {
-  Activity,
-  ActivityRepository,
-  NewActivity,
-} from './activity.repository'
+import type { Activity, ActivityRepository, NewActivity } from './activity.repository'
 
 // ── In-memory implementation for testing ─────────────────────────────
 

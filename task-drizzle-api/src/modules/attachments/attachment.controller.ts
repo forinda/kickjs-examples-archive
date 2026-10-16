@@ -57,8 +57,7 @@ export class AttachmentController {
   @ApiQueryParams(ATTACHMENT_QUERY_CONFIG)
   async list(ctx: RequestContext) {
     return ctx.paginate(
-      (parsed) =>
-        this.repo.findPaginated(parsed, ctx.query.taskId as string | undefined),
+      (parsed) => this.repo.findPaginated(parsed, ctx.query.taskId as string | undefined),
       ATTACHMENT_QUERY_CONFIG,
     )
   }

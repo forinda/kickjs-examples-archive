@@ -1,9 +1,6 @@
 import { defineModule } from '@forinda/kickjs'
 import { DRIZZLE_DB } from '@/db'
-import {
-  createAttachmentRepository,
-  ATTACHMENT_REPOSITORY,
-} from './attachment.repository'
+import { createAttachmentRepository, ATTACHMENT_REPOSITORY } from './attachment.repository'
 import { AttachmentController } from './attachment.controller'
 
 export const AttachmentModule = defineModule({

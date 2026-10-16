@@ -14,12 +14,7 @@ import {
   type ParsedQuery,
 } from '@forinda/kickjs'
 import { createTestApp, createTestModule } from '@forinda/kickjs-testing'
-import {
-  TASK_REPOSITORY,
-  type NewTask,
-  type Task,
-  type TaskRepository,
-} from './task.repository'
+import { TASK_REPOSITORY, type NewTask, type Task, type TaskRepository } from './task.repository'
 
 // ── In-memory repository ─────────────────────────────────────────────
 
