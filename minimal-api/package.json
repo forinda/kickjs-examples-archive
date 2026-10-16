@@ -10,10 +10,13 @@
     "test": "vitest run",
     "typecheck": "kick typecheck",
     "lint": "oxlint src/",
-    "format": "oxfmt src/"
+    "format": "oxfmt src/",
+    "build:netlify": "kick build && kick build:netlify",
+    "build:vercel": "kick build && kick build:vercel"
   },
   "dependencies": {
     "@forinda/kickjs": "^10.3.1",
+    "@forinda/kickjs-devtools": "^7.11.0",
     "@forinda/kickjs-schema": "^0.2.4",
     "dotenv": "^17.4.2",
     "express": "^5.3.0",
@@ -39,5 +42,6 @@
   "allowScripts": {
     "@swc/core": true,
     "esbuild": true
-  }
+  },
+  "packageManager": "pnpm@11.24.0"
 }
