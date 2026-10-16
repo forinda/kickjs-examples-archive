@@ -37,6 +37,7 @@ const ProbeModule = defineModule({
 async function makeApp() {
   const { app } = await createTestApp({
     modules: [ProbeModule()],
+    health: { flags: ['auth.public'] }, // as in src/index.ts
     adapters: [
       AuthAdapter({
         defaultPolicy: 'protected',
@@ -79,6 +80,13 @@ describe('BYO auth (src/auth)', () => {
     const http = await makeApp()
     const res = await http.get('/api/v1/probe/health').expect(200)
     expect(res.body.status).toBe('ok')
+  })
+
+  it('lets the /health probes through without a token, by their mount flag', async () => {
+    const http = await makeApp()
+    await http.get('/health/live').expect(200)
+    await http.get('/health/ready').expect(200)
+    await http.get('/api/v1/probe/me').expect(401)
   })
 
   it('@RequireRole answers 403 for the wrong role and 200 for the right one', async () => {

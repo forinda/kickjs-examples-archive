@@ -1,4 +1,4 @@
-import { defineHttpContextDecorator, HealthController, HttpException } from '@forinda/kickjs'
+import { defineHttpContextDecorator, HttpException } from '@forinda/kickjs'
 import { AUTH_STRATEGIES } from '@/auth'
 
 /**
@@ -14,10 +14,9 @@ export const LoadAuthUser = defineHttpContextDecorator.withParams<{
 }>()({
   key: 'user',
   deps: { strategies: AUTH_STRATEGIES },
-  // `@Public` routes, plus the built-in /health probes (a framework module we
-  // can't decorate) — orchestrators call them without credentials.
-  skipWhen: ({ flags, route }) =>
-    flags.has('auth.public') || route?.controller === HealthController,
+  // `@Public` routes, and the built-in /health probes — src/index.ts puts the
+  // same flag on them via `bootstrap({ health: { flags } })`.
+  skipWhen: 'auth.public',
   beforeValidation: true,
   paramDefaults: { on401: 'reject' },
   resolve: async (ctx, { strategies }, params) => {

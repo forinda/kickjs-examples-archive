@@ -65,6 +65,6 @@ JWT_SECRET=$(openssl rand -hex 32) RESEND_API_KEY=re_… docker compose up --bui
 
 **Not serverless:** WebSockets (`/ws`), BullMQ workers and `@Cron` jobs need a long-running process.
 
-- **Health:** `GET /health/ready` runs every adapter's health check — the image's `HEALTHCHECK` and a load balancer's readiness probe use it; `GET /health/live` for liveness.
+- **Health:** `GET /health/ready` runs every adapter's health check — the image's `HEALTHCHECK` and a load balancer's readiness probe use it; `GET /health/live` for liveness. Both answer without a token: `src/index.ts` mounts them with `health: { flags: ['auth.public'] }`, the flag `LoadAuthUser` skips on.
 - **DevTools** is dev-only and not in the production build: `/_debug` answers 404 in the image.
 - The image installs from the committed `pnpm-lock.yaml` (frozen) and runs `node dist/index.js` as the unprivileged `node` user with `NODE_ENV=production`; `.env` files are never copied in — pass env with `-e`, `--env-file` or the platform.
