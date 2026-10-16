@@ -70,3 +70,34 @@ pnpm test             # or: npm test
 ```
 
 `src/modules/files/file.test.ts` runs the module with `STORAGE` overridden by `memoryStorage()`: upload → list → download → delete (then 404); 413 over the limit and 415 for `text/html`, with nothing stored; 401 without the API key; a signed URL works without the key, a tampered id or expiry gets 403, and so does the same URL once its time has passed.
+
+## Deploy
+
+**Required env** (fail closed — with `NODE_ENV=production`, the image's, or unset, the app refuses to boot without them): `API_KEY`, `SIGNING_SECRET` (32+ chars each), and with the default `s3` driver `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (+ `S3_ENDPOINT` for MinIO / R2).
+
+**Docker**
+
+```bash
+docker build -t file-storage-api .
+docker run -p 3000:3000 -e API_KEY=… -e SIGNING_SECRET=… \
+  -e S3_BUCKET=files -e S3_REGION=us-east-1 -e S3_ACCESS_KEY_ID=… -e S3_SECRET_ACCESS_KEY=… file-storage-api
+```
+
+Files live in the bucket, so the container keeps nothing. To store on disk instead: `-e STORAGE_DRIVER=disk -e UPLOAD_DIR=/app/data/uploads -v file-storage-data:/app/data` (one instance only).
+
+**Compose** — MinIO, a one-off job that creates the `files` bucket, and the API on the `s3` driver:
+
+```bash
+API_KEY=$(openssl rand -hex 32) SIGNING_SECRET=$(openssl rand -hex 32) docker compose up --build
+```
+
+**Netlify / Vercel** — with S3 it is stateless, so it also runs as a function (`src/serverless.ts`, `netlify.toml`, `vercel.json`). Set the same env in the platform; the platforms cap request bodies (Vercel 4.5 MB, Netlify 6 MB), so keep `MAX_UPLOAD_BYTES` under that or upload straight to the bucket with a presigned URL.
+
+```bash
+pnpm build:netlify   # → .netlify/v1/functions/api.mjs
+pnpm build:vercel    # → .vercel/output
+```
+
+- **Health:** `GET /health/ready` runs every adapter's health check — the image's `HEALTHCHECK` and a load balancer's readiness probe use it; `GET /health/live` for liveness.
+- **DevTools** is dev-only and not in the production build: `/_debug` answers 404 in the image.
+- The image installs from the committed `pnpm-lock.yaml` (frozen) and runs `node dist/index.js` as the unprivileged `node` user with `NODE_ENV=production`; `.env` files are never copied in — pass env with `-e`, `--env-file` or the platform.
