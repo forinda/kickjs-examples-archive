@@ -1,6 +1,5 @@
 import type { RequestContext } from '@forinda/kickjs'
 import { HttpException } from '@forinda/kickjs'
-import type { ChannelMember, Project, WorkspaceMember } from '@/generated/prisma/client'
 
 export interface AuthUser {
   id: string
@@ -12,10 +11,6 @@ declare module '@forinda/kickjs' {
   interface ContextMeta {
     /** Set by `authBridgeMiddleware` on authenticated routes. */
     user: AuthUser
-    /** Set by the access guards in src/guards. */
-    project: Project
-    workspaceMember: WorkspaceMember
-    channelMember: ChannelMember
   }
 }
 

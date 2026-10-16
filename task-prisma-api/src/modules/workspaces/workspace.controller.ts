@@ -13,6 +13,7 @@ import {
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
+import { requireWorkspaceRole, workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
 import { WorkspaceService } from './workspace.service'
@@ -52,6 +53,7 @@ export class WorkspaceController {
     return successResponse(workspaces)
   }
 
+  @Middleware(workspaceMembershipGuard)
   @Get('/:id')
   @ApiTags('Workspace')
   async getById(ctx: RequestContext) {
@@ -60,6 +62,7 @@ export class WorkspaceController {
     return successResponse(result)
   }
 
+  @Middleware(requireWorkspaceRole('admin'))
   @Put('/:id', { body: updateWorkspaceSchema, name: 'UpdateWorkspace' })
   @ApiTags('Workspace')
   async update(ctx: RequestContext) {
@@ -67,6 +70,7 @@ export class WorkspaceController {
     return successResponse(result)
   }
 
+  @Middleware(requireWorkspaceRole('admin'))
   @Delete('/:id')
   @ApiTags('Workspace')
   async remove(ctx: RequestContext) {
@@ -76,6 +80,7 @@ export class WorkspaceController {
 
   // --- Member management ---
 
+  @Middleware(workspaceMembershipGuard)
   @Get('/:id/members')
   @ApiTags('Workspace')
   async listMembers(ctx: RequestContext) {
@@ -83,6 +88,7 @@ export class WorkspaceController {
     return successResponse(members)
   }
 
+  @Middleware(requireWorkspaceRole('admin'))
   @Post('/:id/members', { body: inviteMemberSchema, name: 'InviteMember' })
   @ApiTags('Workspace')
   async inviteMember(ctx: RequestContext) {
@@ -90,6 +96,7 @@ export class WorkspaceController {
     return reply.created(successResponse(result))
   }
 
+  @Middleware(requireWorkspaceRole('admin'))
   @Put('/:id/members/:userId', {
     body: updateMemberRoleSchema,
     name: 'UpdateMemberRole',
@@ -104,6 +111,7 @@ export class WorkspaceController {
     return successResponse(result)
   }
 
+  @Middleware(requireWorkspaceRole('admin'))
   @Delete('/:id/members/:userId')
   @ApiTags('Workspace')
   async removeMember(ctx: RequestContext) {
@@ -111,6 +119,7 @@ export class WorkspaceController {
     return reply.noContent()
   }
 
+  @Middleware(workspaceMembershipGuard)
   @Post('/:id/leave')
   @ApiTags('Workspace')
   async leave(ctx: RequestContext) {

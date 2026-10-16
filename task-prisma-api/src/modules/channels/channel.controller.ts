@@ -14,6 +14,8 @@ import {
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
+import { requireWorkspaceMember } from '@/guards/workspace-membership.guard'
+import { access, workspaceIdOf } from '@/guards/resource-access.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
 import { CHANNEL_REPOSITORY, type ChannelRepository } from './channel.repository'
@@ -36,6 +38,13 @@ export class ChannelController {
   @Post('/', { body: createChannelSchema, name: 'CreateChannel' })
   @ApiTags('Channel')
   async create(ctx: RequestContext) {
+    await requireWorkspaceMember(ctx, ctx.body.workspaceId)
+    if (
+      ctx.body.projectId &&
+      (await workspaceIdOf('project', ctx.body.projectId)) !== ctx.body.workspaceId
+    ) {
+      throw HttpException.notFound('Project not found')
+    }
     const user = getUser(ctx)
     const result = await this.channelService.create(ctx.body, user.id)
     return reply.created(successResponse(result))
@@ -49,6 +58,7 @@ export class ChannelController {
     if (!workspaceId) {
       throw HttpException.badRequest('workspaceId query parameter is required')
     }
+    await requireWorkspaceMember(ctx, workspaceId)
 
     return ctx.paginate(
       (parsed) => this.repo.findPaginated(parsed, workspaceId),
@@ -56,6 +66,7 @@ export class ChannelController {
     )
   }
 
+  @Middleware(access('channel'))
   @Get('/:id')
   @ApiTags('Channel')
   async getById(ctx: RequestContext) {
@@ -64,6 +75,7 @@ export class ChannelController {
     return successResponse(result)
   }
 
+  @Middleware(access('channel'))
   @Put('/:id', { body: updateChannelSchema, name: 'UpdateChannel' })
   @ApiTags('Channel')
   async update(ctx: RequestContext) {
@@ -71,6 +83,7 @@ export class ChannelController {
     return successResponse(result)
   }
 
+  @Middleware(access('channel'))
   @Delete('/:id')
   @ApiTags('Channel')
   async remove(ctx: RequestContext) {
@@ -80,6 +93,7 @@ export class ChannelController {
 
   // --- Members ---
 
+  @Middleware(access('channel'))
   @Get('/:id/members')
   @ApiTags('Channel')
   async listMembers(ctx: RequestContext) {
@@ -87,6 +101,7 @@ export class ChannelController {
     return successResponse(members)
   }
 
+  @Middleware(access('channel'))
   @Post('/:id/members/:userId')
   @ApiTags('Channel')
   async addMember(ctx: RequestContext) {
@@ -94,6 +109,7 @@ export class ChannelController {
     return reply.created(successResponse(result))
   }
 
+  @Middleware(access('channel'))
   @Delete('/:id/members/:userId')
   @ApiTags('Channel')
   async removeMember(ctx: RequestContext) {

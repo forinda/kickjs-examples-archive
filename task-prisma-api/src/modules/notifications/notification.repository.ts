@@ -40,9 +40,10 @@ export function createNotificationRepository(prisma: PrismaClient) {
       return prisma.notification.create({ data: data as any })
     },
 
-    async markRead(id: string) {
-      await prisma.notification.update({
-        where: { id },
+    /** Only the recipient's own notification — someone else's id is a no-op. */
+    async markRead(id: string, recipientId: string) {
+      await prisma.notification.updateMany({
+        where: { id, recipientId },
         data: { isRead: true },
       })
     },

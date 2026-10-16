@@ -2,6 +2,8 @@ import { Controller, Get, Inject, Middleware } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
+import { access } from '@/guards/resource-access.guard'
+import { workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
 import { successResponse } from '@/shared/api-response'
 import { STATS_REPOSITORY, type StatsRepository } from './stat.repository'
 
@@ -11,6 +13,7 @@ import { STATS_REPOSITORY, type StatsRepository } from './stat.repository'
 export class StatController {
   @Inject(STATS_REPOSITORY) private readonly repo!: StatsRepository
 
+  @Middleware(workspaceMembershipGuard)
   @Get('/workspace/:workspaceId')
   @ApiTags('Stats')
   async workspaceStats(ctx: RequestContext) {
@@ -18,6 +21,7 @@ export class StatController {
     return successResponse(stats)
   }
 
+  @Middleware(access('project', 'projectId'))
   @Get('/project/:projectId')
   @ApiTags('Stats')
   async projectStats(ctx: RequestContext) {
@@ -25,6 +29,7 @@ export class StatController {
     return successResponse(stats)
   }
 
+  @Middleware(workspaceMembershipGuard)
   @Get('/workspace/:workspaceId/stream')
   @ApiTags('Stats')
   async workspaceStatsStream(ctx: RequestContext) {
@@ -41,6 +46,7 @@ export class StatController {
     sse.onClose(() => clearInterval(interval))
   }
 
+  @Middleware(access('project', 'projectId'))
   @Get('/project/:projectId/stream')
   @ApiTags('Stats')
   async projectStatsStream(ctx: RequestContext) {

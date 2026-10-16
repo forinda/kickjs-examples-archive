@@ -35,8 +35,8 @@ class InMemoryNotificationRepository implements NotificationRepository {
     return notification
   }
 
-  async markRead(id: string) {
-    const notif = this.notifications.find((n) => n.id === id)
+  async markRead(id: string, recipientId: string) {
+    const notif = this.notifications.find((n) => n.id === id && n.recipientId === recipientId)
     if (notif) notif.isRead = true
   }
 
@@ -109,7 +109,7 @@ describe('InMemoryNotificationRepository', () => {
       title: 'N',
       body: 'B',
     })
-    await repo.markRead(notif.id)
+    await repo.markRead(notif.id, 'u1')
     const found = await repo.findById(notif.id)
     expect(found!.isRead).toBe(true)
   })
@@ -134,7 +134,7 @@ describe('InMemoryNotificationRepository', () => {
     expect(await repo.unreadCount('u1')).toBe(2)
 
     const notifs = (await repo.findPaginated({} as any, 'u1')).data
-    await repo.markRead(notifs[0].id)
+    await repo.markRead(notifs[0].id, 'u1')
     expect(await repo.unreadCount('u1')).toBe(1)
   })
 

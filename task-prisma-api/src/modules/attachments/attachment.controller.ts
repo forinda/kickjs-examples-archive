@@ -14,6 +14,7 @@ import {
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
+import { access, requireAccess, requiredQuery } from '@/guards/resource-access.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
 import { ATTACHMENT_REPOSITORY, type AttachmentRepository } from './attachment.repository'
@@ -38,6 +39,7 @@ export class AttachmentController {
     const user = getUser(ctx)
     const file = ctx.file
     const taskId = ctx.body.taskId
+    await requireAccess(ctx, 'task', taskId)
 
     const result = await this.attachmentService.create(
       {
@@ -56,12 +58,15 @@ export class AttachmentController {
   @ApiTags('Attachment')
   @ApiQueryParams(ATTACHMENT_QUERY_CONFIG)
   async list(ctx: RequestContext) {
+    const taskId = requiredQuery(ctx, 'taskId')
+    await requireAccess(ctx, 'task', taskId)
     return ctx.paginate(
-      (parsed) => this.repo.findPaginated(parsed, ctx.query.taskId as string | undefined),
+      (parsed) => this.repo.findPaginated(parsed, taskId),
       ATTACHMENT_QUERY_CONFIG,
     )
   }
 
+  @Middleware(access('attachment'))
   @Get('/:id')
   @ApiTags('Attachment')
   async getById(ctx: RequestContext) {
@@ -70,6 +75,7 @@ export class AttachmentController {
     return successResponse(result)
   }
 
+  @Middleware(access('attachment'))
   @Get('/:id/download')
   @ApiTags('Attachment')
   async download(ctx: RequestContext) {
@@ -83,6 +89,7 @@ export class AttachmentController {
     ctx.res.end(buffer)
   }
 
+  @Middleware(access('attachment'))
   @Delete('/:id')
   @ApiTags('Attachment')
   async remove(ctx: RequestContext) {

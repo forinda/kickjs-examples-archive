@@ -15,6 +15,8 @@ import {
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
+import { requireWorkspaceMember } from '@/guards/workspace-membership.guard'
+import { access, requireAccess, requiredQuery, workspaceIdOf } from '@/guards/resource-access.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
 import { TASK_REPOSITORY, type TaskRepository } from './task.repository'
@@ -34,6 +36,11 @@ export class TaskController {
   @Post('/', { body: createTaskSchema, name: 'CreateTask' })
   @ApiTags('Task')
   async create(ctx: RequestContext) {
+    // The project must be the caller's, and in the workspace the body names.
+    if ((await workspaceIdOf('project', ctx.body.projectId)) !== ctx.body.workspaceId) {
+      throw HttpException.notFound('Project not found')
+    }
+    await requireWorkspaceMember(ctx, ctx.body.workspaceId, 'Project not found')
     const user = getUser(ctx)
     const result = await this.taskService.create(ctx.body, user.id)
     return reply.created(successResponse(result))
@@ -43,12 +50,12 @@ export class TaskController {
   @ApiTags('Task')
   @ApiQueryParams(TASK_QUERY_CONFIG)
   async list(ctx: RequestContext) {
-    return ctx.paginate(
-      (parsed) => this.repo.findPaginated(parsed, ctx.query.projectId as string | undefined),
-      TASK_QUERY_CONFIG,
-    )
+    const projectId = requiredQuery(ctx, 'projectId')
+    await requireAccess(ctx, 'project', projectId)
+    return ctx.paginate((parsed) => this.repo.findPaginated(parsed, projectId), TASK_QUERY_CONFIG)
   }
 
+  @Middleware(access('task'))
   @Get('/:id')
   @ApiTags('Task')
   async getById(ctx: RequestContext) {
@@ -57,6 +64,7 @@ export class TaskController {
     return successResponse(result)
   }
 
+  @Middleware(access('task'))
   @Put('/:id', { body: updateTaskSchema, name: 'UpdateTask' })
   @ApiTags('Task')
   async update(ctx: RequestContext) {
@@ -64,6 +72,7 @@ export class TaskController {
     return successResponse(result)
   }
 
+  @Middleware(access('task'))
   @Delete('/:id')
   @ApiTags('Task')
   async remove(ctx: RequestContext) {
@@ -73,6 +82,7 @@ export class TaskController {
 
   // --- Assignees ---
 
+  @Middleware(access('task'))
   @Get('/:id/assignees')
   @ApiTags('Task')
   async getAssignees(ctx: RequestContext) {
@@ -80,6 +90,7 @@ export class TaskController {
     return successResponse(assignees)
   }
 
+  @Middleware(access('task'))
   @Post('/:id/assignees/:userId')
   @ApiTags('Task')
   async addAssignee(ctx: RequestContext) {
@@ -87,6 +98,7 @@ export class TaskController {
     return reply.created(successResponse(result))
   }
 
+  @Middleware(access('task'))
   @Delete('/:id/assignees/:userId')
   @ApiTags('Task')
   async removeAssignee(ctx: RequestContext) {
@@ -96,6 +108,7 @@ export class TaskController {
 
   // --- Subtasks ---
 
+  @Middleware(access('task'))
   @Get('/:id/subtasks')
   @ApiTags('Task')
   async listSubtasks(ctx: RequestContext) {

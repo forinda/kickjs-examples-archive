@@ -8,10 +8,13 @@ import {
   Inject,
   Middleware,
   reply,
+  HttpException,
 } from '@forinda/kickjs'
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
+import { ErrorCode } from '@/shared/error-codes'
+import { channelMembershipGuard, requireChannelMember } from '@/guards/channel-membership.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
 import { MESSAGE_REPOSITORY, type MessageRepository } from './message.repository'
@@ -28,11 +31,13 @@ export class MessageController {
   @Post('/', { body: createMessageSchema, name: 'CreateMessage' })
   @ApiTags('Message')
   async create(ctx: RequestContext) {
+    await requireChannelMember(ctx, ctx.body.channelId)
     const user = getUser(ctx)
     const result = await this.messageService.create(ctx.body, user.id)
     return reply.created(successResponse(result))
   }
 
+  @Middleware(channelMembershipGuard)
   @Get('/channel/:channelId')
   @ApiTags('Message')
   async listByChannel(ctx: RequestContext) {
@@ -47,6 +52,11 @@ export class MessageController {
   @Put('/:id', { body: updateMessageSchema, name: 'UpdateMessage' })
   @ApiTags('Message')
   async update(ctx: RequestContext) {
+    const message = await this.repo.findById(ctx.params.id)
+    await requireChannelMember(ctx, message?.channelId, 'Message not found')
+    if (message?.senderId !== getUser(ctx).id) {
+      throw HttpException.forbidden(ErrorCode.NOT_MESSAGE_AUTHOR)
+    }
     const result = await this.repo.update(ctx.params.id, { content: ctx.body.content })
     return successResponse(result)
   }
@@ -54,6 +64,11 @@ export class MessageController {
   @Delete('/:id')
   @ApiTags('Message')
   async remove(ctx: RequestContext) {
+    const message = await this.repo.findById(ctx.params.id)
+    await requireChannelMember(ctx, message?.channelId, 'Message not found')
+    if (message?.senderId !== getUser(ctx).id) {
+      throw HttpException.forbidden(ErrorCode.NOT_MESSAGE_AUTHOR)
+    }
     await this.repo.delete(ctx.params.id)
     return reply.noContent()
   }

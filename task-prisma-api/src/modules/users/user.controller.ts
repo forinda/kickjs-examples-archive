@@ -12,6 +12,7 @@ import {
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
+import { ErrorCode } from '@/shared/error-codes'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
 import { USER_REPOSITORY, type UserRepository } from './user.repository'
@@ -58,6 +59,8 @@ export class UserController {
   @Delete('/:id')
   @ApiTags('User')
   async remove(ctx: RequestContext) {
+    // Deleting accounts is a platform-admin action.
+    if (getUser(ctx).globalRole !== 'superadmin') throw HttpException.forbidden(ErrorCode.FORBIDDEN)
     await this.repo.delete(ctx.params.id)
     return reply.noContent()
   }

@@ -12,6 +12,11 @@ import {
 import type { RequestContext } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
+import { access } from '@/guards/resource-access.guard'
+import {
+  requireWorkspaceMember,
+  workspaceMembershipGuard,
+} from '@/guards/workspace-membership.guard'
 import { successResponse } from '@/shared/api-response'
 import { PROJECT_REPOSITORY, type ProjectRepository } from './project.repository'
 import { createProjectSchema, updateProjectSchema } from './project.dto'
@@ -25,10 +30,12 @@ export class ProjectController {
   @Post('/', { body: createProjectSchema, name: 'CreateProject' })
   @ApiTags('Project')
   async create(ctx: RequestContext) {
+    await requireWorkspaceMember(ctx, ctx.body.workspaceId)
     const result = await this.repo.create(ctx.body)
     return reply.created(successResponse(result))
   }
 
+  @Middleware(workspaceMembershipGuard)
   @Get('/workspace/:workspaceId')
   @ApiTags('Project')
   async listByWorkspace(ctx: RequestContext) {
@@ -36,6 +43,7 @@ export class ProjectController {
     return successResponse(projects)
   }
 
+  @Middleware(access('project'))
   @Get('/:id')
   @ApiTags('Project')
   async getById(ctx: RequestContext) {
@@ -44,6 +52,7 @@ export class ProjectController {
     return successResponse(result)
   }
 
+  @Middleware(access('project'))
   @Put('/:id', { body: updateProjectSchema, name: 'UpdateProject' })
   @ApiTags('Project')
   async update(ctx: RequestContext) {
@@ -51,6 +60,7 @@ export class ProjectController {
     return successResponse(result)
   }
 
+  @Middleware(access('project'))
   @Delete('/:id')
   @ApiTags('Project')
   async remove(ctx: RequestContext) {

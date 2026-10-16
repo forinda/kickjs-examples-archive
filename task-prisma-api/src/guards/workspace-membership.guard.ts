@@ -2,49 +2,44 @@ import { Container, HttpException, type MiddlewareHandler } from '@forinda/kickj
 import type { RequestContext } from '@forinda/kickjs'
 import { ErrorCode } from '@/shared/error-codes'
 import { getUser } from '@/shared/auth'
-import {
-  WORKSPACE_MEMBER_REPOSITORY,
-  type WorkspaceMemberRepository,
-} from '@/modules/workspaces/workspace-member.repository'
+import { WORKSPACE_MEMBER_REPOSITORY } from '@/modules/workspaces/workspace-member.repository'
 
+/**
+ * The caller must be a member of `workspaceId` (with one of `roles`, when
+ * given). A non-member gets the same 404 as a missing record — `notFound` —
+ * so ids from other workspaces can't be probed; a member without the role
+ * gets 403.
+ */
+export async function requireWorkspaceMember(
+  ctx: RequestContext,
+  workspaceId: string | null | undefined,
+  notFound = 'Workspace not found',
+  roles?: string[],
+): Promise<void> {
+  const member = workspaceId
+    ? await Container.getInstance()
+        .resolve(WORKSPACE_MEMBER_REPOSITORY)
+        .findByWorkspaceAndUser(workspaceId, getUser(ctx).id)
+    : null
+  if (!member) throw HttpException.notFound(notFound)
+  if (roles && !roles.includes(member.role)) throw HttpException.forbidden(ErrorCode.FORBIDDEN)
+}
+
+/** Routes with `:workspaceId` (or `:id` on /workspaces): members only. */
 export const workspaceMembershipGuard: MiddlewareHandler = async (ctx: RequestContext, next) => {
-  const user = getUser(ctx)
-  const workspaceId = ctx.params.workspaceId || ctx.params.id
-
-  if (!workspaceId) {
-    throw HttpException.badRequest('Workspace ID is required')
-  }
-
-  const container = Container.getInstance()
-  const memberRepo = container.resolve<WorkspaceMemberRepository>(WORKSPACE_MEMBER_REPOSITORY)
-
-  const member = await memberRepo.findByWorkspaceAndUser(workspaceId, user.id)
-  if (!member) {
-    throw HttpException.forbidden(ErrorCode.NOT_WORKSPACE_MEMBER)
-  }
-
-  ctx.set('workspaceMember', member)
+  await requireWorkspaceMember(ctx, ctx.params.workspaceId || ctx.params.id)
   next()
 }
 
-export const requireWorkspaceRole = (...roles: string[]): MiddlewareHandler => {
-  return async (ctx: RequestContext, next) => {
-    const user = getUser(ctx)
-    const workspaceId = ctx.params.workspaceId || ctx.params.id
-
-    const container = Container.getInstance()
-    const memberRepo = container.resolve<WorkspaceMemberRepository>(WORKSPACE_MEMBER_REPOSITORY)
-
-    const member = await memberRepo.findByWorkspaceAndUser(workspaceId, user.id)
-    if (!member) {
-      throw HttpException.forbidden(ErrorCode.NOT_WORKSPACE_MEMBER)
-    }
-
-    if (!roles.includes(member.role)) {
-      throw HttpException.forbidden(ErrorCode.FORBIDDEN)
-    }
-
-    ctx.set('workspaceMember', member)
+/** Members with one of `roles` only — e.g. `requireWorkspaceRole('admin')`. */
+export const requireWorkspaceRole =
+  (...roles: string[]): MiddlewareHandler =>
+  async (ctx: RequestContext, next) => {
+    await requireWorkspaceMember(
+      ctx,
+      ctx.params.workspaceId || ctx.params.id,
+      'Workspace not found',
+      roles,
+    )
     next()
   }
-}
