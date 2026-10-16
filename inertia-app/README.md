@@ -8,7 +8,7 @@ A notes app on **KickJS + Inertia (React)** with **kick/db + SQLite**: controlle
   - **Deferred prop**: `stats: defer(() => notes.stats())` is left out of the first response and fetched right after render; the page wraps it in `<Deferred>`.
 - `src/config/inertia.ts` — adapter options, incl. the **shared props** every page gets (`appName`, a stub `user`).
 - `src/client/pages/` — `Notes/Index.tsx`, `Notes/Edit.tsx`, `Error.tsx`; server-rendered (`src/client/ssr.tsx`) and hydrated (`main.tsx`).
-- `src/db/` — client + schema; `src/adapters/db.adapter.ts` — `DbAdapter` (`APP_DB` token, `SELECT 1` on `GET /health/ready`, closes the handle on shutdown). `kickDbAdapter()` applies migrations on boot outside production. `db/migrations/` holds the reviewed `init` migration.
+- `src/db/` — client + schema; `src/adapters/db.adapter.ts` — `DbAdapter` (`APP_DB` token, `SELECT 1` on `GET /health/ready`, closes the handle on shutdown). `kickDbAdapter()` applies migrations on boot only when NODE_ENV is development or test. `db/migrations/` holds the reviewed `init` migration.
 - `src/modules/notes/note.repository.ts` — factory repository (`createNoteRepository(db)`, contract = its `ReturnType`, `NOTE_REPOSITORY` token bound in the module's `register()`).
 
 Validation errors and flash messages travel in the session (an encrypted cookie). Guides: [Inertia](https://kickjs.app/guide/inertia) · [kick/db](https://kickjs.app/guide/database/)
@@ -17,7 +17,7 @@ Validation errors and flash messages travel in the session (an encrypted cookie)
 
 ```bash
 pnpm install          # or: npm install  (builds better-sqlite3)
-cp .env.example .env  # DB_FILE defaults to data/app.db; SESSION_SECRET required in production
+cp .env.example .env  # DB_FILE defaults to data/app.db; SESSION_SECRET required unless NODE_ENV is development or test
 pnpm dev              # http://localhost:3000 — applies migrations on boot, HMR for pages and server
 ```
 
@@ -25,7 +25,7 @@ pnpm dev              # http://localhost:3000 — applies migrations on boot, HM
 pnpm test        # in-memory SQLite + the real migrations: page objects, validation round trip, CRUD + flash
 pnpm typecheck
 pnpm build       # server (dist/index.js) + pages (dist/client) + SSR bundle (dist/ssr/ssr.js)
-pnpm db:migrate  # production refuses to boot with pending migrations
+pnpm db:migrate  # outside development/test the app refuses to boot with pending migrations
 NODE_ENV=production SESSION_SECRET=$(openssl rand -hex 32) pnpm start
 ```
 

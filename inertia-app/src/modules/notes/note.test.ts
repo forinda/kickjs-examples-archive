@@ -3,12 +3,12 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, session } from '@forinda/kickjs'
+import { Container, getEnv, session } from '@forinda/kickjs'
 import { kickDbAdapter } from '@forinda/kickjs-db'
 import { InertiaAdapter, inertiaErrorHandler, inertiaNotFound } from '@forinda/kickjs-inertia'
 import { createTestApp } from '@forinda/kickjs-testing'
 import express from 'express'
-import { env } from '@/config'
+import '@/config'
 import { database, migrationAdapter } from '@/db/client'
 import { DbAdapter } from '@/adapters/db.adapter'
 import { inertiaOptions } from '@/config/inertia'
@@ -30,7 +30,7 @@ const VERSION = 'test'
 async function makeApp() {
   const { app } = await createTestApp({
     modules: [NoteModule()],
-    middlewares: [express.json(), session({ secret: env.SESSION_SECRET, store: 'cookie' })],
+    middlewares: [express.json(), session({ secret: getEnv('SESSION_SECRET'), store: 'cookie' })],
     adapters: [
       DbAdapter(),
       kickDbAdapter({

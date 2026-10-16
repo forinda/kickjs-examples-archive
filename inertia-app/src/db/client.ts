@@ -1,4 +1,5 @@
 // Registers the env schema — `kick db` loads this file without src/index.ts.
+// Relative on purpose: kick.config.ts loads it outside Vite, where `@/` does not resolve.
 import '../config'
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'

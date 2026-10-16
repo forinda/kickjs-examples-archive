@@ -1,13 +1,14 @@
 import 'reflect-metadata'
 // Side-effect import — registers and validates the env schema before
-// bootstrap(). SESSION_SECRET is required when NODE_ENV=production.
-import { env } from './config'
-import { bootstrap, requestId, session, expressRuntime } from '@forinda/kickjs'
+// bootstrap(). SESSION_SECRET is required unless NODE_ENV is development or test.
+import './config'
+import { bootstrap, getEnv, requestId, session, expressRuntime } from '@forinda/kickjs'
 import { kickDbAdapter } from '@forinda/kickjs-db'
 import { InertiaAdapter, inertiaErrorHandler, inertiaNotFound } from '@forinda/kickjs-inertia'
 import express from 'express'
 import { migrationAdapter } from './db/client'
 import { DbAdapter } from './adapters/db.adapter'
+import { isDevOrTest } from './config/dev-default'
 import { inertiaOptions } from './config/inertia'
 import { modules } from './modules'
 
@@ -21,14 +22,15 @@ export const app = await bootstrap({
     express.json(),
     // Carries validation errors and flash messages to the next page, in an
     // encrypted cookie — nothing shared between instances.
-    session({ secret: env.SESSION_SECRET, store: 'cookie' }),
+    session({ secret: getEnv('SESSION_SECRET'), store: 'cookie' }),
   ],
   adapters: [
     DbAdapter(),
     kickDbAdapter({
       migrationAdapter,
       migrationsDir: 'db/migrations',
-      migrationsOnBoot: env.NODE_ENV === 'production' ? 'fail-if-pending' : 'apply',
+      // Auto-apply only in development/test; anywhere else (incl. unset NODE_ENV) pending migrations stop the boot.
+      migrationsOnBoot: isDevOrTest() ? 'apply' : 'fail-if-pending',
     }),
     InertiaAdapter({
       ...inertiaOptions,
