@@ -1,0 +1,13 @@
+packages:
+  - server
+  - web
+
+allowBuilds:
+  '@swc/core': true
+  esbuild: true
+  better-sqlite3: true
+
+onlyBuiltDependencies:
+  - '@swc/core'
+  - esbuild
+  - better-sqlite3

@@ -1,0 +1,26 @@
+{
+  "name": "kickjs-example-fullstack-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "pnpm@11.24.0",
+  "scripts": {
+    "dev": "pnpm --parallel -r run dev",
+    "start": "pnpm --filter ./server run start",
+    "dev:server": "pnpm --filter ./server dev",
+    "dev:web": "pnpm --filter ./web dev",
+    "build": "pnpm --filter ./server exec kick typegen && pnpm -r run build",
+    "typecheck": "pnpm --filter ./server typecheck && pnpm --filter ./web typecheck",
+    "test": "pnpm --filter ./server test",
+    "format": "cd server && kick format",
+    "lint": "pnpm --filter ./server lint",
+    "db:migrate": "pnpm --filter ./server db:migrate"
+  },
+  "devDependencies": {
+    "@forinda/kickjs-cli": "^8.10.2"
+  },
+  "workspaces": [
+    "server",
+    "web"
+  ]
+}
