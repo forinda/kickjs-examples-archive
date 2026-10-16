@@ -42,3 +42,31 @@ pnpm dev               # or: npm run dev
 | `JWT_ACCESS_EXPIRES_IN`, `JWT_REFRESH_EXPIRES_IN`, `APP_NAME`, `MAIL_FROM_*` | no | see `.env.example` |
 
 "prod" = required unless `NODE_ENV` is exactly `development` or `test` — an unset `NODE_ENV` gets no dev default (`src/config/dev-default.ts`). Swagger (`/docs`, `/openapi.json`) is likewise on only under development/test; DevTools (`/_debug`) only in `kick dev` — the `__KICKJS_DEVTOOLS__` build flag drops it from `kick build`.
+
+## Deploy
+
+**Required env** (fail closed — with `NODE_ENV=production`, the image's, or unset, the app refuses to boot without them): `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET` (32+ chars each), `REDIS_URL`, `APP_URL`, `SMTP_URL`.
+
+**Docker**
+
+```bash
+docker build -t task-prisma-api .
+docker run -p 3000:3000 -e DATABASE_URL=postgres://… -e REDIS_URL=redis://… -e SMTP_URL=smtp://… \
+  -e APP_URL=https://api.example.com -e JWT_SECRET=$(openssl rand -hex 32) -e JWT_REFRESH_SECRET=$(openssl rand -hex 32) task-prisma-api
+```
+
+**Compose** — Postgres, Redis, Mailpit (UI on :8025), a one-off schema push and the API:
+
+```bash
+JWT_SECRET=$(openssl rand -hex 32) JWT_REFRESH_SECRET=$(openssl rand -hex 32) docker compose up --build
+```
+
+- **Schema:** the app does not create its tables. The runtime image has no dev dependencies, so the schema step runs from the build stage (`docker build --target build`): compose's `migrate` service runs `pnpm db:push` (`prisma db push`) before the API starts. Run the same once per release against your database; for a real production history, generate and commit migrations and apply those instead.
+- **State:** Postgres (`pg-data` volume; attachments are stored there too) and Redis queues (`redis-data`); the container itself keeps nothing.
+- **Swagger** (`/docs`, `/openapi.json`) is mounted only under development/test.
+
+**Not serverless:** WebSockets (`/ws`), BullMQ workers and `@Cron` jobs need a long-running process.
+
+- **Health:** `GET /health/ready` runs every adapter's health check — the image's `HEALTHCHECK` and a load balancer's readiness probe use it; `GET /health/live` for liveness.
+- **DevTools** is dev-only and not in the production build: `/_debug` answers 404 in the image.
+- The image installs from the committed `pnpm-lock.yaml` (frozen) and runs `node dist/index.js` as the unprivileged `node` user with `NODE_ENV=production`; `.env` files are never copied in — pass env with `-e`, `--env-file` or the platform.

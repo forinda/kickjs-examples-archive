@@ -64,5 +64,6 @@
     "esbuild": true,
     "prisma": true,
     "@prisma/engines": true
-  }
+  },
+  "packageManager": "pnpm@11.24.0"
 }
