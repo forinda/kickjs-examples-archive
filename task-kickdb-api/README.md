@@ -39,3 +39,34 @@ pnpm dev              # or: npm run dev
 ## Tests
 
 `pnpm test` runs without a database; the round-trip test runs when `DATABASE_URL` is set in `.env.test` (copy `.env.test.example`, point it at a migrated database).
+
+## Deploy
+
+**Required env:** `DATABASE_URL` (Postgres).
+
+**Docker**
+
+```bash
+docker build -t task-kickdb-api .
+docker run -p 3000:3000 -e DATABASE_URL=postgres://… -e MIGRATE_ON_BOOT=true task-kickdb-api
+```
+
+**Compose** — Postgres (persisted in the `pg-data` volume) and the API:
+
+```bash
+docker compose up --build
+curl localhost:3000/health/ready   # {"status":"ready","checks":[{"name":"postgres","status":"up"}]}
+```
+
+**Migrations:** outside development, pending migrations stop the boot. Either set `MIGRATE_ON_BOOT=true` (compose does — fine for one instance), or with several replicas run them once per release from the build stage, which has the CLI:
+
+```bash
+docker build --target build -t task-kickdb-api:build .
+docker run --rm -e DATABASE_URL=postgres://… task-kickdb-api:build pnpm db:migrate
+```
+
+**Serverless:** not configured — the `pg` pool expects a long-running process; on Netlify/Vercel use a pooled/serverless Postgres driver first.
+
+- **Health:** `GET /health/ready` runs every adapter's health check — the image's `HEALTHCHECK` and a load balancer's readiness probe use it; `GET /health/live` for liveness.
+- **DevTools** is dev-only and not in the production build: `/_debug` answers 404 in the image.
+- The image installs from the committed `pnpm-lock.yaml` (frozen) and runs `node dist/index.js` as the unprivileged `node` user with `NODE_ENV=production`; `.env` files are never copied in — pass env with `-e`, `--env-file` or the platform.
