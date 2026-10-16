@@ -12,12 +12,14 @@ export const projects = table(
   'projects',
   {
     id: uuid().primaryKey().defaultRandom(),
-    tenantId: tenantKey(tenancy), // marks the table tenanted
+    // Marks the table tenanted. Named and typed like the registry's key: a
+    // varchar(64) workspace slug, not the default text `tenantId`.
+    workspaceId: tenantKey(tenancy, varchar(64)),
     title: varchar(200).notNull(),
     description: text(),
     createdAt: timestamp().notNull().defaultNow(),
   },
   (t) => ({
-    tenantIdx: index('projects_tenant_idx').on(t.tenantId),
+    workspaceIdx: index('projects_workspace_idx').on(t.workspaceId),
   }),
 )
