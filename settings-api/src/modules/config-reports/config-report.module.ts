@@ -10,7 +10,6 @@ import { ConfigReportController } from './config-report.controller'
 export const ConfigReportModule = defineModule({
   name: 'ConfigReportModule',
   build: () => ({
-    routes: () =>
-      isDevOrTest() ? { path: '/config', controller: ConfigReportController } : null,
+    routes: () => (isDevOrTest() ? { path: '/config', controller: ConfigReportController } : null),
   }),
 })
