@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 // Side-effect import — registers the env schema before bootstrap().
-import { env } from './config'
-import { bootstrap, expressRuntime } from '@forinda/kickjs'
+import './config'
+import { bootstrap, expressRuntime, getEnv } from '@forinda/kickjs'
 import { SpaAdapter } from '@forinda/kickjs/spa'
 import { kickDbAdapter } from '@forinda/kickjs-db'
 import express from 'express'
@@ -22,7 +22,7 @@ export const app = await bootstrap({
     kickDbAdapter({
       migrationAdapter,
       migrationsDir: 'db/migrations',
-      migrationsOnBoot: env.NODE_ENV === 'production' ? 'fail-if-pending' : 'apply',
+      migrationsOnBoot: getEnv('NODE_ENV') === 'production' ? 'fail-if-pending' : 'apply',
     }),
     // Serves the built frontend from this origin in production. Inert until
     // web/dist exists, so `kick dev` (Vite serves the client) is unaffected.
