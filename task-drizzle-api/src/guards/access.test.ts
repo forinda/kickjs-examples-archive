@@ -39,10 +39,18 @@ import { ACTIVITY_REPOSITORY } from '@/modules/activities/activity.repository'
 import { StatController } from '@/modules/stats/stat.controller'
 import { STATS_REPOSITORY } from '@/modules/stats/stat.repository'
 
-// Workspace wA holds project pA, task tA, label lA, channel cA (member: u-admin),
-// message mA, comment kA and attachment aA. u-admin is its admin, u-member a
-// member; u-out belongs to another workspace only.
-const roles: Record<string, string> = { 'u-admin': 'admin', 'u-member': 'member' }
+// Workspace wA holds project pA, task tA, label lA, public channel cA (created
+// by u-other), private channel cP (member: u-admin), messages mA (by u-admin)
+// and mB (by u-member), comments kA (by u-admin) and kB (by u-member), and
+// attachment aA. u-admin is its admin, u-member and u-other members; u-out
+// belongs to workspace wB only.
+const roles: Record<string, string> = {
+  'u-admin': 'admin',
+  'u-member': 'member',
+  'u-other': 'member',
+}
+const cP = '00000000-0000-4000-8000-0000000000c9'
+const update = async (id: string, data: object) => ({ id, ...data })
 const byId =
   <T>(rows: Record<string, T>) =>
   async (id: string) =>
@@ -56,40 +64,71 @@ const TestModule = defineModule({
         findByWorkspaceAndUser: async (workspaceId: string, userId: string) =>
           workspaceId === 'wA' && roles[userId]
             ? { workspaceId, userId, role: roles[userId] }
-            : null,
+            : workspaceId === 'wB' && userId === 'u-out'
+              ? { workspaceId, userId, role: 'admin' }
+              : null,
       } as never)
       container.registerInstance(WORKSPACE_REPOSITORY, {
         findById: byId({ wA: { id: 'wA', name: 'Acme' } }),
       } as never)
       container.registerInstance(PROJECT_REPOSITORY, {
-        findById: byId({ pA: { id: 'pA', workspaceId: 'wA' } }),
+        findById: byId({ pA: { id: 'pA', workspaceId: 'wA', leadId: null } }),
+        update,
       } as never)
       container.registerInstance(TASK_REPOSITORY, {
-        findById: byId({ tA: { id: 'tA', projectId: 'pA', workspaceId: 'wA', title: 'Ship it' } }),
-        update: async (id: string, data: object) => ({ id, ...data }),
+        findById: byId({
+          tA: {
+            id: 'tA',
+            projectId: 'pA',
+            workspaceId: 'wA',
+            title: 'Ship it',
+            reporterId: 'u-admin',
+          },
+        }),
+        update,
         delete: async () => undefined,
       } as never)
       container.registerInstance(LABEL_REPOSITORY, {
         findById: byId({ lA: { id: 'lA', workspaceId: 'wA' } }),
       } as never)
       container.registerInstance(CHANNEL_REPOSITORY, {
-        findById: byId({ cA: { id: 'cA', workspaceId: 'wA' } }),
+        findById: byId({
+          cA: { id: 'cA', workspaceId: 'wA', type: 'public', createdById: 'u-other' },
+          [cP]: { id: cP, workspaceId: 'wA', type: 'private', createdById: 'u-admin' },
+        }),
+        update,
+        delete: async () => undefined,
       } as never)
       container.registerInstance(CHANNEL_MEMBER_REPOSITORY, {
         findByChannelAndUser: async (channelId: string, userId: string) =>
-          channelId === 'cA' && userId === 'u-admin' ? { channelId, userId } : null,
+          channelId === cP && userId === 'u-admin' ? { channelId, userId } : null,
+        listMembers: async () => [],
+        addMember: async (channelId: string, userId: string) => ({ channelId, userId }),
+        removeMember: async () => undefined,
       } as never)
       container.registerInstance(MESSAGE_REPOSITORY, {
-        findById: byId({ mA: { id: 'mA', channelId: 'cA', senderId: 'u-admin' } }),
+        findById: byId({
+          mA: { id: 'mA', channelId: 'cA', senderId: 'u-admin' },
+          mB: { id: 'mB', channelId: 'cA', senderId: 'u-member' },
+        }),
+        findByChannel: async () => [],
+        create: async (data: object) => ({ id: 'new', ...data }),
+        update,
       } as never)
       container.registerInstance(COMMENT_REPOSITORY, {
-        findById: byId({ kA: { id: 'kA', taskId: 'tA', authorId: 'u-admin' } }),
+        findById: byId({
+          kA: { id: 'kA', taskId: 'tA', authorId: 'u-admin' },
+          kB: { id: 'kB', taskId: 'tA', authorId: 'u-member' },
+        }),
+        update,
       } as never)
       container.registerInstance(ATTACHMENT_REPOSITORY, {
         findById: byId({ aA: { id: 'aA', taskId: 'tA' } }),
       } as never)
+      container.registerInstance(TASK_ASSIGNEE_REPOSITORY, {
+        add: async (taskId: string, userId: string) => ({ taskId, userId }),
+      } as never)
       for (const token of [
-        TASK_ASSIGNEE_REPOSITORY,
         TASK_LABEL_REPOSITORY,
         ACTIVITY_REPOSITORY,
         STATS_REPOSITORY,
@@ -215,5 +254,121 @@ describe('workspace scoping', () => {
       .send(invite)
       .expect(403)
     await api.delete('/api/v1/workspaces/wA').set('Authorization', as('u-member')).expect(403)
+  })
+})
+
+describe('object-level authorization', () => {
+  beforeEach(() => Container.reset())
+
+  it('refuses to add a user from another workspace, as if they did not exist', async () => {
+    const api = await makeApp()
+    const auth = as('u-admin')
+    await api.post('/api/v1/channels/cA/members/u-out').set('Authorization', auth).expect(404)
+    await api.post('/api/v1/tasks/tA/assignees/u-out').set('Authorization', auth).expect(404)
+    await api
+      .put('/api/v1/workspaces/wA/members/u-out')
+      .set('Authorization', auth)
+      .send({ role: 'admin' })
+      .expect(404)
+    // Teammates from the same workspace are fine.
+    await api.post('/api/v1/channels/cA/members/u-member').set('Authorization', auth).expect(201)
+    await api.post('/api/v1/tasks/tA/assignees/u-member').set('Authorization', auth).expect(201)
+  })
+
+  it('hides a private channel from workspace members outside it', async () => {
+    const api = await makeApp()
+    const auth = as('u-member')
+    for (const path of [
+      `/api/v1/channels/${cP}`,
+      `/api/v1/channels/${cP}/members`,
+      `/api/v1/messages/channel/${cP}`,
+    ]) {
+      const res = await api.get(path).set('Authorization', auth)
+      expect(res.status, path).toBe(404)
+    }
+    await api
+      .post('/api/v1/messages')
+      .set('Authorization', auth)
+      .send({ channelId: cP, content: 'hi' })
+      .expect(404)
+    await api.post(`/api/v1/channels/${cP}/members/u-member`).set('Authorization', auth).expect(404)
+    // Its member reads it; a public channel is open to every workspace member.
+    await api.get(`/api/v1/channels/${cP}`).set('Authorization', as('u-admin')).expect(200)
+    await api.get('/api/v1/messages/channel/cA').set('Authorization', auth).expect(200)
+  })
+
+  it('lets only the creator or an admin change a channel or remove others', async () => {
+    const api = await makeApp()
+    const member = as('u-member')
+    await api
+      .put('/api/v1/channels/cA')
+      .set('Authorization', member)
+      .send({ name: 'x' })
+      .expect(403)
+    await api.delete('/api/v1/channels/cA').set('Authorization', member).expect(403)
+    await api.delete('/api/v1/channels/cA/members/u-other').set('Authorization', member).expect(403)
+    await api
+      .delete('/api/v1/channels/cA/members/u-member')
+      .set('Authorization', member)
+      .expect(204)
+    await api
+      .put('/api/v1/channels/cA')
+      .set('Authorization', as('u-other'))
+      .send({ name: 'x' })
+      .expect(200)
+    await api
+      .put('/api/v1/channels/cA')
+      .set('Authorization', as('u-admin'))
+      .send({ name: 'x' })
+      .expect(200)
+    await api.delete('/api/v1/channels/cA').set('Authorization', as('u-admin')).expect(204)
+  })
+
+  it('lets only the author or an admin edit a message or comment', async () => {
+    const api = await makeApp()
+    const other = as('u-other')
+    await api
+      .put('/api/v1/messages/mB')
+      .set('Authorization', other)
+      .send({ content: 'x' })
+      .expect(403)
+    await api
+      .put('/api/v1/comments/kB')
+      .set('Authorization', other)
+      .send({ content: 'x' })
+      .expect(403)
+    await api
+      .put('/api/v1/messages/mB')
+      .set('Authorization', as('u-member'))
+      .send({ content: 'x' })
+      .expect(200)
+    await api
+      .put('/api/v1/messages/mB')
+      .set('Authorization', as('u-admin'))
+      .send({ content: 'x' })
+      .expect(200)
+    await api
+      .put('/api/v1/comments/kB')
+      .set('Authorization', as('u-admin'))
+      .send({ content: 'x' })
+      .expect(200)
+  })
+
+  it('lets any member edit a task but only the reporter or an admin change projects and delete tasks', async () => {
+    const api = await makeApp()
+    const member = as('u-member')
+    await api.put('/api/v1/tasks/tA').set('Authorization', member).send({ title: 'x' }).expect(200)
+    await api.delete('/api/v1/tasks/tA').set('Authorization', member).expect(403)
+    await api
+      .put('/api/v1/projects/pA')
+      .set('Authorization', member)
+      .send({ name: 'x' })
+      .expect(403)
+    await api.delete('/api/v1/projects/pA').set('Authorization', member).expect(403)
+    await api
+      .put('/api/v1/projects/pA')
+      .set('Authorization', as('u-admin'))
+      .send({ name: 'x' })
+      .expect(200)
   })
 })

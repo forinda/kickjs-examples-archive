@@ -14,8 +14,14 @@ import {
 } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
-import { requireWorkspaceMember } from '@/guards/workspace-membership.guard'
-import { access, workspaceIdOf } from '@/guards/resource-access.guard'
+import { requireTargetMember, requireWorkspaceMember } from '@/guards/workspace-membership.guard'
+import { workspaceIdOf } from '@/guards/resource-access.guard'
+import {
+  channelAccess,
+  channelManager,
+  requireChannelAccess,
+  requireChannelManager,
+} from '@/guards/channel-membership.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
 import { CHANNEL_QUERY_CONFIG } from './channel.constants'
@@ -61,12 +67,12 @@ export class ChannelController {
     await requireWorkspaceMember(ctx, workspaceId)
 
     return ctx.paginate(
-      (parsed) => this.repo.findPaginated(parsed, workspaceId),
+      (parsed) => this.repo.findPaginated(parsed, workspaceId, getUser(ctx).id),
       CHANNEL_QUERY_CONFIG,
     )
   }
 
-  @Middleware(access('channel'))
+  @Middleware(channelAccess())
   @Get('/:id')
   @ApiTags('Channel')
   async getById(ctx: RequestContext) {
@@ -75,7 +81,7 @@ export class ChannelController {
     return successResponse(result)
   }
 
-  @Middleware(access('channel'))
+  @Middleware(channelManager())
   @Put('/:id', { body: updateChannelSchema, name: 'UpdateChannel' })
   @ApiTags('Channel')
   async update(ctx: RequestContext) {
@@ -83,7 +89,7 @@ export class ChannelController {
     return successResponse(result)
   }
 
-  @Middleware(access('channel'))
+  @Middleware(channelManager())
   @Delete('/:id')
   @ApiTags('Channel')
   async remove(ctx: RequestContext) {
@@ -93,7 +99,7 @@ export class ChannelController {
 
   // --- Members ---
 
-  @Middleware(access('channel'))
+  @Middleware(channelAccess())
   @Get('/:id/members')
   @ApiTags('Channel')
   async listMembers(ctx: RequestContext) {
@@ -101,18 +107,22 @@ export class ChannelController {
     return successResponse(members)
   }
 
-  @Middleware(access('channel'))
   @Post('/:id/members/:userId')
   @ApiTags('Channel')
   async addMember(ctx: RequestContext) {
+    // Anyone who can see the channel may add a teammate — from the same workspace only.
+    const { channel } = await requireChannelAccess(ctx, ctx.params.id)
+    await requireTargetMember(channel.workspaceId, ctx.params.userId)
     const result = await this.channelService.addMember(ctx.params.id, ctx.params.userId)
     return reply.created(successResponse(result))
   }
 
-  @Middleware(access('channel'))
   @Delete('/:id/members/:userId')
   @ApiTags('Channel')
   async removeMember(ctx: RequestContext) {
+    // Leaving is always allowed; removing someone else is for the creator or an admin.
+    if (ctx.params.userId === getUser(ctx).id) await requireChannelAccess(ctx, ctx.params.id)
+    else await requireChannelManager(ctx, ctx.params.id)
     await this.memberRepo.removeMember(ctx.params.id, ctx.params.userId)
     return reply.noContent()
   }

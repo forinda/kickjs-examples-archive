@@ -16,6 +16,7 @@ import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
 import { ErrorCode } from '@/shared/error-codes'
 import { access, requireAccess, requiredQuery } from '@/guards/resource-access.guard'
+import { requireOwnerOrAdmin } from '@/guards/workspace-membership.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
 import { COMMENT_QUERY_CONFIG } from './comment.constants'
@@ -57,26 +58,25 @@ export class CommentController {
     return successResponse(result)
   }
 
-  @Middleware(access('comment'))
+  /** The comment's author or a workspace admin, among members of its workspace. */
+  private async requireAuthor(ctx: RequestContext) {
+    const member = await requireAccess(ctx, 'comment', ctx.params.id)
+    const comment = await this.repo.findById(ctx.params.id)
+    requireOwnerOrAdmin(ctx, member, comment?.authorId, ErrorCode.NOT_COMMENT_AUTHOR)
+  }
+
   @Put('/:id', { body: updateCommentSchema, name: 'UpdateComment' })
   @ApiTags('Comment')
   async update(ctx: RequestContext) {
-    const comment = await this.repo.findById(ctx.params.id)
-    if (comment?.authorId !== getUser(ctx).id) {
-      throw HttpException.forbidden(ErrorCode.NOT_COMMENT_AUTHOR)
-    }
+    await this.requireAuthor(ctx)
     const result = await this.commentService.update(ctx.params.id, ctx.body)
     return successResponse(result)
   }
 
-  @Middleware(access('comment'))
   @Delete('/:id')
   @ApiTags('Comment')
   async remove(ctx: RequestContext) {
-    const comment = await this.repo.findById(ctx.params.id)
-    if (comment?.authorId !== getUser(ctx).id) {
-      throw HttpException.forbidden(ErrorCode.NOT_COMMENT_AUTHOR)
-    }
+    await this.requireAuthor(ctx)
     await this.commentService.delete(ctx.params.id)
     return reply.noContent()
   }

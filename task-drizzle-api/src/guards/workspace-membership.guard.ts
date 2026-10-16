@@ -2,7 +2,10 @@ import { Container, HttpException, type MiddlewareHandler } from '@forinda/kickj
 import type { RequestContext } from '@forinda/kickjs'
 import { ErrorCode } from '@/shared/error-codes'
 import { getUser } from '@/shared/auth'
-import { WORKSPACE_MEMBER_REPOSITORY } from '@/modules/workspaces/workspace-member.repository'
+import {
+  WORKSPACE_MEMBER_REPOSITORY,
+  type WorkspaceMember,
+} from '@/modules/workspaces/workspace-member.repository'
 
 /**
  * The caller must be a member of `workspaceId` (with one of `roles`, when
@@ -15,7 +18,7 @@ export async function requireWorkspaceMember(
   workspaceId: string | null | undefined,
   notFound = 'Workspace not found',
   roles?: string[],
-): Promise<void> {
+): Promise<WorkspaceMember> {
   const member = workspaceId
     ? await Container.getInstance()
         .resolve(WORKSPACE_MEMBER_REPOSITORY)
@@ -23,6 +26,35 @@ export async function requireWorkspaceMember(
     : null
   if (!member) throw HttpException.notFound(notFound)
   if (roles && !roles.includes(member.role)) throw HttpException.forbidden(ErrorCode.FORBIDDEN)
+  return member
+}
+
+/**
+ * A user being added to something in `workspaceId` (channel, task assignee,
+ * project lead) must already belong to that workspace. Anyone else gets 404
+ * "User not found" — the same answer as an unknown id, so other workspaces'
+ * users can't be probed or pulled in.
+ */
+export async function requireTargetMember(
+  workspaceId: string | null | undefined,
+  userId: string,
+): Promise<void> {
+  const member = workspaceId
+    ? await Container.getInstance()
+        .resolve(WORKSPACE_MEMBER_REPOSITORY)
+        .findByWorkspaceAndUser(workspaceId, userId)
+    : null
+  if (!member) throw HttpException.notFound('User not found')
+}
+
+/** 403 unless the caller is `ownerId` or a workspace admin. */
+export function requireOwnerOrAdmin(
+  ctx: RequestContext,
+  member: WorkspaceMember,
+  ownerId: string | null | undefined,
+  code: string = ErrorCode.FORBIDDEN,
+): void {
+  if (member.role !== 'admin' && ownerId !== getUser(ctx).id) throw HttpException.forbidden(code)
 }
 
 /** Routes with `:workspaceId` (or `:id` on /workspaces): members only. */

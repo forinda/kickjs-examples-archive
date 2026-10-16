@@ -97,7 +97,7 @@ class TestChannelController {
 
   @Get('/')
   async list(ctx: RequestContext) {
-    const result = await this.repo.findPaginated({} as ParsedQuery, 'ws1')
+    const result = await this.repo.findPaginated({} as ParsedQuery, 'ws1', 'u1')
     return { data: result.data, total: result.total }
   }
 

@@ -1,7 +1,7 @@
 import { createToken, HttpException, type ParsedQuery } from '@forinda/kickjs'
-import { eq, sql } from 'drizzle-orm'
+import { and, eq, inArray, or, sql } from 'drizzle-orm'
 import type { AppDatabase } from '@/db'
-import { channels, type channelMembers } from '@/db/schema'
+import { channels, channelMembers } from '@/db/schema'
 import { CHANNEL_QUERY_CONFIG } from './channel.constants'
 import { queryAdapter } from '@/shared/query-adapter'
 
@@ -19,10 +19,22 @@ export function createChannelRepository(db: AppDatabase) {
     async findPaginated(
       parsed: ParsedQuery,
       workspaceId: string,
+      userId: string,
     ): Promise<{ data: Channel[]; total: number }> {
+      // Public channels, plus the private ones `userId` belongs to.
+      const visible = or(
+        eq(channels.type, 'public'),
+        inArray(
+          channels.id,
+          db
+            .select({ id: channelMembers.channelId })
+            .from(channelMembers)
+            .where(eq(channelMembers.userId, userId)),
+        ),
+      )
       const query = queryAdapter.buildFromColumns(parsed, {
         ...CHANNEL_QUERY_CONFIG,
-        baseCondition: eq(channels.workspaceId, workspaceId),
+        baseCondition: and(eq(channels.workspaceId, workspaceId), visible),
       })
 
       const [data, countResult] = await Promise.all([

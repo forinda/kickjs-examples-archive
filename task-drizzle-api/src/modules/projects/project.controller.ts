@@ -12,8 +12,10 @@ import {
 } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
-import { access } from '@/guards/resource-access.guard'
+import { access, requireAccess } from '@/guards/resource-access.guard'
 import {
+  requireOwnerOrAdmin,
+  requireTargetMember,
   requireWorkspaceMember,
   workspaceMembershipGuard,
 } from '@/guards/workspace-membership.guard'
@@ -27,10 +29,19 @@ import { PROJECT_REPOSITORY, type ProjectRepository } from './project.repository
 export class ProjectController {
   @Inject(PROJECT_REPOSITORY) private readonly repo!: ProjectRepository
 
+  /** Changing or deleting a project: a workspace admin or the project's lead (403). */
+  private async requireManager(ctx: RequestContext) {
+    const member = await requireAccess(ctx, 'project', ctx.params.id)
+    const project = (await this.repo.findById(ctx.params.id))!
+    requireOwnerOrAdmin(ctx, member, project.leadId)
+    return project
+  }
+
   @Post('/', { body: createProjectSchema, name: 'CreateProject' })
   @ApiTags('Project')
   async create(ctx: RequestContext) {
     await requireWorkspaceMember(ctx, ctx.body.workspaceId)
+    if (ctx.body.leadId) await requireTargetMember(ctx.body.workspaceId, ctx.body.leadId)
     const result = await this.repo.create(ctx.body)
     return reply.created(successResponse(result))
   }
@@ -52,18 +63,19 @@ export class ProjectController {
     return successResponse(result)
   }
 
-  @Middleware(access('project'))
   @Put('/:id', { body: updateProjectSchema, name: 'UpdateProject' })
   @ApiTags('Project')
   async update(ctx: RequestContext) {
+    const project = await this.requireManager(ctx)
+    if (ctx.body.leadId) await requireTargetMember(project.workspaceId, ctx.body.leadId)
     const result = await this.repo.update(ctx.params.id, ctx.body)
     return successResponse(result)
   }
 
-  @Middleware(access('project'))
   @Delete('/:id')
   @ApiTags('Project')
   async remove(ctx: RequestContext) {
+    await this.requireManager(ctx)
     await this.repo.delete(ctx.params.id)
     return reply.noContent()
   }

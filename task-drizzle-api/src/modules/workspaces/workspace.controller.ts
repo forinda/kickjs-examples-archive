@@ -13,7 +13,11 @@ import {
 } from '@forinda/kickjs'
 import { ApiTags, ApiBearerAuth } from '@forinda/kickjs-swagger'
 import { authBridgeMiddleware } from '@/middleware/auth-bridge.middleware'
-import { requireWorkspaceRole, workspaceMembershipGuard } from '@/guards/workspace-membership.guard'
+import {
+  requireTargetMember,
+  requireWorkspaceRole,
+  workspaceMembershipGuard,
+} from '@/guards/workspace-membership.guard'
 import { getUser } from '@/shared/auth'
 import { successResponse } from '@/shared/api-response'
 import {
@@ -103,6 +107,7 @@ export class WorkspaceController {
   })
   @ApiTags('Workspace')
   async updateMemberRole(ctx: RequestContext) {
+    await requireTargetMember(ctx.params.id, ctx.params.userId)
     const result = await this.workspaceService.updateMemberRole(
       ctx.params.id,
       ctx.params.userId,
@@ -115,6 +120,7 @@ export class WorkspaceController {
   @Delete('/:id/members/:userId')
   @ApiTags('Workspace')
   async removeMember(ctx: RequestContext) {
+    await requireTargetMember(ctx.params.id, ctx.params.userId)
     await this.workspaceService.removeMember(ctx.params.id, ctx.params.userId)
     return reply.noContent()
   }
