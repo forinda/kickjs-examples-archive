@@ -16,12 +16,12 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@forinda/kickjs": "^10.3.1",
-    "@forinda/kickjs-devtools": "^7.11.0",
-    "@forinda/kickjs-queue": "^8.0.2",
+    "@forinda/kickjs": "^10.6.0",
+    "@forinda/kickjs-devtools": "^7.13.0",
+    "@forinda/kickjs-queue": "^8.1.0",
     "@forinda/kickjs-schema": "^0.2.4",
-    "@forinda/kickjs-swagger": "^7.3.1",
-    "@forinda/kickjs-ws": "^7.2.1",
+    "@forinda/kickjs-swagger": "^7.3.3",
+    "@forinda/kickjs-ws": "^7.2.2",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.81.5",
     "croner": "^10.0.1",
@@ -37,9 +37,9 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@forinda/kickjs-cli": "^8.10.2",
-    "@forinda/kickjs-testing": "^8.3.0",
-    "@forinda/kickjs-vite": "^8.0.2",
+    "@forinda/kickjs-cli": "^8.13.0",
+    "@forinda/kickjs-testing": "^8.3.1",
+    "@forinda/kickjs-vite": "^8.1.0",
     "@swc/core": "^1.16.18",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
