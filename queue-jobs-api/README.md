@@ -22,6 +22,17 @@ Guides: [Background Jobs](https://kickjs.app/guide/jobs) · [Queue API](https://
 | `WORKER_PORT` | `3001` | health port of the worker process |
 | `QUEUE_CONCURRENCY` | `2` | jobs each worker runs at once |
 | `SHUTDOWN_TIMEOUT_MS` | `30000` | how long shutdown waits for active jobs |
+| `MANAGEMENT_PORT` | — | serve health, `/metrics` and `/queues` on this port instead (below) |
+
+### The management port
+
+Set `MANAGEMENT_PORT` and the operational endpoints leave the public port for it:
+
+- `/health/live`, `/health/ready` — what the orchestrator probes
+- `/metrics` — Prometheus (`metricsAdapter({ management: true })`)
+- `/queues` — each queue's job counts, from `QueueHealthAdapter` through `ctx.management`
+
+The API port then carries only the API. `docker-compose.yml` sets `MANAGEMENT_PORT=9090` on both services without publishing it, and the image's `HEALTHCHECK` probes it. Running the API and a worker on one machine, give each its own port. See [the management port](https://kickjs.app/guide/deployment#a-management-port).
 
 ## Run
 

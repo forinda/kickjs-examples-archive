@@ -19,13 +19,16 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
+      # Health, /metrics and /queues on 9090 — reachable on this network only:
+      # not published, unlike the API's port.
+      MANAGEMENT_PORT: 9090
     ports: ['${APP_PORT:-3000}:3000']
     depends_on:
       redis: { condition: service_healthy }
 
   worker:
     build: .
-    # Same image, jobs only: no API routes, /health on WORKER_PORT.
+    # Same image, jobs only: no API routes; health and metrics on its own 9090.
     command: ['node', 'dist/worker.js']
     environment:
       <<: *env

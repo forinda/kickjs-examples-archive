@@ -3,7 +3,7 @@ import 'reflect-metadata'
 // Side-effect import — registers the env schema before anything reads it.
 import './config'
 import express from 'express'
-import { bootstrap, expressRuntime, getEnv, type AppAdapter } from '@forinda/kickjs'
+import { bootstrap, expressRuntime, getEnv, metricsAdapter, type AppAdapter } from '@forinda/kickjs'
 import { QueueAdapter } from '@forinda/kickjs-queue'
 import { JobErrorsAdapter } from './adapters/job-errors.adapter'
 import { QueueHealthAdapter } from './adapters/queue-health.adapter'
@@ -36,6 +36,11 @@ const adapters: AppAdapter[] = [
   JobErrorsAdapter(),
 ]
 
+// The management port: health, Prometheus metrics and queue counts, off the
+// public port. Without it the app serves its health on PORT, and no metrics.
+const managementPort = getEnv('MANAGEMENT_PORT')
+if (managementPort) adapters.push(metricsAdapter({ management: true }))
+
 // DevTools (/_debug) in `kick dev` only: the build sets __KICKJS_DEVTOOLS__ to false and
 // drops this branch, so the package is not in the production bundle.
 if (__KICKJS_DEVTOOLS__) {
@@ -52,4 +57,5 @@ export const app = await bootstrap({
   // waits for the jobs they're running. This bounds that wait.
   shutdownTimeout: getEnv('SHUTDOWN_TIMEOUT_MS'),
   adapters,
+  ...(managementPort ? { management: { port: managementPort } } : {}),
 })
