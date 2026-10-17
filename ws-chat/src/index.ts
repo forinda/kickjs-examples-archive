@@ -9,6 +9,7 @@ import { modules } from './modules'
 import { resolveSocketUser } from './auth'
 import { createRedisClients, RedisAdapter } from './adapters/redis.adapter'
 import { PublicPageAdapter } from './adapters/public-page.adapter'
+import { DrainNoticeAdapter } from './adapters/drain-notice.adapter'
 
 // With REDIS_URL, every instance relays room broadcasts through Redis pub/sub
 // and keeps presence in Redis; without it, one process holds everything.
@@ -28,6 +29,8 @@ const adapters: AppAdapter[] = [
       ? { ...redisBroker({ ...redis, channel: 'ws-chat' }), close: undefined }
       : undefined,
   }),
+  // On shutdown, tells this instance's clients to reconnect elsewhere (app.status).
+  DrainNoticeAdapter(),
   PublicPageAdapter(),
 ]
 
