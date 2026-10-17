@@ -7,7 +7,8 @@ Real-time chat on **`@forinda/kickjs-ws`**: decorator WebSocket controllers, roo
 - `src/modules/chats/chat.controller.ts` — `POST /api/v1/chat/token {name}` (demo sign-in; swap for your auth) and `GET /api/v1/chat/rooms/:room/users` (needs `Authorization: Bearer <chat token>`, like the socket).
 - `src/modules/chats/presence.repository.ts` — who is in which room: a Redis hash when Redis is configured (shared by every instance), a `Map` otherwise.
 - `src/adapters/redis.adapter.ts` — `RedisAdapter` owns the two ioredis connections (publisher + subscriber), binds `REDIS`, reports `redis` on `GET /health/ready`, quits on shutdown.
-- `src/index.ts` — `WsAdapter({ heartbeatInterval, auth, broker: redisBroker(...) })`; the broker relays `ctx.to(room).send()` between instances.
+- `src/config/adapters.ts` — `WsAdapter({ heartbeatInterval, auth, broker: redisBroker(...) })`; the broker relays `ctx.to(room).send()` between instances. `src/index.ts` passes the list to `bootstrap()`.
+- `src/adapters/drain-notice.adapter.ts` — `watch(app.status, …)`: when the app starts shutting down, this instance's clients get `server:draining` before their sockets close (1001), so they can reconnect to an instance that is staying up. Only this instance's: `deliver`, not `broadcast`.
 - `src/adapters/public-page.adapter.ts` + `public/index.html` — a plain page at `/` to try it in a browser.
 
 Guide: [WebSockets](https://kickjs.app/guide/websockets) · API: [@forinda/kickjs-ws](https://kickjs.app/api/ws)
@@ -16,22 +17,23 @@ Guide: [WebSockets](https://kickjs.app/guide/websockets) · API: [@forinda/kickj
 
 Connect to `ws://localhost:3000/ws/chat?token=<token>`. Frames are JSON `{ "event": …, "data": … }`.
 
-| Client → server | data             | Server → client | data                       |
-| --------------- | ---------------- | --------------- | -------------------------- |
-| `room:join`     | `{ room }`       | `welcome`       | `{ id, name }`             |
-| `room:leave`    | `{ room }`       | `room:users`    | `{ room, users }`          |
-| `message:send`  | `{ room, text }` | `message`       | `{ room, from, text, at }` |
-|                 |                  | `error`         | `{ message }`              |
+| Client → server | data             | Server → client   | data                       |
+| --------------- | ---------------- | ----------------- | -------------------------- |
+| `room:join`     | `{ room }`       | `welcome`         | `{ id, name }`             |
+| `room:leave`    | `{ room }`       | `room:users`      | `{ room, users }`          |
+| `message:send`  | `{ room, text }` | `message`         | `{ room, from, text, at }` |
+|                 |                  | `error`           | `{ message }`              |
+|                 |                  | `server:draining` | `{}` (shutting down)       |
 
 Room names match `[a-z0-9-]{1,32}`; text is 1–500 characters. The server pings every `WS_HEARTBEAT_MS` and drops a socket that missed the previous pong.
 
 ## Env
 
-| Variable          | Default (dev)    | Notes                                                      |
-| ----------------- | ---------------- | ---------------------------------------------------------- |
+| Variable          | Default (dev)    | Notes                                                                                     |
+| ----------------- | ---------------- | ----------------------------------------------------------------------------------------- |
 | `CHAT_SECRET`     | dev-only default | Required unless `NODE_ENV` is `development` or `test`, 32+ chars (`openssl rand -hex 32`) |
-| `REDIS_URL`       | unset            | Set it to run more than one instance                       |
-| `WS_HEARTBEAT_MS` | `30000`          | `0` disables the heartbeat                                 |
+| `REDIS_URL`       | unset            | Set it to run more than one instance                                                      |
+| `WS_HEARTBEAT_MS` | `30000`          | `0` disables the heartbeat                                                                |
 
 ## Run
 

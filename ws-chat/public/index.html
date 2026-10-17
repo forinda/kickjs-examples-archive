@@ -62,6 +62,7 @@
             $('users').textContent = data.users.join(', ')
           if (event === 'message') log(`[${data.room}] ${data.from}: ${data.text}`)
           if (event === 'error') log(`error: ${data.message}`, 'sys')
+          if (event === 'server:draining') log('server restarting — reconnect to continue', 'sys')
         }
       }
       $('room').onsubmit = (e) => {

@@ -9,23 +9,23 @@ importers:
   .:
     dependencies:
       '@forinda/kickjs':
-        specifier: ^10.3.1
-        version: 10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
+        specifier: ^10.7.0
+        version: 10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
       '@forinda/kickjs-devtools':
-        specifier: ^7.11.0
-        version: 7.11.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(ws@8.22.0)(zod@4.6.7)
+        specifier: ^7.14.0
+        version: 7.14.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(ws@8.22.0)(zod@4.6.7)
       '@forinda/kickjs-queue':
-        specifier: ^8.0.2
-        version: 8.0.2(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(bullmq@5.81.5)(ioredis@5.11.1)
+        specifier: ^8.1.0
+        version: 8.1.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(bullmq@5.81.5)(ioredis@5.11.1)
       '@forinda/kickjs-schema':
         specifier: ^0.2.4
         version: 0.2.4(zod@4.6.7)
       '@forinda/kickjs-swagger':
-        specifier: ^7.3.1
-        version: 7.3.1(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(express@5.3.0)(zod@4.6.7)
+        specifier: ^7.3.3
+        version: 7.3.3(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(zod@4.6.7)
       '@forinda/kickjs-ws':
-        specifier: ^7.2.1
-        version: 7.2.1(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(ws@8.22.0)
+        specifier: ^7.2.2
+        version: 7.2.2(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(ws@8.22.0)
       bcryptjs:
         specifier: ^3.0.3
         version: 3.0.3
@@ -67,14 +67,14 @@ importers:
         version: 4.6.7
     devDependencies:
       '@forinda/kickjs-cli':
-        specifier: ^8.10.2
-        version: 8.10.2(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(typescript@7.0.2)(zod@4.6.7)
+        specifier: ^8.13.1
+        version: 8.13.1(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(typescript@7.0.2)(zod@4.6.7)
       '@forinda/kickjs-testing':
-        specifier: ^8.3.0
-        version: 8.3.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(express@5.3.0)(supertest@7.3.1)(vitest@5.0.5(@types/node@26.6.5)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)))
+        specifier: ^8.3.1
+        version: 8.3.1(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(express@5.3.0)(supertest@7.3.1)(vitest@5.0.5(@types/node@26.6.5)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)))
       '@forinda/kickjs-vite':
-        specifier: ^8.0.2
-        version: 8.0.2(@forinda/kickjs-cli@8.10.2(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(typescript@7.0.2)(zod@4.6.7))(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(express@5.3.0)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+        specifier: ^8.1.1
+        version: 8.1.1(@forinda/kickjs-cli@8.13.1(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(typescript@7.0.2)(zod@4.6.7))(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       '@swc/core':
         specifier: ^1.16.18
         version: 1.16.18
@@ -646,8 +646,8 @@ packages:
     peerDependencies:
       commander: '>=12.0.0'
 
-  '@forinda/kickjs-cli@8.10.2':
-    resolution: {integrity: sha512-56+2u253I+Sj7OjcpE/PUGV7woIoDG2PYkx1SiFaOWUVT6Za9muXGZMyyD6kqE9dMijLdGkdRRDsSimESvv0LQ==}
+  '@forinda/kickjs-cli@8.13.1':
+    resolution: {integrity: sha512-VdkAPMc9socMm9+QvAGCYNxcnkgRapLCBto+wTCHyvd1OXJzxqWLhZDrpaTeAp/KkE4y94qKuBjbkq+4oyywUw==}
     engines: {node: '>=20.0'}
     hasBin: true
     peerDependencies:
@@ -659,8 +659,8 @@ packages:
       typescript:
         optional: true
 
-  '@forinda/kickjs-db@8.7.0':
-    resolution: {integrity: sha512-TSQJzjP6vSSS4HbZ08w+ULJFq8l7K5BRdHUgoqZawFPzm40GhEH8iv8GN2itPJQtoWeR+JcRVQu2eMGp21VbWQ==}
+  '@forinda/kickjs-db@8.9.0':
+    resolution: {integrity: sha512-c+87rdZC26lltRN64+MbvBRMyb6aC7F8KL4AjeHIt6LC7/gY9IWOZkDMaJiU4FqRLonTKtSh0yJF6uox41IIZQ==}
     engines: {node: '>=20.0'}
     hasBin: true
     peerDependencies:
@@ -688,19 +688,19 @@ packages:
       '@forinda/kickjs':
         optional: true
 
-  '@forinda/kickjs-devtools@7.11.0':
-    resolution: {integrity: sha512-ZHZYxOKInjNKLXazOMmmT/F7HullziM3gQlqKat4rap5TuH9oXfYyQPxBvhTmhjE6zALBaTuOer8/xlunjlmaA==}
+  '@forinda/kickjs-devtools@7.14.0':
+    resolution: {integrity: sha512-0FCmjYed6/B3eLDpWXEVIjbtpzJrp6x3Dvetfp5bc/F0znaYh1Kwvc2/zS1P8a/OeJIldstSIGAhl1KtS1gD/A==}
     engines: {node: '>=20.0'}
     peerDependencies:
       '@forinda/kickjs': '>=8.6.0'
       ws: ^8.0.0
 
-  '@forinda/kickjs-di@0.1.0':
-    resolution: {integrity: sha512-DYVC/FxhdlZspBrjTsbE0VTXMgQPANQUT5QL2XiR79FL6jqigJkcp7Z7tQYg3ywggcT52nVttRYguoDA7XlTBQ==}
+  '@forinda/kickjs-di@0.2.0':
+    resolution: {integrity: sha512-4799mcV7N2l2Ppsy8qwIdylW6e94YjdTCycrJzfefx2L6JwU71/4daCMENOoBYecXh8MWvH+aLbgU/EW3qFJ7A==}
     engines: {node: '>=20.0'}
 
-  '@forinda/kickjs-queue@8.0.2':
-    resolution: {integrity: sha512-SibuIZhsRtggwgxVgxPTlcZzBqlWcTmcsptsTIJLrsRb/nPL0Z2b0+Y5ZbUv5Ax0dG7+COSMmOrLIrf0LNOhJw==}
+  '@forinda/kickjs-queue@8.1.0':
+    resolution: {integrity: sha512-5VVCVhdcBZ7efNNm4/DHRwVWdQvD0meVCMHGypy2hoo7nLHd4lBkrzcgHHLtSrJu+1YCmHqJgtz0hI7fR4B2jA==}
     engines: {node: '>=20.0'}
     peerDependencies:
       '@forinda/kickjs': '>=8.8.0'
@@ -730,19 +730,18 @@ packages:
       zod:
         optional: true
 
-  '@forinda/kickjs-swagger@7.3.1':
-    resolution: {integrity: sha512-FHxTLvdN/W+YpEcxIoFJ7fnRRWwZj9JMp4hbZUXCEmillPjn5sSchB1e3G3USIEim93eWBT51BCtF9s0Wt0IHw==}
+  '@forinda/kickjs-swagger@7.3.3':
+    resolution: {integrity: sha512-/pa72FoKVwOpInEtKFGmMkKDdRP9M1L3TMrHaL3gq93+CN4KC2v6HcYlJQkZu0oQx1CbaL+EtGvoCC1xcxjMuQ==}
     engines: {node: '>=20.0'}
     peerDependencies:
       '@forinda/kickjs': '>=5.18.0'
-      express: ^5.1.0
       zod: ^4.0.0
     peerDependenciesMeta:
       zod:
         optional: true
 
-  '@forinda/kickjs-testing@8.3.0':
-    resolution: {integrity: sha512-wc2+p1hoOMIUU0HQb5ocy/phNrEYYzWoYIEW41xnHQiAvcRAoLOgSY0G5PyOwY5GfoXb6puLo0g3soO3bJaAPA==}
+  '@forinda/kickjs-testing@8.3.1':
+    resolution: {integrity: sha512-40w7Qz57p8A/jPynh+eP5b5LZKOveqEER/Ai8tFRJ6PeAIZ0t1GeasAhIOkrp6Vrmet988gImj6e3PKVtGOqSA==}
     engines: {node: '>=20.0'}
     peerDependencies:
       '@forinda/kickjs': '>=5.18.0'
@@ -751,6 +750,8 @@ packages:
       testcontainers: '>=11.0.0'
       vitest: '>=3.0.0'
     peerDependenciesMeta:
+      express:
+        optional: true
       supertest:
         optional: true
       testcontainers:
@@ -758,20 +759,21 @@ packages:
       vitest:
         optional: true
 
-  '@forinda/kickjs-vite@8.0.2':
-    resolution: {integrity: sha512-DRzj6iurbI4BOTL1Y4ujLfJGtxo9AfHNK38lOQJNrGMlBKeIB0CQXD634RuRIrhY6yWdSfLAPGHqtqbP/CZYUw==}
+  '@forinda/kickjs-vite@8.1.1':
+    resolution: {integrity: sha512-+HoHPeeHVWlYtdQJ+n9IFeOi/EXux8nsOUnhMWqXdXI/KNxrB9mFheAobU9oIRRMzWAlpaDEPtHatrIgmfcQdQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
       '@forinda/kickjs': '>=5.18.0'
       '@forinda/kickjs-cli': '>=6.2.0'
-      express: ^5.3.0
       vite: '>=6.0.0'
     peerDependenciesMeta:
+      '@forinda/kickjs':
+        optional: true
       '@forinda/kickjs-cli':
         optional: true
 
-  '@forinda/kickjs-ws@7.2.1':
-    resolution: {integrity: sha512-sQ5IUG67OZmvimDWfto1zKTleVBItLsk7QuGyOv8LF40aJvHy+L7hL0q1DZ/RVxEa7dSXL/phHXYDFwKvFNePQ==}
+  '@forinda/kickjs-ws@7.2.2':
+    resolution: {integrity: sha512-x8Py8iv3YfWvoSb/+J9ucmuDP5ceW2ri8Dj4FxKI8w78CG3YPY7Tzldxosg0+FAW/palESdv+A00Yb6K1QjETw==}
     engines: {node: '>=20.0'}
     peerDependencies:
       '@forinda/kickjs': '>=5.18.0'
@@ -781,8 +783,8 @@ packages:
       socket.io:
         optional: true
 
-  '@forinda/kickjs@10.3.1':
-    resolution: {integrity: sha512-h3hguwyK4IdNpzfifKoc2kl9WV8YeCQ/CrrnpHokfPZzNXwqlvn3JH0HZ3MZqkhs33+tU1PemSh/rz0zAWE4cw==}
+  '@forinda/kickjs@10.7.0':
+    resolution: {integrity: sha512-rlntpCaTuQ4H2Es8CQjeWZeK+Fzz7kayQ2S8K+SPP0i5nGGxKE1j153cIZ9QbZQe1DHfEmB8Z5lswadX8CnCuA==}
     engines: {node: '>=20.0'}
     peerDependencies:
       '@fastify/middie': ^9.0.0
@@ -803,6 +805,8 @@ packages:
       croner:
         optional: true
       dotenv:
+        optional: true
+      express:
         optional: true
       fastify:
         optional: true
@@ -3182,12 +3186,12 @@ snapshots:
     dependencies:
       commander: 15.0.0
 
-  '@forinda/kickjs-cli@8.10.2(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(typescript@7.0.2)(zod@4.6.7)':
+  '@forinda/kickjs-cli@8.13.1(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(typescript@7.0.2)(zod@4.6.7)':
     dependencies:
       '@clack/prompts': 1.8.1
-      '@forinda/kickjs': 10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
+      '@forinda/kickjs': 10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
       '@forinda/kickjs-cli-kit': 0.1.3(commander@15.0.0)
-      '@forinda/kickjs-db': 8.7.0(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))
+      '@forinda/kickjs-db': 8.9.0(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))
       commander: 15.0.0
       glob: 13.0.6
       jiti: 2.7.0
@@ -3218,24 +3222,24 @@ snapshots:
       - yup
       - zod
 
-  '@forinda/kickjs-db@8.7.0(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))':
+  '@forinda/kickjs-db@8.9.0(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))':
     dependencies:
-      '@forinda/kickjs': 10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
+      '@forinda/kickjs': 10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
       '@forinda/kickjs-cli-kit': 0.1.3(commander@15.0.0)
       commander: 15.0.0
       jiti: 2.7.0
       kysely: 0.29.6
     optionalDependencies:
-      '@forinda/kickjs-devtools-kit': 7.3.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))
+      '@forinda/kickjs-devtools-kit': 7.3.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))
 
-  '@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))':
+  '@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))':
     optionalDependencies:
-      '@forinda/kickjs': 10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
+      '@forinda/kickjs': 10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
 
-  '@forinda/kickjs-devtools@7.11.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(ws@8.22.0)(zod@4.6.7)':
+  '@forinda/kickjs-devtools@7.14.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(ws@8.22.0)(zod@4.6.7)':
     dependencies:
-      '@forinda/kickjs': 10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
-      '@forinda/kickjs-devtools-kit': 7.3.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))
+      '@forinda/kickjs': 10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
+      '@forinda/kickjs-devtools-kit': 7.3.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))
       '@forinda/kickjs-schema': 0.2.4(zod@4.6.7)
       reflect-metadata: 0.2.2
       ws: 8.22.0
@@ -3245,14 +3249,14 @@ snapshots:
       - yup
       - zod
 
-  '@forinda/kickjs-di@0.1.0':
+  '@forinda/kickjs-di@0.2.0':
     dependencies:
       reflect-metadata: 0.2.2
 
-  '@forinda/kickjs-queue@8.0.2(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(bullmq@5.81.5)(ioredis@5.11.1)':
+  '@forinda/kickjs-queue@8.1.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(bullmq@5.81.5)(ioredis@5.11.1)':
     dependencies:
-      '@forinda/kickjs': 10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
-      '@forinda/kickjs-devtools-kit': 7.3.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))
+      '@forinda/kickjs': 10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
+      '@forinda/kickjs-devtools-kit': 7.3.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))
       reflect-metadata: 0.2.2
     optionalDependencies:
       bullmq: 5.81.5
@@ -3262,11 +3266,10 @@ snapshots:
     optionalDependencies:
       zod: 4.6.7
 
-  '@forinda/kickjs-swagger@7.3.1(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(express@5.3.0)(zod@4.6.7)':
+  '@forinda/kickjs-swagger@7.3.3(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(zod@4.6.7)':
     dependencies:
-      '@forinda/kickjs': 10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
+      '@forinda/kickjs': 10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
       '@forinda/kickjs-schema': 0.2.4(zod@4.6.7)
-      express: 5.3.0
       reflect-metadata: 0.2.2
       swagger-ui-dist: 5.33.2
     optionalDependencies:
@@ -3276,38 +3279,37 @@ snapshots:
       - valibot
       - yup
 
-  '@forinda/kickjs-testing@8.3.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(express@5.3.0)(supertest@7.3.1)(vitest@5.0.5(@types/node@26.6.5)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)))':
+  '@forinda/kickjs-testing@8.3.1(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(express@5.3.0)(supertest@7.3.1)(vitest@5.0.5(@types/node@26.6.5)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)))':
     dependencies:
-      '@forinda/kickjs': 10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
-      express: 5.3.0
+      '@forinda/kickjs': 10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
     optionalDependencies:
+      express: 5.3.0
       supertest: 7.3.1
       vitest: 5.0.5(@types/node@26.6.5)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
-  '@forinda/kickjs-vite@8.0.2(@forinda/kickjs-cli@8.10.2(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(typescript@7.0.2)(zod@4.6.7))(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(express@5.3.0)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))':
+  '@forinda/kickjs-vite@8.1.1(@forinda/kickjs-cli@8.13.1(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(typescript@7.0.2)(zod@4.6.7))(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))':
     dependencies:
       '@babel/core': 8.0.7
-      '@forinda/kickjs': 10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
-      express: 5.3.0
       vite: 8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)
     optionalDependencies:
-      '@forinda/kickjs-cli': 8.10.2(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(typescript@7.0.2)(zod@4.6.7)
+      '@forinda/kickjs': 10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
+      '@forinda/kickjs-cli': 8.13.1(@forinda/kickjs-devtools-kit@7.3.0(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)))(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(typescript@7.0.2)(zod@4.6.7)
 
-  '@forinda/kickjs-ws@7.2.1(@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(ws@8.22.0)':
+  '@forinda/kickjs-ws@7.2.2(@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7))(ws@8.22.0)':
     dependencies:
-      '@forinda/kickjs': 10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
+      '@forinda/kickjs': 10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)
       reflect-metadata: 0.2.2
       ws: 8.22.0
 
-  '@forinda/kickjs@10.3.1(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)':
+  '@forinda/kickjs@10.7.0(croner@10.0.1)(dotenv@17.4.2)(express@5.3.0)(serve-static@2.2.1)(zod@4.6.7)':
     dependencies:
-      '@forinda/kickjs-di': 0.1.0
+      '@forinda/kickjs-di': 0.2.0
       '@forinda/kickjs-schema': 0.2.4(zod@4.6.7)
-      express: 5.3.0
       reflect-metadata: 0.2.2
     optionalDependencies:
       croner: 10.0.1
       dotenv: 17.4.2
+      express: 5.3.0
       serve-static: 2.2.1
       zod: 4.6.7
     transitivePeerDependencies:

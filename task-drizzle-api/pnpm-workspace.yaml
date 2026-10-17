@@ -4,13 +4,20 @@ allowBuilds:
   esbuild: true
   msgpackr-extract: true
 minimumReleaseAgeExclude:
-  - '@forinda/kickjs-cli@8.10.2'
-  - '@forinda/kickjs-db@8.7.0'
-  - '@forinda/kickjs-devtools@7.11.0'
-  - '@forinda/kickjs-di@0.1.0'
-  - '@forinda/kickjs-testing@8.3.0'
-  - '@forinda/kickjs-ws@7.2.1'
-  - '@forinda/kickjs@10.3.1'
+  - '@forinda/kickjs@10.6.0 || 10.7.0'
+  - '@forinda/kickjs-cli@8.13.0 || 8.13.1'
+  - '@forinda/kickjs-client@0.3.1'
+  - '@forinda/kickjs-db@8.9.0'
+  - '@forinda/kickjs-devtools@7.13.0 || 7.14.0'
+  - '@forinda/kickjs-di@0.2.0'
+  - '@forinda/kickjs-inertia@0.3.0'
+  - '@forinda/kickjs-queue@8.1.0'
+  - '@forinda/kickjs-schema@0.2.4'
+  - '@forinda/kickjs-storage@0.2.0'
+  - '@forinda/kickjs-swagger@7.3.3'
+  - '@forinda/kickjs-testing@8.3.1'
+  - '@forinda/kickjs-vite@8.1.0 || 8.1.1'
+  - '@forinda/kickjs-ws@7.2.2'
   - '@vitest/mocker@5.0.5'
   - '@vitest/spy@5.0.5'
   - vitest@5.0.5

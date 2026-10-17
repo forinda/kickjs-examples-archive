@@ -19,6 +19,10 @@ const envSchema = fromZod(
     APP_ROLE: z.enum(['all', 'api', 'worker']).default('all'),
     // The worker process serves /health on its own port, so it can run beside the API.
     WORKER_PORT: z.coerce.number().default(3001),
+    // Set it to move /health, /metrics and /queues off the public port onto this one —
+    // reachable by the orchestrator and Prometheus, not the ingress. Unset: health stays
+    // on PORT and there is no /metrics or /queues. Each process needs its own.
+    MANAGEMENT_PORT: z.coerce.number().int().min(1).max(65535).optional(),
     QUEUE_CONCURRENCY: z.coerce.number().int().positive().default(2),
     // How long shutdown waits for active jobs before giving up on them.
     SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),

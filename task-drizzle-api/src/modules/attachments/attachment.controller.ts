@@ -39,6 +39,9 @@ export class AttachmentController {
   async create(ctx: RequestContext) {
     const user = getUser(ctx)
     const file = ctx.file
+    if (!file) {
+      throw HttpException.badRequest('No file uploaded. Use field name "file".')
+    }
     const taskId = ctx.body.taskId
     await requireAccess(ctx, 'task', taskId)
 

@@ -6,6 +6,7 @@ import { WebSocket } from 'ws'
 import { Application, Container } from '@forinda/kickjs'
 import { WsAdapter } from '@forinda/kickjs-ws'
 import { issueToken, resolveSocketUser } from '@/auth'
+import { DrainNoticeAdapter } from '@/adapters/drain-notice.adapter'
 import { ChatModule } from './chat.module'
 
 type Frame = { event: string; data: any }
@@ -129,5 +130,26 @@ describe('ws-chat', () => {
     await http.post('/api/v1/chat/token').send({ name: 'x y' }).expect(422)
     const res = await http.post('/api/v1/chat/token').send({ name: 'dana' }).expect(201)
     expect(res.body.token).toMatch(/\./)
+  })
+})
+
+describe('ws-chat on shutdown', () => {
+  it("tells this instance's clients to reconnect before their sockets close", async () => {
+    Container.reset()
+    const app = new Application({
+      modules: [ChatModule()],
+      adapters: [WsAdapter({ auth: { resolveUser: resolveSocketUser } }), DrainNoticeAdapter()],
+      port: 0,
+    })
+    await app.start()
+    const { port } = app.getHttpServer()!.address() as AddressInfo
+    const c = await connect(`ws://127.0.0.1:${port}/ws/chat`, issueToken('erin'))
+    await c.next('welcome')
+
+    const closed = new Promise<number>((resolve) => c.ws.once('close', resolve))
+    await app.shutdown()
+    // A socket's frames arrive in order: the notice came before the close.
+    expect(await closed).toBe(1001)
+    expect(c.frames.map((f) => f.event)).toContain('server:draining')
   })
 })
