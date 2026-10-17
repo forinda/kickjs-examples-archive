@@ -15,9 +15,9 @@
     "db:status": "kick db migrate status"
   },
   "dependencies": {
-    "@forinda/kickjs": "^10.6.0",
+    "@forinda/kickjs": "^10.7.0",
     "@forinda/kickjs-db": "^8.9.0",
-    "@forinda/kickjs-devtools": "^7.13.0",
+    "@forinda/kickjs-devtools": "^7.14.0",
     "@forinda/kickjs-schema": "^0.2.4",
     "better-sqlite3": "^13.0.3",
     "dotenv": "^17.4.2",
@@ -26,9 +26,9 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@forinda/kickjs-cli": "^8.13.0",
+    "@forinda/kickjs-cli": "^8.13.1",
     "@forinda/kickjs-testing": "^8.3.1",
-    "@forinda/kickjs-vite": "^8.1.0",
+    "@forinda/kickjs-vite": "^8.1.1",
     "@swc/core": "^1.16.18",
     "@types/better-sqlite3": "^9.6.0",
     "@types/express": "^5.0.6",

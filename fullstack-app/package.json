@@ -17,7 +17,7 @@
     "db:migrate": "pnpm --filter ./server db:migrate"
   },
   "devDependencies": {
-    "@forinda/kickjs-cli": "^8.13.0"
+    "@forinda/kickjs-cli": "^8.13.1"
   },
   "workspaces": [
     "server",

@@ -6,11 +6,11 @@ allowBuilds:
   msgpackr-extract: true
   '@scarf/scarf': false
 minimumReleaseAgeExclude:
-  - '@forinda/kickjs@10.6.0'
-  - '@forinda/kickjs-cli@8.13.0'
+  - '@forinda/kickjs@10.6.0 || 10.7.0'
+  - '@forinda/kickjs-cli@8.13.0 || 8.13.1'
   - '@forinda/kickjs-client@0.3.1'
   - '@forinda/kickjs-db@8.9.0'
-  - '@forinda/kickjs-devtools@7.13.0'
+  - '@forinda/kickjs-devtools@7.13.0 || 7.14.0'
   - '@forinda/kickjs-di@0.2.0'
   - '@forinda/kickjs-inertia@0.3.0'
   - '@forinda/kickjs-queue@8.1.0'
@@ -18,7 +18,7 @@ minimumReleaseAgeExclude:
   - '@forinda/kickjs-storage@0.2.0'
   - '@forinda/kickjs-swagger@7.3.3'
   - '@forinda/kickjs-testing@8.3.1'
-  - '@forinda/kickjs-vite@8.1.0'
+  - '@forinda/kickjs-vite@8.1.0 || 8.1.1'
   - '@forinda/kickjs-ws@7.2.2'
   - '@prisma/adapter-pg@7.10.1'
   - '@prisma/client-runtime-utils@7.10.1'
