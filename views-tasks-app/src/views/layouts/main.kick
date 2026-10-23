@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <slot name="head">
+      <title>ktodo</title>
+    </slot>
+    <style>
+      :root {
+        --bg: #f8fafc; --card: #fff; --text: #0f172a; --muted: #64748b;
+        --line: #e2e8f0; --accent: #2563eb; --danger: #dc2626;
+        color-scheme: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root { --bg: #0b1120; --card: #111827; --text: #e2e8f0; --muted: #94a3b8; --line: #1f2937; }
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--text); }
+      main { max-width: 44rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+      header.top { border-bottom: 1px solid var(--line); background: var(--card); }
+      header.top nav { max-width: 44rem; margin: 0 auto; padding: 0.75rem 1rem; display: flex; gap: 1rem; align-items: center; }
+      header.top .brand { font-weight: 700; margin-right: auto; }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      h1 { margin: 0 0 1rem; font-size: 1.5rem; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
+      label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.25rem; }
+      input, select, textarea { font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.45rem 0.6rem; width: 100%; }
+      input[type='color'] { padding: 0.1rem; height: 2.3rem; width: 3rem; }
+      input:user-invalid, select:user-invalid { border-color: var(--danger); }
+      button { font: inherit; border: 0; border-radius: 6px; padding: 0.45rem 0.9rem; background: var(--accent); color: #fff; cursor: pointer; }
+      button.link { background: none; color: var(--muted); padding: 0.2rem 0.4rem; }
+      button.link:hover { color: var(--danger); }
+      .row { display: flex; gap: 0.75rem; align-items: end; flex-wrap: wrap; }
+      .row > .grow { flex: 1 1 12rem; }
+      .field { margin-bottom: 0.75rem; }
+      [data-kick-error]:not([hidden]) { display: block; color: var(--danger); font-size: 0.85rem; margin-top: 0.2rem; }
+      .form-error { color: var(--danger); margin: 0 0 0.75rem; }
+      .muted { color: var(--muted); }
+      .chips { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+      .chip { border: 1px solid var(--line); border-radius: 999px; padding: 0.15rem 0.7rem; font-size: 0.85rem; color: var(--text); }
+      .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .dot { display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 50%; margin-right: 0.3rem; }
+      ul.list { list-style: none; margin: 0; padding: 0; }
+      kick-toast { position: fixed; margin: 0; inset: auto; top: 1rem; right: 1rem; display: flex; gap: 0.75rem; align-items: center; background: var(--card); color: var(--text); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 0.5rem 0.75rem; box-shadow: 0 4px 16px rgb(0 0 0 / 0.12); }
+      kick-toast p { margin: 0; }
+      kick-toast[kind='success'] { border-left-color: #16a34a; }
+      kick-toast[kind='error'] { border-left-color: var(--danger); }
+      kick-toast button { background: none; color: var(--muted); padding: 0 0.25rem; }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <nav>
+        <a class="brand" href="/">ktodo</a>
+        @if (user) {
+          <a href="/">Tasks</a>
+          <a href="/categories">Categories</a>
+          <span class="muted">{{ user.email }}</span>
+          <form method="post" action="/logout"><button class="link">Sign out</button></form>
+        } @else {
+          <a href="/login">Sign in</a>
+          <a href="/register">Create account</a>
+        }
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    @for ([kind, message] of $flash | entries; track kind) {
+      <flash-toast [kind]="kind" [message]="message" />
+    }
+  </body>
+</html>

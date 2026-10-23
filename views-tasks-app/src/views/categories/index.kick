@@ -1,0 +1,47 @@
+@layout('layouts/main')
+@slot('head') {
+  <title>Categories · ktodo</title>
+  <style>
+    li.cat { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; border-top: 1px solid var(--line); }
+    li.cat:first-child { border-top: 0; }
+    li.cat a { flex: 1; color: var(--text); }
+  </style>
+}
+<h1>Categories</h1>
+
+<form class="card" method="post" action="/categories">
+  <div class="row">
+    <div class="grow">
+      <label for="name">New category</label>
+      <input id="name" name="name" placeholder="e.g. Errands" validate="required | maxLength:60" />
+    </div>
+    <div>
+      <label for="color">Colour</label>
+      <input id="color" name="color" type="color" value="#6b7280" />
+    </div>
+    <button>Add</button>
+  </div>
+  @error('name') {
+    {{ $message }}
+  }
+  @error('color') {
+    {{ $message }}
+  }
+</form>
+
+<div class="card">
+  <ul class="list">
+    @for (c of categories; track c.id) {
+      <li class="cat">
+        <i class="dot" [style.background]="c.color"></i>
+        <a href="/?category={{ c.id }}">{{ c.name }}</a>
+        <span class="muted">{{ c.taskCount }} {{ c.taskCount == 1 ? 'task' : 'tasks' }}</span>
+        <form method="post" action="/categories/{{ c.id }}/delete">
+          <button class="link" aria-label="Delete {{ c.name }}">✕</button>
+        </form>
+      </li>
+    } @empty {
+      <li class="muted">No categories yet.</li>
+    }
+  </ul>
+</div>

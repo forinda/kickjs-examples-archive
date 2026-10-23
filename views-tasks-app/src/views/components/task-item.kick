@@ -1,0 +1,27 @@
+@input task
+<li class="task" [class.done]="task.done">
+  <form method="post" action="/tasks/{{ task.id }}/toggle">
+    <button class="check" [class.on]="task.done" aria-label="{{ task.done ? 'Mark open' : 'Mark done' }}">
+      @if (task.done) {
+        ✓
+      }
+    </button>
+  </form>
+  <div class="body">
+    <a class="title" href="/tasks/{{ task.id }}/edit">{{ task.title }}</a>
+    <div class="meta">
+      @if (task.categoryName) {
+        <span><i class="dot" [style.background]="task.categoryColor"></i>{{ task.categoryName }}</span>
+      }
+      @if (task.dueDate) {
+        <span>due {{ task.dueDate | date:'mediumDate' }}</span>
+      }
+    </div>
+    @if (task.notes) {
+      <p class="notes">{{ task.notes }}</p>
+    }
+  </div>
+  <form method="post" action="/tasks/{{ task.id }}/delete">
+    <button class="link" aria-label="Delete {{ task.title }}">✕</button>
+  </form>
+</li>

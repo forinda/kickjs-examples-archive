@@ -1,0 +1,26 @@
+@layout('layouts/main')
+@slot('head') {
+  <title>Sign in · ktodo</title>
+}
+<h1>Sign in</h1>
+<form class="card" method="post" action="/login">
+  @error('form') {
+    <b>{{ $message }}</b>
+  }
+  <div class="field">
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" autocomplete="email" validate="required | email" />
+    @error('email') {
+      {{ $message }}
+    }
+  </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" validate="required" />
+    @error('password') {
+      {{ $message }}
+    }
+  </div>
+  <button>Sign in</button>
+</form>
+<p class="muted">New here? <a href="/register">Create an account</a>.</p>

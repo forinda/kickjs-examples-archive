@@ -1,0 +1,195 @@
+{
+  "version": 1,
+  "dialect": "sqlite",
+  "tables": {
+    "categories": {
+      "name": "categories",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "nullable": false,
+          "default": null,
+          "primaryKey": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "primaryKey": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(60)",
+          "nullable": false,
+          "default": null,
+          "primaryKey": false
+        },
+        "color": {
+          "name": "color",
+          "type": "varchar(7)",
+          "nullable": false,
+          "default": "#6b7280",
+          "primaryKey": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "primaryKey": false
+        }
+      },
+      "indexes": [],
+      "foreignKeys": [
+        {
+          "name": "categories_userId_fk",
+          "columns": [
+            "userId"
+          ],
+          "refTable": "users",
+          "refColumns": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no_action"
+        }
+      ],
+      "checks": []
+    },
+    "tasks": {
+      "name": "tasks",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "nullable": false,
+          "default": null,
+          "primaryKey": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "primaryKey": false
+        },
+        "categoryId": {
+          "name": "categoryId",
+          "type": "integer",
+          "nullable": true,
+          "default": null,
+          "primaryKey": false
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(200)",
+          "nullable": false,
+          "default": null,
+          "primaryKey": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "primaryKey": false
+        },
+        "done": {
+          "name": "done",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false",
+          "primaryKey": false
+        },
+        "dueDate": {
+          "name": "dueDate",
+          "type": "date",
+          "nullable": true,
+          "default": null,
+          "primaryKey": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "primaryKey": false
+        }
+      },
+      "indexes": [],
+      "foreignKeys": [
+        {
+          "name": "tasks_userId_fk",
+          "columns": [
+            "userId"
+          ],
+          "refTable": "users",
+          "refColumns": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no_action"
+        },
+        {
+          "name": "tasks_categoryId_fk",
+          "columns": [
+            "categoryId"
+          ],
+          "refTable": "categories",
+          "refColumns": [
+            "id"
+          ],
+          "onDelete": "set_null",
+          "onUpdate": "no_action"
+        }
+      ],
+      "checks": []
+    },
+    "users": {
+      "name": "users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "nullable": false,
+          "default": null,
+          "primaryKey": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "nullable": false,
+          "default": null,
+          "primaryKey": false
+        },
+        "passwordHash": {
+          "name": "passwordHash",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "primaryKey": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "primaryKey": false
+        }
+      },
+      "indexes": [
+        {
+          "name": "users_email_unique",
+          "columns": [
+            "email"
+          ],
+          "unique": true
+        }
+      ],
+      "foreignKeys": [],
+      "checks": []
+    }
+  }
+}
