@@ -22,7 +22,7 @@ export const DbAdapter = defineAdapter({
       }
     },
     shutdown: () => {
-      if (database.open) database.close()
+      // if (database.open) database.close()
     },
   }),
 })
