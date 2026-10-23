@@ -40,9 +40,11 @@ export class TasksController {
       open,
       filter: { category: filter.category ?? null, status: filter.status },
       statuses: STATUSES,
-      // Links keep the other filter: `?category=…&status=…`.
-      categoryQuery: filter.status === 'all' ? '' : `&status=${filter.status}`,
-      statusQuery: filter.category ? `&category=${filter.category}` : '',
+      // The filter links keep the other filter; kvQuery leaves out the nulls.
+      query: {
+        category: filter.category ?? null,
+        status: filter.status === 'all' ? null : filter.status,
+      },
     })
   }
 

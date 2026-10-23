@@ -3,7 +3,8 @@
   <title>Sign in · ktodo</title>
 }
 <h1>Sign in</h1>
-<form class="card" method="post" action="/login">
+<form class="card" method="post" action="{{ 'AuthController.login' | kvRoute }}">
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
   @error('form') {
     <b>{{ $message }}</b>
   }
@@ -23,4 +24,4 @@
   </div>
   <button>Sign in</button>
 </form>
-<p class="muted">New here? <a href="/register">Create an account</a>.</p>
+<p class="muted">New here? <a href="{{ 'AuthController.registerPage' | kvRoute }}">Create an account</a>.</p>

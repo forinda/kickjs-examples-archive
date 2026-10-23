@@ -4,6 +4,7 @@ import 'reflect-metadata'
 import './config'
 import {
   bootstrap,
+  csrf,
   expressRuntime,
   formErrorHandler,
   getEnv,
@@ -29,9 +30,11 @@ export const app = await bootstrap({
     // Forms post urlencoded bodies.
     express.urlencoded({ extended: false }),
     express.json(),
-    // The signed-in user id, flash messages and form errors, in an encrypted
-    // cookie. SameSite=Lax keeps it off cross-site form posts.
+    // The signed-in user id, flash messages and form errors, in an encrypted cookie.
     session({ secret: getEnv('SESSION_SECRET'), store: 'cookie' }),
+    // Every form posts the token (`_csrf`, from csrfToken(ctx) in src/views.ts),
+    // and the request must come from this site. After the body parsers: it reads the field.
+    csrf(),
   ],
   adapters: [
     DbAdapter(),

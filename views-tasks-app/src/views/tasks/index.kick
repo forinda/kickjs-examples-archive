@@ -15,7 +15,8 @@
 }
 <h1>Tasks <small class="muted">{{ open }} open</small></h1>
 
-<form class="card" method="post" action="/tasks">
+<form class="card" method="post" action="{{ 'TasksController.create' | kvRoute }}">
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
   <div class="row">
     <div class="grow">
       <label for="title">New task</label>
@@ -45,22 +46,22 @@
 </form>
 
 <div class="chips">
-  <a class="chip" [class.active]="filter.category == null" href="/?{{ categoryQuery }}">All</a>
+  <a class="chip" [class.active]="filter.category == null" href="{{ 'TasksController.index' | kvRoute | kvQuery:'status':query.status }}">All</a>
   @for (c of categories; track c.id) {
-    <a class="chip" [class.active]="filter.category == c.id" href="/?category={{ c.id }}{{ categoryQuery }}"><i class="dot" [style.background]="c.color"></i>{{ c.name }}</a>
+    <a class="chip" [class.active]="filter.category == c.id" href="{{ 'TasksController.index' | kvRoute | kvQuery:'category':c.id:'status':query.status }}"><i class="dot" [style.background]="c.color"></i>{{ c.name }}</a>
   }
-  <a class="chip" [class.active]="filter.category == 'none'" href="/?category=none{{ categoryQuery }}">Uncategorised</a>
+  <a class="chip" [class.active]="filter.category == 'none'" href="{{ 'TasksController.index' | kvRoute | kvQuery:'category':'none':'status':query.status }}">Uncategorised</a>
 </div>
 <div class="chips">
   @for (s of statuses; track s) {
-    <a class="chip" [class.active]="filter.status == s" href="/?status={{ s }}{{ statusQuery }}">{{ s | titlecase }}</a>
+    <a class="chip" [class.active]="filter.status == s" href="{{ 'TasksController.index' | kvRoute | kvQuery:'category':query.category:'status':(s == 'all' ? null : s) }}">{{ s | titlecase }}</a>
   }
 </div>
 
 <div class="card">
   <ul class="list">
     @for (task of tasks; track task.id) {
-      <task-item [task]="task" />
+      <task-item [task]="task" [csrf]="csrfToken" />
     } @empty {
       <li class="muted">Nothing here. Add a task above.</li>
     }

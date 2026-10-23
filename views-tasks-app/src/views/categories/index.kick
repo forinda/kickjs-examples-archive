@@ -9,7 +9,8 @@
 }
 <h1>Categories</h1>
 
-<form class="card" method="post" action="/categories">
+<form class="card" method="post" action="{{ 'CategoriesController.create' | kvRoute }}">
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
   <div class="row">
     <div class="grow">
       <label for="name">New category</label>
@@ -34,9 +35,10 @@
     @for (c of categories; track c.id) {
       <li class="cat">
         <i class="dot" [style.background]="c.color"></i>
-        <a href="/?category={{ c.id }}">{{ c.name }}</a>
+        <a href="{{ 'TasksController.index' | kvRoute | kvQuery:'category':c.id }}">{{ c.name }}</a>
         <span class="muted">{{ c.taskCount }} {{ c.taskCount == 1 ? 'task' : 'tasks' }}</span>
-        <form method="post" action="/categories/{{ c.id }}/delete">
+        <form method="post" action="{{ 'CategoriesController.remove' | kvRoute:c.id }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
           <button class="link" aria-label="Delete {{ c.name }}">✕</button>
         </form>
       </li>

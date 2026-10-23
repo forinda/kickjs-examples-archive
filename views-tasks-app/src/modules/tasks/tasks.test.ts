@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import request from 'supertest'
-import { Container, formErrorHandler, getEnv, session } from '@forinda/kickjs'
+import { Container, csrf, formErrorHandler, getEnv, session } from '@forinda/kickjs'
 import { kickDbAdapter } from '@forinda/kickjs-db'
 import { KickView } from '@forinda/kickjs-view'
 import { createTestApp } from '@forinda/kickjs-testing'
@@ -20,6 +20,7 @@ async function makeApp() {
     middlewares: [
       express.urlencoded({ extended: false }),
       session({ secret: getEnv('SESSION_SECRET'), store: 'cookie' }),
+      csrf(),
     ],
     adapters: [
       DbAdapter(),
@@ -36,13 +37,33 @@ async function makeApp() {
 }
 
 /** A browser form post: urlencoded, asking for HTML. */
-const post = (http: request.Agent, url: string, body: string) =>
-  http.post(url).type('form').set('accept', 'text/html').send(body)
+/** The CSRF token, as a browser gets it: from a page's hidden _csrf field. */
+async function csrfToken(http: request.Agent): Promise<string> {
+  // Signed in, /register redirects to the task list: its forms carry the token too.
+  let res = await http.get('/register')
+  if (res.status >= 300 && res.status < 400) res = await http.get(res.headers.location!)
+  const page = res.text
+  return /name="_csrf" value="([0-9a-f]+)"/.exec(page)![1]!
+}
+
+/** A browser form post: urlencoded, asking for HTML, with the page's CSRF token. */
+async function post(http: request.Agent, url: string, body = '') {
+  const token = await csrfToken(http)
+  return http
+    .post(url)
+    .type('form')
+    .set('accept', 'text/html')
+    .send(`${body}${body ? '&' : ''}_csrf=${token}`)
+}
 
 async function signUp(email: string) {
   const http = await makeApp()
   await http.get('/register')
-  const res = await post(http, '/register', `email=${email}&password=correct-horse`)
+  const res = await post(
+    http,
+    '/register',
+    `email=${email}&password=correct-horse&confirm=correct-horse`,
+  )
   expect(res.headers.location).toBe('/')
   return http
 }
@@ -59,6 +80,16 @@ describe('tasks app', () => {
       .prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'users'")
       .get()
     if (hasTable) database.exec('DELETE FROM tasks; DELETE FROM categories; DELETE FROM users')
+  })
+
+  it('refuses a form post without the CSRF token', async () => {
+    const http = await makeApp()
+    await http.get('/register')
+    const res = await http
+      .post('/register')
+      .type('form')
+      .send('email=ada@example.com&password=correct-horse')
+    expect(res.status).toBe(403)
   })
 
   it('sends visitors who are not signed in to /login', async () => {
@@ -82,13 +113,25 @@ describe('tasks app', () => {
     expect(page).not.toContain('value="short"')
   })
 
+  it('the password confirmation must match', async () => {
+    const http = await makeApp()
+    await http.get('/register')
+    const res = await post(
+      http,
+      '/register',
+      'email=ada@example.com&password=correct-horse&confirm=correct-hose',
+    )
+    expect(res.headers.location).toBe('/register')
+    expect((await http.get('/register')).text).toContain('The passwords don’t match')
+  })
+
   it('registers, signs out and signs back in', async () => {
     const http = await signUp('ada@example.com')
     const home = (await http.get('/').expect(200)).text
     expect(home).toContain('ada@example.com')
     expect(home).toContain('Account created')
 
-    await http.post('/logout').expect(303)
+    expect((await post(http, '/logout')).status).toBe(303)
     await http.get('/').expect(302)
 
     const wrong = await post(http, '/login', 'email=ada@example.com&password=wrong-password')
@@ -100,7 +143,11 @@ describe('tasks app', () => {
   it('refuses a second account with the same email', async () => {
     await signUp('ada@example.com')
     const http = await makeApp()
-    const res = await post(http, '/register', 'email=ada@example.com&password=correct-horse')
+    const res = await post(
+      http,
+      '/register',
+      'email=ada@example.com&password=correct-horse&confirm=correct-horse',
+    )
     expect(res.text).toContain('That email is already registered')
   })
 
@@ -122,7 +169,7 @@ describe('tasks app', () => {
     expect(titles((await http.get('/?category=none')).text)).toEqual(['Loose end'])
 
     const id = /\/tasks\/(\d+)\/edit"[^>]*>Buy milk/.exec(list)![1]
-    await http.post(`/tasks/${id}/toggle`).expect(303)
+    expect((await post(http, `/tasks/${id}/toggle`)).status).toBe(303)
     expect(titles((await http.get('/?status=done')).text)).toEqual(['Buy milk'])
     expect(titles((await http.get('/?status=open')).text)).toEqual(['Loose end', 'Write report'])
 
@@ -137,7 +184,7 @@ describe('tasks app', () => {
     expect(after).toContain('Buy oat milk')
     expect(after).toContain('two cartons')
 
-    await http.post(`/tasks/${id}/delete`).expect(303)
+    expect((await post(http, `/tasks/${id}/delete`)).status).toBe(303)
     expect(titles((await http.get('/')).text)).toEqual(['Loose end', 'Write report'])
   })
 
@@ -155,7 +202,7 @@ describe('tasks app', () => {
     const work = /href="\/\?category=(\d+)">Work/.exec(page)![1]
     await post(http, '/tasks', `title=Write report&categoryId=${work}&dueDate=`)
 
-    await http.post(`/categories/${work}/delete`).expect(303)
+    expect((await post(http, `/categories/${work}/delete`)).status).toBe(303)
     expect(titles((await http.get('/?category=none')).text)).toEqual(['Write report'])
   })
 
@@ -173,7 +220,7 @@ describe('tasks app', () => {
     const bob = await signUp('bob@example.com')
     expect(titles((await bob.get('/')).text)).toEqual([])
     await bob.get(`/tasks/${id}/edit`).expect(404)
-    await bob.post(`/tasks/${id}/toggle`).expect(404)
-    await bob.post(`/tasks/${id}/delete`).expect(404)
+    expect((await post(bob, `/tasks/${id}/toggle`)).status).toBe(404)
+    expect((await post(bob, `/tasks/${id}/delete`)).status).toBe(404)
   })
 })
