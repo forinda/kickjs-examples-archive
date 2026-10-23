@@ -1,0 +1,43 @@
+@layout('layouts/main')
+@slot('head') {
+  <title>{{ title }} · ktodo</title>
+}
+<h1>Edit task</h1>
+<form class="card" method="post" action="/tasks/{{ task.id }}">
+  <div class="field">
+    <label for="title">Title</label>
+    <input id="title" name="title" value="{{ task.title }}" validate="required | maxLength:200" />
+    @error('title') {
+      {{ $message }}
+    }
+  </div>
+  <div class="field">
+    <label for="notes">Notes</label>
+    <textarea id="notes" name="notes" rows="4">{{ task.notes }}</textarea>
+    @error('notes') {
+      {{ $message }}
+    }
+  </div>
+  <div class="row field">
+    <div>
+      <label for="categoryId">Category</label>
+      <select id="categoryId" name="categoryId">
+        <option value="" [selected]="task.categoryId == null">None</option>
+        @for (c of categories; track c.id) {
+          <option value="{{ c.id }}" [selected]="task.categoryId == c.id">{{ c.name }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label for="dueDate">Due</label>
+      <input id="dueDate" name="dueDate" type="date" value="{{ dueValue }}" />
+      @error('dueDate') {
+        {{ $message }}
+      }
+    </div>
+  </div>
+  <div class="row">
+    <button>Save</button>
+    <a href="/">Cancel</a>
+  </div>
+</form>

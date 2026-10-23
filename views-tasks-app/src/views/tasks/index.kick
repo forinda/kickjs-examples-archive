@@ -1,0 +1,68 @@
+@layout('layouts/main')
+@slot('head') {
+  <title>Tasks ({{ open }} open) · ktodo</title>
+  <style>
+    li.task { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.6rem 0; border-top: 1px solid var(--line); }
+    li.task:first-child { border-top: 0; }
+    li.task .body { flex: 1; min-width: 0; }
+    li.task .title { color: var(--text); font-weight: 500; overflow-wrap: anywhere; }
+    li.task.done .title { text-decoration: line-through; color: var(--muted); }
+    li.task .meta { display: flex; gap: 0.75rem; font-size: 0.8rem; color: var(--muted); }
+    li.task .notes { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--muted); white-space: pre-line; }
+    button.check { width: 1.4rem; height: 1.4rem; padding: 0; border-radius: 50%; border: 2px solid var(--muted); background: none; color: #fff; font-size: 0.8rem; line-height: 1; }
+    button.check.on { background: #16a34a; border-color: #16a34a; }
+  </style>
+}
+<h1>Tasks <small class="muted">{{ open }} open</small></h1>
+
+<form class="card" method="post" action="/tasks">
+  <div class="row">
+    <div class="grow">
+      <label for="title">New task</label>
+      <input id="title" name="title" placeholder="What needs doing?" validate="required | maxLength:200" />
+    </div>
+    <div>
+      <label for="categoryId">Category</label>
+      <select id="categoryId" name="categoryId">
+        <option value="">None</option>
+        @for (c of categories; track c.id) {
+          <option value="{{ c.id }}">{{ c.name }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label for="dueDate">Due</label>
+      <input id="dueDate" name="dueDate" type="date" />
+    </div>
+    <button>Add</button>
+  </div>
+  @error('title') {
+    {{ $message }}
+  }
+  @error('dueDate') {
+    {{ $message }}
+  }
+</form>
+
+<div class="chips">
+  <a class="chip" [class.active]="filter.category == null" href="/?{{ categoryQuery }}">All</a>
+  @for (c of categories; track c.id) {
+    <a class="chip" [class.active]="filter.category == c.id" href="/?category={{ c.id }}{{ categoryQuery }}"><i class="dot" [style.background]="c.color"></i>{{ c.name }}</a>
+  }
+  <a class="chip" [class.active]="filter.category == 'none'" href="/?category=none{{ categoryQuery }}">Uncategorised</a>
+</div>
+<div class="chips">
+  @for (s of statuses; track s) {
+    <a class="chip" [class.active]="filter.status == s" href="/?status={{ s }}{{ statusQuery }}">{{ s | titlecase }}</a>
+  }
+</div>
+
+<div class="card">
+  <ul class="list">
+    @for (task of tasks; track task.id) {
+      <task-item [task]="task" />
+    } @empty {
+      <li class="muted">Nothing here. Add a task above.</li>
+    }
+  </ul>
+</div>

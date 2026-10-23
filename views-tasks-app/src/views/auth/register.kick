@@ -1,0 +1,23 @@
+@layout('layouts/main')
+@slot('head') {
+  <title>Create account · ktodo</title>
+}
+<h1>Create an account</h1>
+<form class="card" method="post" action="/register">
+  <div class="field">
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" autocomplete="email" validate="required | email" />
+    @error('email') {
+      {{ $message }}
+    }
+  </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="new-password" validate="required | minLength:8" />
+    @error('password') {
+      {{ $message }}
+    }
+  </div>
+  <button>Create account</button>
+</form>
+<p class="muted">Have an account? <a href="/login">Sign in</a>.</p>

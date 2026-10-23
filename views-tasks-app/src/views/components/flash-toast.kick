@@ -1,0 +1,32 @@
+@input message
+@input kind = 'info'
+@input timeout = 4000
+<kick-toast popover="manual" role="status" kind="{{ kind }}" timeout="{{ timeout }}">
+  <p>{{ message }}</p>
+  <button type="button" data-close aria-label="Dismiss">×</button>
+</kick-toast>
+
+<script client>
+  class KickToast extends HTMLElement {
+    private timer = 0
+
+    connectedCallback(): void {
+      this.showPopover?.()
+      this.querySelector('[data-close]')?.addEventListener('click', () => this.remove())
+      const ms = Number(this.getAttribute('timeout'))
+      if (ms > 0) {
+        const pause = () => window.clearTimeout(this.timer)
+        const start = () => {
+          pause()
+          this.timer = window.setTimeout(() => this.remove(), ms)
+        }
+        this.addEventListener('mouseenter', pause)
+        this.addEventListener('mouseleave', start)
+        this.addEventListener('focusin', pause)
+        this.addEventListener('focusout', start)
+        start()
+      }
+    }
+  }
+  customElements.get('kick-toast') || customElements.define('kick-toast', KickToast)
+</script>
