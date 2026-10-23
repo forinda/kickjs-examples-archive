@@ -5,10 +5,10 @@ allowBuilds:
 
 minimumReleaseAgeExclude:
   - '@forinda/kickjs-cli@8.15.0 || 8.16.0'
-  - '@forinda/kickjs-db@8.11.2'
+  - '@forinda/kickjs-db@8.11.2 || 8.11.3'
   - '@forinda/kickjs-view@0.3.0 || 0.4.0'
   - '@forinda/kickjs-vite@8.4.0 || 8.5.0'
-  - '@forinda/kickjs@10.12.0 || 10.13.0'
+  - '@forinda/kickjs@10.12.0 || 10.13.0 || 10.13.1'
   - '@swc/core-darwin-arm64@1.16.20'
   - '@swc/core-darwin-x64@1.16.20'
   - '@swc/core-linux-arm-gnueabihf@1.16.20'

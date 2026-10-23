@@ -16,8 +16,8 @@
     "db:status": "kick db migrate status"
   },
   "dependencies": {
-    "@forinda/kickjs": "^10.13.0",
-    "@forinda/kickjs-db": "^8.11.2",
+    "@forinda/kickjs": "^10.13.1",
+    "@forinda/kickjs-db": "^8.11.3",
     "@forinda/kickjs-schema": "^0.2.4",
     "@forinda/kickjs-view": "^0.4.0",
     "better-sqlite3": "^13.0.3",
