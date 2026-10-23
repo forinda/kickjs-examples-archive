@@ -3,7 +3,8 @@
   <title>{{ title }} · ktodo</title>
 }
 <h1>Edit task</h1>
-<form class="card" method="post" action="/tasks/{{ task.id }}">
+<form class="card" method="post" action="{{ 'TasksController.update' | kvRoute:task.id }}">
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
   <div class="field">
     <label for="title">Title</label>
     <input id="title" name="title" value="{{ task.title }}" validate="required | maxLength:200" />
@@ -38,6 +39,6 @@
   </div>
   <div class="row">
     <button>Save</button>
-    <a href="/">Cancel</a>
+    <a href="{{ 'TasksController.index' | kvRoute }}">Cancel</a>
   </div>
 </form>

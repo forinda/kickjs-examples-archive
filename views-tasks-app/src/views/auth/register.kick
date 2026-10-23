@@ -3,7 +3,8 @@
   <title>Create account · ktodo</title>
 }
 <h1>Create an account</h1>
-<form class="card" method="post" action="/register">
+<form class="card" method="post" action="{{ 'AuthController.register' | kvRoute }}">
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
   <div class="field">
     <label for="email">Email</label>
     <input id="email" name="email" type="email" autocomplete="email" validate="required | email" />
@@ -18,6 +19,13 @@
       {{ $message }}
     }
   </div>
+  <div class="field">
+    <label for="confirm">Confirm password</label>
+    <input id="confirm" name="confirm" type="password" autocomplete="new-password" validate="required | sameAs:'password'" />
+    @error('confirm') {
+      {{ $message }}
+    }
+  </div>
   <button>Create account</button>
 </form>
-<p class="muted">Have an account? <a href="/login">Sign in</a>.</p>
+<p class="muted">Have an account? <a href="{{ 'AuthController.loginPage' | kvRoute }}">Sign in</a>.</p>

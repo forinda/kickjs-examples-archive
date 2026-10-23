@@ -53,15 +53,18 @@
   <body>
     <header class="top">
       <nav>
-        <a class="brand" href="/">ktodo</a>
+        <a class="brand" href="{{ 'TasksController.index' | kvRoute }}">ktodo</a>
         @if (user) {
-          <a href="/">Tasks</a>
-          <a href="/categories">Categories</a>
+          <a href="{{ 'TasksController.index' | kvRoute }}">Tasks</a>
+          <a href="{{ 'CategoriesController.index' | kvRoute }}">Categories</a>
           <span class="muted">{{ user.email }}</span>
-          <form method="post" action="/logout"><button class="link">Sign out</button></form>
+          <form method="post" action="{{ 'AuthController.logout' | kvRoute }}">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+            <button class="link">Sign out</button>
+          </form>
         } @else {
-          <a href="/login">Sign in</a>
-          <a href="/register">Create account</a>
+          <a href="{{ 'AuthController.loginPage' | kvRoute }}">Sign in</a>
+          <a href="{{ 'AuthController.registerPage' | kvRoute }}">Create account</a>
         }
       </nav>
     </header>
