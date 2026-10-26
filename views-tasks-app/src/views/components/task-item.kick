@@ -1,6 +1,8 @@
 @input task
+@input csrf
 <li class="task" [class.done]="task.done">
-  <form method="post" action="/tasks/{{ task.id }}/toggle">
+  <form method="post" action="{{ 'TasksController.toggle' | kvRoute:task.id }}">
+    <input type="hidden" name="_csrf" value="{{ csrf }}" />
     <button class="check" [class.on]="task.done" aria-label="{{ task.done ? 'Mark open' : 'Mark done' }}">
       @if (task.done) {
         ✓
@@ -8,7 +10,7 @@
     </button>
   </form>
   <div class="body">
-    <a class="title" href="/tasks/{{ task.id }}/edit">{{ task.title }}</a>
+    <a class="title" href="{{ 'TasksController.edit' | kvRoute:task.id }}">{{ task.title }}</a>
     <div class="meta">
       @if (task.categoryName) {
         <span><i class="dot" [style.background]="task.categoryColor"></i>{{ task.categoryName }}</span>
@@ -21,7 +23,8 @@
       <p class="notes">{{ task.notes }}</p>
     }
   </div>
-  <form method="post" action="/tasks/{{ task.id }}/delete">
+  <form method="post" action="{{ 'TasksController.remove' | kvRoute:task.id }}">
+    <input type="hidden" name="_csrf" value="{{ csrf }}" />
     <button class="link" aria-label="Delete {{ task.title }}">✕</button>
   </form>
 </li>

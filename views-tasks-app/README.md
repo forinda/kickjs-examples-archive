@@ -10,6 +10,9 @@ A task list with categories and accounts, rendered on the server with **`.kick` 
   - Route validation (`{ body: zod schema }`) plus `formErrorHandler()`: a failed post goes back to its page with each field's message under `@error('field')` and the values refilled. Passwords are never refilled.
   - Duplicates (an email, a category name) are answered by re-rendering the form with `$errors`.
   - `validate="required | email"` on an input checks it in the browser first, and its message lands in the same spot.
+  - `src/views/validators.ts` adds the app's own validator, `sameAs`: the registration form's "confirm password" field uses `validate="required | sameAs:'password'"`. The route's schema checks the same thing on the server (a `refine` in `auth.schemas.ts`).
+- **Links:** templates link to routes by name: `{{ 'TasksController.edit' | kvRoute:task.id }}`. The filter chips add their query with `kvQuery:'category':c.id:'status':query.status`, which leaves out empty values.
+- **CSRF:** `csrf()` checks every form post. `share` hands each page `csrfToken(ctx)`, and each form posts it as a hidden `_csrf` field. The `task-item` component gets the token as an input, since components see only their inputs.
 - **Flash messages:** `flash(ctx, { success })` before a redirect, shown by the `flash-toast` component (`src/views/components/flash-toast.kick`). It's a custom element with a `<script client>`, built to `dist/public/_kick/c/` and served from there.
 - **Database:** `src/db/` holds the client and schema. `src/adapters/db.adapter.ts` registers the `APP_DB` token, answers `GET /health/ready` with a `SELECT 1`, and closes the handle on shutdown. `db/migrations/` holds the reviewed `init` migration.
 
@@ -34,7 +37,7 @@ NODE_ENV=production SESSION_SECRET=$(openssl rand -hex 32) pnpm start
 
 In production the session cookie is `Secure`, so signing in needs HTTPS. Plain `http://localhost` works in development.
 
-**CSRF:** forms are protected by the session cookie's `SameSite=Lax`, which keeps it off cross-site posts. A form posted from another site arrives signed out and is redirected to `/login`.
+**CSRF:** `csrf()` refuses a form post (403) without the page's `_csrf` token, or from another site.
 
 ## Deploy
 
